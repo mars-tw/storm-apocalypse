@@ -13,12 +13,22 @@ OUTPUT_DIR = REPO_ROOT / "public" / "models" / "custom"
 def reset_scene():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
-    for datablocks in (bpy.data.meshes, bpy.data.curves, bpy.data.materials, bpy.data.cameras, bpy.data.lights):
+    for datablocks in (
+        bpy.data.meshes,
+        bpy.data.curves,
+        bpy.data.materials,
+        bpy.data.cameras,
+        bpy.data.lights,
+        bpy.data.armatures,
+        bpy.data.actions,
+    ):
         for block in list(datablocks):
             if block.users == 0:
                 datablocks.remove(block)
     bpy.context.scene.unit_settings.system = "METRIC"
     bpy.context.scene.unit_settings.scale_length = 1.0
+    bpy.context.scene.render.fps = 24
+    bpy.context.scene.render.fps_base = 1.0
     bpy.context.scene.world.color = (0.035, 0.045, 0.055)
 
 
@@ -169,6 +179,7 @@ def export_glb(filename, model_root):
     parent_loose(model_root)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUTPUT_DIR / filename
+    out.parent.mkdir(parents=True, exist_ok=True)
     bpy.ops.object.select_all(action="DESELECT")
     model_root.select_set(True)
     for child in model_root.children_recursive:
@@ -183,7 +194,60 @@ def export_glb(filename, model_root):
         export_cameras=False,
         export_lights=False,
         export_materials="EXPORT",
+        export_animations=True,
+        export_animation_mode="NLA_TRACKS",
+        export_nla_strips=True,
+        export_force_sampling=True,
+        export_frame_step=1,
+        export_skins=True,
+        export_def_bones=True,
     )
     size = out.stat().st_size
     print(f"EXPORTED {filename} | {triangle_count()} tris | {size} bytes")
 
+
+def render_portrait(filename, target=(0.0, 0.0, 1.02), camera_location=(2.7, 4.8, 2.25)):
+    """Render a transparent, softly lit selection-card portrait."""
+    output = REPO_ROOT / "public" / "images" / "characters" / filename
+    output.parent.mkdir(parents=True, exist_ok=True)
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_EEVEE"
+    scene.render.resolution_x = 384
+    scene.render.resolution_y = 512
+    scene.render.resolution_percentage = 100
+    scene.render.film_transparent = True
+    scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.color_mode = "RGBA"
+    scene.render.filepath = str(output)
+
+    bpy.ops.object.camera_add(location=camera_location)
+    camera = bpy.context.object
+    camera.name = "PortraitCamera"
+    camera.data.lens = 68
+    camera.rotation_euler = (Vector(target) - camera.location).to_track_quat("-Z", "Y").to_euler()
+    scene.camera = camera
+
+    bpy.ops.object.light_add(type="AREA", location=(-2.8, 3.8, 5.2))
+    key = bpy.context.object
+    key.name = "PortraitKey"
+    key.data.energy = 760
+    key.data.shape = "DISK"
+    key.data.size = 4.0
+    key.rotation_euler = (Vector(target) - key.location).to_track_quat("-Z", "Y").to_euler()
+    bpy.ops.object.light_add(type="AREA", location=(3.2, 1.5, 3.2))
+    fill = bpy.context.object
+    fill.name = "PortraitFill"
+    fill.data.energy = 430
+    fill.data.color = (0.45, 0.72, 0.86)
+    fill.data.size = 3.0
+    fill.rotation_euler = (Vector(target) - fill.location).to_track_quat("-Z", "Y").to_euler()
+    bpy.ops.object.light_add(type="AREA", location=(0.0, -2.5, 3.6))
+    rim = bpy.context.object
+    rim.name = "PortraitRim"
+    rim.data.energy = 520
+    rim.data.color = (0.92, 0.45, 0.2)
+    rim.data.size = 2.5
+    rim.rotation_euler = (Vector(target) - rim.location).to_track_quat("-Z", "Y").to_euler()
+
+    bpy.ops.render.render(write_still=True)
+    print(f"RENDERED {filename} | {output.stat().st_size} bytes")

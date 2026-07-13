@@ -1,11 +1,81 @@
-import type { EmployeeId, RuntimeState, TowerId, WeaponId } from "./state";
+import type { EmployeeId, NamedCustomerId, ProtagonistId, RuntimeState, TowerId, WeaponId } from "./state";
 
 export interface ShopItem<T extends string> {
   id: T;
   name: string;
   description: string;
   price: number;
+  upgradePrice?: number;
+  upgradeDescription?: string;
 }
+
+export interface ProtagonistDefinition {
+  id: ProtagonistId;
+  name: string;
+  persona: string;
+  passive: string;
+  passiveDescription: string;
+  runSummary: string;
+  openingLine: string;
+  model: string;
+  portrait: string;
+}
+
+export const PROTAGONISTS: readonly ProtagonistDefinition[] = [
+  {
+    id: "butcher_matron",
+    name: "屠夫老闆娘",
+    persona: "沒秤就沒公道，沒公道就只剩搶。",
+    passive: "賣肉 +10%",
+    passiveDescription: "每筆肉品交易收入提升 10%",
+    runSummary: "這局：肉舖更快堆出第一座塔",
+    openingLine: "秤要準。今天的肉，還有人等。",
+    model: "custom/characters/protagonist-butcher-matron.glb",
+    portrait: "images/characters/protagonist-butcher-matron.png",
+  },
+  {
+    id: "vet_sniper",
+    name: "退伍狙擊手",
+    persona: "子彈會用完，但準星還在腦子裡。",
+    passive: "武器傷 +1",
+    passiveDescription: "你的武器每次命中額外 +1 傷害",
+    runSummary: "這局：你的刀與槍更疼，守夜更像獵人",
+    openingLine: "風向不對。先保住燈，再談子彈。",
+    model: "custom/characters/protagonist-vet-sniper.glb",
+    portrait: "images/characters/protagonist-vet-sniper.png",
+  },
+  {
+    id: "mech_youth",
+    name: "機械師少年",
+    persona: "齒輪比人誠實，轉不動就換。",
+    passive: "塔費 -10%",
+    passiveDescription: "建造與升級防禦塔費用九折",
+    runSummary: "這局：三角防線比較不傷本",
+    openingLine: "塔架歪了半指……我先焊，你們先撐。",
+    model: "custom/characters/protagonist-mech-youth.glb",
+    portrait: "images/characters/protagonist-mech-youth.png",
+  },
+] as const;
+
+export interface NamedCustomerDefinition {
+  id: NamedCustomerId;
+  name: string;
+  role: string;
+  preference: string;
+  arrivalLine: string;
+  affinityBonus: string;
+  friendMark: string;
+  friendMarkName: string;
+  weight: number;
+  model: string;
+}
+
+export const NAMED_CUSTOMERS: readonly NamedCustomerDefinition[] = [
+  { id: "lao_zhou", name: "老周", role: "廢鐵收購", preference: "偏好：好肉／份量感", arrivalLine: "夠秤就行。封鎖線外面……更黑。", affinityBonus: "每筆肉品交易 +1 金", friendMark: "friend-lao-zhou", friendMarkName: "廢鐵之友", weight: 0.12, model: "custom/characters/npc-lao-zhou.glb" },
+  { id: "nurse_lin", name: "林護理", role: "醫務夜班", preference: "偏好：穩定供貨", arrivalLine: "帳篷裡還有人醒著。給我能下鍋的。", affinityBonus: "壁壘受擊時 8% 機率減免 1 傷", friendMark: "friend-nurse-lin", friendMarkName: "夜班燈火", weight: 0.12, model: "custom/characters/npc-nurse-lin.glb" },
+  { id: "kid_bao", name: "小包", role: "雪屋孩子", preference: "偏好：便宜／人情", arrivalLine: "我數過三次……這次夠不夠？", affinityBonus: "賣肉時 5% 機率多付 5 金", friendMark: "friend-kid-bao", friendMarkName: "雪屋守護", weight: 0.11, model: "custom/characters/npc-kid-bao.glb" },
+  { id: "scout_he", name: "何偵察", role: "北境巡邏", preference: "偏好：戰備充足", arrivalLine: "北面有動靜。你們的燈，別滅。", affinityBonus: "所有擊殺賞金 +1", friendMark: "friend-scout-he", friendMarkName: "北境眼線", weight: 0.10, model: "custom/characters/npc-scout-he.glb" },
+] as const;
 
 export const WEAPONS: readonly ShopItem<WeaponId>[] = [
   { id: "machete", name: "砍刀", description: "近距離單體揮砍 · 傷害 2", price: 0 },
@@ -14,9 +84,9 @@ export const WEAPONS: readonly ShopItem<WeaponId>[] = [
 ] as const;
 
 export const EMPLOYEES: readonly ShopItem<EmployeeId>[] = [
-  { id: "hunter", name: "獵人", description: "巡邏牧場並自動攻擊牛隻", price: 140 },
-  { id: "cashier", name: "收銀員", description: "快速結帳並增加 5 金小費", price: 190 },
-  { id: "dog", name: "牧羊犬", description: "拾取肉品並搬回攤位", price: 230 },
+  { id: "hunter", name: "獵人", description: "Lv1 · 自動牧牛 · 1 傷／1.45s", price: 140, upgradePrice: 120, upgradeDescription: "攻速 1.10s · 移動更快" },
+  { id: "cashier", name: "收銀員", description: "Lv1 · 快速結帳 · 每筆 +5", price: 190, upgradePrice: 150, upgradeDescription: "結帳 0.28s · 每筆 +8" },
+  { id: "dog", name: "牧羊犬", description: "Lv1 · 自動拾肉回攤", price: 230, upgradePrice: 160, upgradeDescription: "優先鮮度 · 一次搬 2 份" },
 ] as const;
 
 export const TOWERS: readonly ShopItem<TowerId>[] = [
@@ -46,6 +116,7 @@ export const SHOP_UNLOCK_CHAPTER = {
   axe: 8,
   smg: 9,
   towerUpgrade: 10,
+  employeeUpgrade: 12,
 } as const;
 
 export function hasCompletedChapter(state: RuntimeState, chapter: number): boolean {
@@ -99,4 +170,11 @@ export const LOOP_QUESTS: readonly LoopQuestDefinition[] = [
 
 export function towerUpgradeCost(id: TowerId, level: number): number {
   return TOWERS.find((tower) => tower.id === id)!.price + level * 70;
+}
+
+export function towerCostForState(state: RuntimeState, id: TowerId, level: number): number {
+  const listPrice = level === 0
+    ? TOWERS.find((tower) => tower.id === id)!.price
+    : towerUpgradeCost(id, level);
+  return state.protagonistId === "mech_youth" ? Math.ceil(listPrice * 0.9) : listPrice;
 }

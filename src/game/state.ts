@@ -1,9 +1,12 @@
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 const SAVE_KEY = "storm-apocalypse-save-v1";
 
 export type WeaponId = "machete" | "axe" | "smg";
 export type EmployeeId = "hunter" | "cashier" | "dog";
+export type EmployeeLevel = 0 | 1 | 2;
 export type TowerId = "ballista" | "frost" | "cannon";
+export type ProtagonistId = "butcher_matron" | "vet_sniper" | "mech_youth";
+export type NamedCustomerId = "lao_zhou" | "nurse_lin" | "kid_bao" | "scout_he";
 
 export interface LoopQuestState {
   id: string;
@@ -46,7 +49,12 @@ export interface SaveState {
   towerBuilt: boolean;
   bestWave: number;
   weapon: WeaponId;
-  employees: Record<EmployeeId, boolean>;
+  protagonistId: ProtagonistId;
+  employees: Record<EmployeeId, EmployeeLevel>;
+  customerAffinity: Record<NamedCustomerId, number>;
+  customerRewardsClaimed: string[];
+  customerAffinityWave: number;
+  customerAffinityGained: Record<NamedCustomerId, number>;
   pasture2Unlocked: boolean;
   towers: Record<TowerId, number>;
   quest: QuestSaveState;
@@ -55,6 +63,7 @@ export interface SaveState {
 }
 
 export interface RuntimeState extends SaveState {
+  requiresProtagonistSelection: boolean;
   carriedMeat: number;
   displayedMeat: number;
   baseHealth: number;
@@ -82,6 +91,13 @@ const DEFAULT_STATS: LifetimeStats = {
   campaignWins: 0,
 };
 
+const DEFAULT_AFFINITY: Record<NamedCustomerId, number> = {
+  lao_zhou: 0,
+  nurse_lin: 0,
+  kid_bao: 0,
+  scout_he: 0,
+};
+
 const DEFAULT_SAVE: SaveState = {
   version: SAVE_VERSION,
   money: 35,
@@ -90,7 +106,12 @@ const DEFAULT_SAVE: SaveState = {
   towerBuilt: false,
   bestWave: 0,
   weapon: "machete",
-  employees: { hunter: false, cashier: false, dog: false },
+  protagonistId: "butcher_matron",
+  employees: { hunter: 0, cashier: 0, dog: 0 },
+  customerAffinity: { ...DEFAULT_AFFINITY },
+  customerRewardsClaimed: [],
+  customerAffinityWave: 0,
+  customerAffinityGained: { ...DEFAULT_AFFINITY },
   pasture2Unlocked: false,
   towers: { ballista: 0, frost: 0, cannon: 0 },
   quest: { chapter: 1, completed: [], unlocks: [], loop: null },
@@ -112,10 +133,24 @@ function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? value as Record<string, unknown> : {};
 }
 
+function employeeLevel(value: unknown): EmployeeLevel {
+  if (value === true) return 1;
+  if (value === false) return 0;
+  return finite(value, 0, 0, 2) as EmployeeLevel;
+}
+
+function protagonist(value: unknown): ProtagonistId {
+  return value === "vet_sniper" || value === "mech_youth" || value === "butcher_matron"
+    ? value
+    : "butcher_matron";
+}
+
 function migrate(input: unknown): SaveState {
   const raw = record(input);
   const oldTowerBuilt = boolean(raw.towerBuilt);
   const employees = record(raw.employees);
+  const customerAffinity = record(raw.customerAffinity);
+  const customerAffinityGained = record(raw.customerAffinityGained);
   const towers = record(raw.towers);
   const quest = record(raw.quest);
   const stats = record(raw.stats);
@@ -148,10 +183,27 @@ function migrate(input: unknown): SaveState {
     towerBuilt: ballista > 0,
     bestWave: finite(raw.bestWave, wave, 0, 30),
     weapon,
+    protagonistId: protagonist(raw.protagonistId),
     employees: {
-      hunter: boolean(employees.hunter),
-      cashier: boolean(employees.cashier),
-      dog: boolean(employees.dog),
+      hunter: employeeLevel(employees.hunter),
+      cashier: employeeLevel(employees.cashier),
+      dog: employeeLevel(employees.dog),
+    },
+    customerAffinity: {
+      lao_zhou: finite(customerAffinity.lao_zhou, 0, 0, 10),
+      nurse_lin: finite(customerAffinity.nurse_lin, 0, 0, 10),
+      kid_bao: finite(customerAffinity.kid_bao, 0, 0, 10),
+      scout_he: finite(customerAffinity.scout_he, 0, 0, 10),
+    },
+    customerRewardsClaimed: Array.isArray(raw.customerRewardsClaimed)
+      ? [...new Set(raw.customerRewardsClaimed.filter((value): value is string => typeof value === "string"))]
+      : [],
+    customerAffinityWave: finite(raw.customerAffinityWave, wave, 0, 30),
+    customerAffinityGained: {
+      lao_zhou: finite(customerAffinityGained.lao_zhou, 0, 0, 2),
+      nurse_lin: finite(customerAffinityGained.nurse_lin, 0, 0, 2),
+      kid_bao: finite(customerAffinityGained.kid_bao, 0, 0, 2),
+      scout_he: finite(customerAffinityGained.scout_he, 0, 0, 2),
     },
     pasture2Unlocked: boolean(raw.pasture2Unlocked),
     towers: {
@@ -185,15 +237,29 @@ function migrate(input: unknown): SaveState {
 }
 
 export function loadState(): RuntimeState {
-  let saved = { ...DEFAULT_SAVE, employees: { ...DEFAULT_SAVE.employees }, towers: { ...DEFAULT_SAVE.towers }, quest: { ...DEFAULT_SAVE.quest }, stats: { ...DEFAULT_STATS } };
+  let saved: SaveState = {
+    ...DEFAULT_SAVE,
+    employees: { ...DEFAULT_SAVE.employees },
+    customerAffinity: { ...DEFAULT_AFFINITY },
+    customerRewardsClaimed: [],
+    customerAffinityGained: { ...DEFAULT_AFFINITY },
+    towers: { ...DEFAULT_SAVE.towers },
+    quest: { ...DEFAULT_SAVE.quest },
+    stats: { ...DEFAULT_STATS },
+  };
+  let requiresProtagonistSelection = true;
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) saved = migrate(JSON.parse(raw));
+    if (raw) {
+      saved = migrate(JSON.parse(raw));
+      requiresProtagonistSelection = false;
+    }
   } catch {
     saved = migrate(DEFAULT_SAVE);
   }
   return {
     ...saved,
+    requiresProtagonistSelection,
     carriedMeat: 0,
     displayedMeat: 0,
     baseHealth: 100,
@@ -215,7 +281,12 @@ export function saveState(state: RuntimeState): void {
     towerBuilt: state.towers.ballista > 0,
     bestWave: Math.max(state.bestWave, state.wave),
     weapon: state.weapon,
+    protagonistId: state.protagonistId,
     employees: { ...state.employees },
+    customerAffinity: { ...state.customerAffinity },
+    customerRewardsClaimed: [...state.customerRewardsClaimed],
+    customerAffinityWave: state.customerAffinityWave,
+    customerAffinityGained: { ...state.customerAffinityGained },
     pasture2Unlocked: state.pasture2Unlocked,
     towers: { ...state.towers },
     quest: {

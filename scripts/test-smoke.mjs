@@ -11,6 +11,7 @@ const qualityUrl = new URL(url);
 qualityUrl.searchParams.delete("smoke");
 const saveKey = "storm-apocalypse-save-v1";
 const scenarioFilter = process.env.SMOKE_SCENARIO;
+const heroOnly = scenarioFilter === "heroes";
 const loadTimeout = 180_000;
 const screenshotDir = process.env.SMOKE_SCREENSHOT_DIR;
 const captureOnly = process.env.SMOKE_CAPTURE_ONLY === "1";
@@ -89,7 +90,7 @@ function overlaps(a, b) {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
-async function newPage(browser, config) {
+async function newPage(browser, config, savedState = fixture()) {
   const context = await browser.newContext({
     viewport: config.viewport,
     hasTouch: config.touch,
@@ -99,7 +100,9 @@ async function newPage(browser, config) {
       ? "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36"
       : undefined,
   });
-  await context.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: fixture() });
+  if (savedState) {
+    await context.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: savedState });
+  }
   const page = await context.newPage();
   const consoleErrors = [];
   const networkErrors = [];
@@ -202,7 +205,14 @@ async function moveNorthUntil(page, touch, label) {
 }
 
 async function holdAttack(page, touch, duration) {
-  if (!touch) return holdKey(page, "Space", duration);
+  if (!touch) {
+    await page.keyboard.down("Space");
+    await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "attack_ranged", undefined, { timeout: 15_000 });
+    const animation = await page.locator("#game-canvas").getAttribute("data-player-animation");
+    await page.waitForTimeout(duration - 100);
+    await page.keyboard.up("Space");
+    return animation;
+  }
   const box = await page.locator("#attack-button").boundingBox();
   assert(box, "attack button has no bounding box");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -210,12 +220,74 @@ async function holdAttack(page, touch, duration) {
   await page.waitForTimeout(40);
   const pressed = await page.locator("#attack-button").evaluate((button) => button.classList.contains("is-pressed"));
   record("390×844", "attack pressed state", pressed, `is-pressed=${pressed}`);
+  await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "attack_ranged", undefined, { timeout: 15_000 });
+  const animation = await page.locator("#game-canvas").getAttribute("data-player-animation");
   await page.waitForTimeout(duration - 40);
   await page.mouse.up();
+  return animation;
 }
 
 async function attackCount(page) {
   return Number(await page.locator("#game-canvas").getAttribute("data-attack-count"));
+}
+
+async function checkProtagonistSelectionAndAnimations(browser) {
+  const protagonists = ["butcher_matron", "vet_sniper", "mech_youth"];
+  const context = await browser.newContext({ viewport: { width: 1100, height: 760 } });
+  const page = await context.newPage();
+  const consoleErrors = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => consoleErrors.push(error.message));
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: loadTimeout });
+    await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
+    await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
+    const cards = page.locator(".character-card[data-protagonist]");
+    const cardCount = await cards.count();
+    record("hero/selection", "three protagonist choices", cardCount === 3, `cards=${cardCount}`);
+    for (const protagonist of protagonists) {
+      const selectedCard = page.locator(`.character-card[data-protagonist="${protagonist}"]`);
+      await selectedCard.click();
+      const cardSelected = await selectedCard.evaluate((card) => card.classList.contains("is-selected") && card.getAttribute("aria-pressed") === "true");
+      record(`hero/${protagonist}`, "selection card switches", cardSelected, `selected=${cardSelected}`);
+    }
+    await page.locator('.character-card[data-protagonist="butcher_matron"]').click();
+    await page.locator("#start-button").click();
+    await page.locator("#intro").waitFor({ state: "detached", timeout: 15_000 });
+    const canvas = page.locator("#game-canvas");
+
+    for (const protagonist of protagonists) {
+      await page.evaluate((id) => window.__stormSelectProtagonist?.(id), protagonist);
+      await page.waitForFunction((id) => document.querySelector("#game-canvas")?.dataset.protagonist === id, protagonist, { timeout: 10_000 });
+      const selectedId = await canvas.getAttribute("data-protagonist");
+      record(`hero/${protagonist}`, "selected model enters game", selectedId === protagonist, `protagonist=${selectedId}`);
+      const clips = (await canvas.getAttribute("data-player-clips") ?? "").split(",").filter(Boolean);
+      const expectedClips = ["attack_melee", "attack_ranged", "idle", "run"];
+      record(
+        `hero/${protagonist}`,
+        "shared four-clip contract",
+        expectedClips.every((clip) => clips.some((name) => name.endsWith(clip))),
+        `clips=${clips.join(",")}`,
+      );
+      await page.keyboard.down("w");
+      await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "run", undefined, { timeout: 5_000 });
+      const runAnimation = await canvas.getAttribute("data-player-animation");
+      await page.keyboard.up("w");
+      record(`hero/${protagonist}`, "movement switches to run", runAnimation === "run", `animation=${runAnimation}`);
+      await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "idle", undefined, { timeout: 15_000 });
+      await page.keyboard.down("Space");
+      await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "attack_melee", undefined, { timeout: 15_000 });
+      await page.keyboard.up("Space");
+      record(`hero/${protagonist}`, "attack interrupts with melee clip", true, "animation=attack_melee observed");
+      await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "idle", undefined, { timeout: 15_000 });
+      record(`hero/${protagonist}`, "one-shot returns to idle", true, "animation=idle");
+      record(`hero/${protagonist}`, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
+    }
+  } finally {
+    await context.close();
+  }
 }
 
 async function buySmg(page, touch) {
@@ -301,10 +373,11 @@ async function runCombat(browser, config) {
     const before = await readSave(page);
 
     const attacksBeforeCow = await attackCount(page);
-    await holdAttack(page, config.touch, 3_000);
+    const rangedAnimation = await holdAttack(page, config.touch, 3_000);
     await page.waitForTimeout(120);
     const attacksAfterCow = await attackCount(page);
     record(label, `${config.touch ? "touch" : "keyboard"} SMG responds immediately`, attacksAfterCow > attacksBeforeCow, `attacks ${attacksBeforeCow}→${attacksAfterCow}`);
+    record(label, "SMG switches to ranged clip", rangedAnimation === "attack_ranged", `animation=${rangedAnimation}`);
     const afterCow = await readSave(page);
     record(label, `${config.touch ? "touch" : "keyboard"} SMG damages cow`, afterCow.stats.cowsKilled > before.stats.cowsKilled, `cowsKilled ${before.stats.cowsKilled}→${afterCow.stats.cowsKilled}`);
 
@@ -320,6 +393,9 @@ async function runCombat(browser, config) {
       return;
     }
     await page.waitForFunction(() => Number(document.querySelector("#game-canvas")?.dataset.activeZombies) > 0, undefined, { timeout: 15_000 });
+    await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.towerAnimations?.includes("frost:attack"), undefined, { timeout: 15_000 });
+    const towerAnimations = await page.locator("#game-canvas").getAttribute("data-tower-animations");
+    record(label, "tower fire triggers authored clip", towerAnimations?.includes("frost:attack") === true, `animations=${towerAnimations}`);
     const attacksBeforeZombie = await attackCount(page);
     await holdAttack(page, config.touch, 8_000);
     await page.waitForTimeout(150);
@@ -327,6 +403,14 @@ async function runCombat(browser, config) {
     record(label, `${config.touch ? "touch" : "keyboard"} SMG hold repeats`, attacksAfterZombie - attacksBeforeZombie >= 2, `attacks ${attacksBeforeZombie}→${attacksAfterZombie}`);
     const livePlayerKills = Number(await page.locator("#game-canvas").getAttribute("data-player-kills"));
     record(label, `${config.touch ? "touch" : "keyboard"} SMG damages zombie`, livePlayerKills > before.stats.playerKills, `playerKills ${before.stats.playerKills}→${livePlayerKills}`);
+    if (!config.touch) {
+      await page.keyboard.down("s");
+      await page.waitForFunction(() => Number(document.querySelector("#game-canvas")?.dataset.playerZ) <= -19, undefined, { timeout: 12_000 });
+      await page.keyboard.up("s");
+      await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.towerAnimationLod?.includes("frost:paused"), undefined, { timeout: 5_000 });
+      const towerLod = await page.locator("#game-canvas").getAttribute("data-tower-animation-lod");
+      record(label, "distant tower animation LOD pauses", towerLod?.includes("frost:paused") === true, `lod=${towerLod}`);
+    }
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {
     await context.close();
@@ -357,7 +441,8 @@ try {
   await ensureServer();
   const browser = await chromium.launch({ headless: true, args: ["--use-angle=swiftshader"] });
   try {
-    if (!scenarioFilter && !captureOnly) {
+    if ((!scenarioFilter || heroOnly) && !captureOnly) {
+      if (!heroOnly) {
       const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125 Safari/537.36";
       const mobileUa = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36";
       for (const config of [
@@ -372,12 +457,19 @@ try {
           record(config.label, "automatic quality", false, error instanceof Error ? error.message : String(error));
         }
       }
+      }
+      try {
+        await checkProtagonistSelectionAndAnimations(browser);
+      } catch (error) {
+        record("hero/coverage", "protagonist animation coverage completes", false, error instanceof Error ? error.message : String(error));
+      }
     }
     for (const scenario of [
       ["1440×900", () => runCombat(browser, { viewport: { width: 1440, height: 900 }, touch: false })],
       ["390×844", () => runCombat(browser, { viewport: { width: 390, height: 844 }, touch: true })],
       ["844×390", () => runLayout(browser, { width: 844, height: 390 })],
     ]) {
+      if (heroOnly) continue;
       if (scenarioFilter && scenario[0] !== scenarioFilter) continue;
       try {
         await scenario[1]();

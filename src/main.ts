@@ -8,8 +8,10 @@ async function bootstrap(): Promise<void> {
   const root = document.querySelector<HTMLElement>("#app");
   if (!canvas || !root) throw new Error("Storm Apocalypse mount points are missing.");
 
-  const ui = new UiController(root);
-  const game = new StormGame(canvas, ui, loadState());
+  const state = loadState();
+  const ui = new UiController(root, state);
+  const game = new StormGame(canvas, ui, state);
+  ui.onProtagonistSelect = (id) => game.selectProtagonist(id);
   ui.onStart = () => game.start();
   ui.onAttackStart = () => game.startAttack();
   ui.onAttackEnd = () => game.stopAttack();

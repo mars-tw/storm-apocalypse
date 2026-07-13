@@ -1,6 +1,6 @@
-import { EMPLOYEES, MAIN_QUESTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerUpgradeCost } from "./content";
+import { EMPLOYEES, MAIN_QUESTS, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { currentLoopDefinition, currentMainQuest, type QuestCompletion } from "./quests";
-import type { EmployeeId, RuntimeState, TowerId } from "./state";
+import type { EmployeeId, ProtagonistId, RuntimeState, TowerId } from "./state";
 
 type ShopCategory = "weapon" | "employee" | "pasture";
 
@@ -41,6 +41,9 @@ export class UiController {
   private readonly resultTitle: HTMLElement;
   private readonly resultCopy: HTMLElement;
   private readonly resultStats: HTMLElement;
+  private readonly protagonistStatus: HTMLElement;
+  private readonly requiresProtagonistSelection: boolean;
+  private selectedProtagonist: ProtagonistId = "butcher_matron";
   private renderedChapter = 0;
 
   onStart: () => void = () => undefined;
@@ -48,16 +51,38 @@ export class UiController {
   onAttackEnd: () => void = () => undefined;
   onWave: () => void = () => undefined;
   onReset: () => void = () => undefined;
+  onProtagonistSelect: (id: ProtagonistId) => void = () => undefined;
   onShopAction: (category: ShopCategory, id: string) => void = () => undefined;
   onTowerAction: (id: TowerId) => void = () => undefined;
 
-  constructor(root: HTMLElement) {
+  constructor(root: HTMLElement, state: RuntimeState) {
     const coarsePointer = matchMedia("(pointer: coarse)").matches;
     const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
       || /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
     this.touchMode = coarsePointer || mobileUa || navigator.maxTouchPoints > 0 && window.innerWidth <= 1100;
     root.classList.toggle("is-touch", this.touchMode);
     const startHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "WASD 移動 · 空白鍵攻擊";
+    this.requiresProtagonistSelection = state.requiresProtagonistSelection;
+    this.selectedProtagonist = state.protagonistId;
+    const selectionCards = PROTAGONISTS.map((protagonist) => `
+      <button class="character-card${protagonist.id === this.selectedProtagonist ? " is-selected" : ""}" type="button" data-protagonist="${protagonist.id}" aria-pressed="${protagonist.id === this.selectedProtagonist}">
+        <span class="character-card__portrait"><img src="${import.meta.env.BASE_URL}${protagonist.portrait}" alt="${protagonist.name}低模半身像"></span>
+        <span class="character-card__copy"><small>${protagonist.runSummary}</small><b>${protagonist.name}</b><q>「${protagonist.persona}」</q><em>${protagonist.passive}</em><i>${protagonist.passiveDescription}</i></span>
+      </button>`).join("");
+    const introContent = this.requiresProtagonistSelection ? `
+      <div class="character-select" id="character-select">
+        <div class="character-select__head"><span>新戰役 · 選擇守燈人</span><h1>誰來走進<span>暴風</span>？</h1><p>三條路都能守到第三十次鐘聲。確認後，本局不可換角。</p></div>
+        <div class="character-grid" role="radiogroup" aria-label="選擇主角">${selectionCards}</div>
+        <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
+        <button class="start-button start-button--confirm" id="start-button" disabled><span>確認屠夫老闆娘</span><small>寫入存檔 · ${startHint}</small></button>
+      </div>` : `
+      <div class="intro__content">
+        <span class="intro__overline">北境封鎖區 · 第 1,247 日</span><h1><span>暴風</span>啟示錄</h1><h2>STORM APOCALYPSE</h2>
+        <p>在永夜暴雪中狩獵、經營最後一間肉舖，<br>並在三十次鐘聲裡守住僅存的燈火。</p>
+        <div class="intro__features"><span>30 波戰役</span><span>經營 × 塔防</span><span>本地存檔</span></div>
+        <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
+        <button class="start-button" id="start-button" disabled><span>踏 入 暴 風</span><small>${startHint}</small></button>
+      </div>`;
     root.innerHTML = `
       <div class="vignette"></div>
       <header class="hud hud--top">
@@ -67,7 +92,7 @@ export class UiController {
           <div class="resource"><span>🥩</span><div><small>背包</small><b id="hud-meat">0 / 6</b></div></div>
           <div class="resource"><span>▤</span><div><small>攤位存貨</small><b id="hud-stock">0 / 6</b></div></div>
         </div>
-        <div class="hud-status"><div class="wave-chip"><small>30 波戰役</small><b id="hud-wave">黎明 · 0 / 30</b></div><small id="performance-chip">高畫質</small></div>
+        <div class="hud-status"><div class="wave-chip"><small>30 波戰役</small><b id="hud-wave">黎明 · 0 / 30</b></div><span class="protagonist-status" id="protagonist-status"></span><small id="performance-chip">高畫質</small></div>
       </header>
 
       <button class="panel-toggle panel-toggle--quest" id="quest-toggle" aria-label="開關生存手冊" aria-controls="quest-panel" aria-expanded="false">手冊 01 · 0/1</button>
@@ -89,7 +114,8 @@ export class UiController {
       <aside class="command-panel" id="command-panel">
         <div class="command-panel__head"><div><small>北境補給站</small><b>武裝與自動化</b></div><button id="shop-close" aria-label="關閉整備商店">×</button></div>
         <section><h3>武器鏈</h3><div class="shop-grid">${WEAPONS.map((item) => `<button class="shop-item" data-category="weapon" data-id="${item.id}"><span><b>${item.name}</b><small>${item.description}</small></span><em data-price="weapon-${item.id}"></em></button>`).join("")}</div></section>
-        <section><h3>自動化員工</h3><div class="shop-grid">${EMPLOYEES.map((item) => `<button class="shop-item" data-category="employee" data-id="${item.id}"><span><b>${item.name}</b><small>${item.description}</small></span><em data-price="employee-${item.id}"></em></button>`).join("")}</div></section>
+        <section><h3>自動化員工</h3><div class="shop-grid">${EMPLOYEES.map((item) => `<button class="shop-item" data-category="employee" data-id="${item.id}"><span><b>${item.name}</b><small data-description="employee-${item.id}">${item.description}</small></span><em data-price="employee-${item.id}"></em></button>`).join("")}</div></section>
+        <section class="regulars"><h3>北境常客</h3><div class="regular-list">${NAMED_CUSTOMERS.map((customer) => `<article data-regular="${customer.id}"><div><b>${customer.name}</b><small>${customer.preference}</small></div><span><i></i><em>0 / 10</em></span></article>`).join("")}</div></section>
         <section><h3>牧場擴張</h3><button class="shop-item" data-category="pasture" data-id="pasture2"><span><b>炸開牧場 2</b><small>強化牛 · 生命 9 · 掉落 6 肉</small></span><em data-price="pasture-pasture2"></em></button></section>
         <section><h3>防禦塔</h3><div class="shop-grid">${TOWERS.map((item) => `<button class="shop-item" data-tower="${item.id}"><span><b>${item.name}</b><small>${item.description}</small></span><em data-price="tower-${item.id}"></em></button>`).join("")}</div></section>
       </aside>
@@ -102,14 +128,8 @@ export class UiController {
       </div>
       <div class="toast-host" id="toast-host"></div>
 
-      <section class="intro" id="intro">
-        <div class="intro__content">
-          <span class="intro__overline">北境封鎖區 · 第 1,247 日</span><h1><span>暴風</span>啟示錄</h1><h2>STORM APOCALYPSE</h2>
-          <p>在永夜暴雪中狩獵、經營最後一間肉舖，<br>並在三十次鐘聲裡守住僅存的燈火。</p>
-          <div class="intro__features"><span>30 波戰役</span><span>經營 × 塔防</span><span>本地存檔</span></div>
-          <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
-          <button class="start-button" id="start-button" disabled><span>踏 入 暴 風</span><small>${startHint}</small></button>
-        </div>
+      <section class="intro${this.requiresProtagonistSelection ? " intro--selection" : ""}" id="intro">
+        ${introContent}
         <div class="intro__side"><span>THE LAST BUTCHER</span><i></i><small>TAIPEI / LOCAL SAVE</small></div>
       </section>
 
@@ -154,6 +174,7 @@ export class UiController {
     this.resultTitle = get("result-title");
     this.resultCopy = get("result-copy");
     this.resultStats = get("result-stats");
+    this.protagonistStatus = get("protagonist-status");
 
     const clearPressed = (): void => {
       for (const button of root.querySelectorAll("button.is-pressed")) button.classList.remove("is-pressed");
@@ -189,7 +210,22 @@ export class UiController {
       this.panelScrim.classList.toggle("is-active", this.touchMode && (questOpen || shopOpen));
     };
 
-    this.startButton.addEventListener("click", () => this.onStart());
+    for (const card of root.querySelectorAll<HTMLButtonElement>("[data-protagonist]")) {
+      card.addEventListener("click", () => {
+        this.selectedProtagonist = card.dataset.protagonist as ProtagonistId;
+        for (const candidate of root.querySelectorAll<HTMLButtonElement>("[data-protagonist]")) {
+          const selected = candidate === card;
+          candidate.classList.toggle("is-selected", selected);
+          candidate.setAttribute("aria-pressed", String(selected));
+        }
+        const definition = PROTAGONISTS.find((entry) => entry.id === this.selectedProtagonist)!;
+        this.startButton.querySelector("span")!.textContent = `確認${definition.name}`;
+      });
+    }
+    this.startButton.addEventListener("click", () => {
+      if (this.requiresProtagonistSelection) this.onProtagonistSelect(this.selectedProtagonist);
+      this.onStart();
+    });
     this.attackButton.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
       event.preventDefault();
@@ -247,6 +283,9 @@ export class UiController {
     this.stock.textContent = `${state.displayedMeat} / ${state.stallLevel * 6}`;
     this.wave.textContent = state.waveActive ? `夜襲 · ${state.wave + 1} / 30 · ${state.enemiesRemaining} 敵` : `黎明 · ${state.wave} / 30`;
     this.performance.textContent = `${state.quality}畫質 · ${Math.round(state.currentFps || 0)} FPS · ${state.drawCalls} DC`;
+    const protagonist = PROTAGONISTS.find((entry) => entry.id === state.protagonistId)!;
+    this.protagonistStatus.textContent = `${protagonist.name} · ${protagonist.passive}`;
+    this.protagonistStatus.title = protagonist.passiveDescription;
     this.baseHealth.textContent = `${Math.max(0, Math.round(state.baseHealth))}%`;
     this.baseHealthFill.style.width = `${Math.max(0, state.baseHealth)}%`;
     const hasTower = Object.values(state.towers).some((level) => level > 0);
@@ -262,6 +301,7 @@ export class UiController {
     this.attackButton.querySelector("small")!.textContent = state.weapon === "smg" ? "掃射" : state.weapon === "axe" ? "橫掃" : "揮砍";
     this.updateQuest(state);
     this.updateShop(state);
+    this.updateRegulars(state);
   }
 
   private updateQuest(state: RuntimeState): void {
@@ -322,19 +362,39 @@ export class UiController {
       set(`weapon-${item.id}`, equipped ? "使用中" : owned ? "已擁有" : `✦ ${item.price}`, equipped || owned || state.money < item.price || state.waveActive, equipped, chapterLock ?? chainLock);
     }
     for (const item of EMPLOYEES) {
-      const owned = state.employees[item.id as EmployeeId];
-      const lock = !owned && !hasCompletedChapter(state, SHOP_UNLOCK_CHAPTER.employeeShop) ? `🔒 完成手冊第 ${SHOP_UNLOCK_CHAPTER.employeeShop} 章解鎖` : undefined;
-      set(`employee-${item.id}`, owned ? "已雇用" : `✦ ${item.price}`, owned || state.money < item.price || state.waveActive, owned, lock);
+      const id = item.id as EmployeeId;
+      const level = state.employees[id];
+      const price = level === 0 ? item.price : item.upgradePrice ?? 0;
+      const lockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.employeeShop : SHOP_UNLOCK_CHAPTER.employeeUpgrade;
+      const lock = level < 2 && !hasCompletedChapter(state, lockChapter) ? `🔒 完成手冊第 ${lockChapter} 章解鎖` : undefined;
+      const text = level === 0 ? `雇用 · ✦ ${price}` : level === 1 ? `升級 Lv2 · ✦ ${price}` : "已滿級 Lv2";
+      const description = this.commandPanel.querySelector<HTMLElement>(`[data-description="employee-${id}"]`);
+      if (description) description.textContent = level === 0 ? item.description : level === 1 ? `升至 Lv2：${item.upgradeDescription}` : `Lv2 · ${item.upgradeDescription}`;
+      set(`employee-${id}`, text, level >= 2 || state.money < price || state.waveActive, level > 0, lock);
     }
     const pastureLock = !state.pasture2Unlocked && !hasCompletedChapter(state, SHOP_UNLOCK_CHAPTER.pasture2) ? `🔒 完成手冊第 ${SHOP_UNLOCK_CHAPTER.pasture2} 章解鎖` : undefined;
     set("pasture-pasture2", state.pasture2Unlocked ? "已開放" : "✦ 260", state.pasture2Unlocked || state.money < 260 || state.waveActive, state.pasture2Unlocked, pastureLock);
     for (const item of TOWERS) {
       const level = state.towers[item.id];
-      const price = level === 0 ? item.price : towerUpgradeCost(item.id, level);
+      const price = towerCostForState(state, item.id, level);
       const text = level >= 3 ? "滿級 Lv.3" : level === 0 ? `建造 ✦ ${price}` : `升級 Lv.${level + 1} · ✦ ${price}`;
       const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.defenseShop : SHOP_UNLOCK_CHAPTER.towerUpgrade;
       const lock = level < 3 && !hasCompletedChapter(state, unlockChapter) ? `🔒 完成手冊第 ${unlockChapter} 章解鎖` : undefined;
       set(`tower-${item.id}`, text, level >= 3 || state.money < price || state.waveActive, level > 0, lock);
+    }
+  }
+
+  private updateRegulars(state: RuntimeState): void {
+    for (const customer of NAMED_CUSTOMERS) {
+      const affinity = state.customerAffinity[customer.id];
+      const row = this.commandPanel.querySelector<HTMLElement>(`[data-regular="${customer.id}"]`);
+      const fill = row?.querySelector<HTMLElement>("span > i");
+      const value = row?.querySelector<HTMLElement>("span > em");
+      if (!row || !fill || !value) continue;
+      fill.style.width = `${affinity * 10}%`;
+      value.textContent = `${affinity} / 10`;
+      row.classList.toggle("is-regular", affinity >= 6);
+      row.title = affinity >= 6 ? customer.affinityBonus : `好感 6 解鎖：${customer.affinityBonus}`;
     }
   }
 

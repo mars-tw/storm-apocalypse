@@ -29,11 +29,11 @@ import {
   VertexData,
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
-import { EMPLOYEES, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerUpgradeCost } from "./content";
+import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
 import { detectDeviceQuality, type QualityLevel } from "./quality";
 import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
-import { creditIncome, saveState, type EmployeeId, type RuntimeState, type TowerId, type WeaponId } from "./state";
+import { creditIncome, saveState, type EmployeeId, type NamedCustomerId, type ProtagonistId, type RuntimeState, type TowerId, type WeaponId } from "./state";
 import type { UiController } from "./ui";
 
 interface Actor {
@@ -74,6 +74,7 @@ interface MeatDrop {
   root: TransformNode;
   baseY: number;
   phase: number;
+  expiresAt: number;
 }
 
 interface Projectile {
@@ -87,12 +88,12 @@ interface Projectile {
   slow: number;
 }
 
-interface TowerActor {
+interface TowerActor extends Actor {
   id: TowerId;
-  root: TransformNode;
   weapon: TransformNode;
   pad: Mesh;
   cooldown: number;
+  animationLodPaused: boolean;
 }
 
 interface StaffActor extends Actor {
@@ -106,6 +107,7 @@ type CustomerPhase = "hidden" | "arriving" | "buying" | "leaving";
 interface CustomerActor extends Actor {
   phase: CustomerPhase;
   timer: number;
+  identity: NamedCustomerId | null;
 }
 
 const ASSET_FILES = [
@@ -117,6 +119,8 @@ const ASSET_FILES = [
   "custom/butcher-stall.glb", "custom/cash-register.glb", "custom/doghouse.glb",
   "custom/tower-ballista.glb", "custom/tower-frost.glb", "custom/tower-cannon.glb",
   "custom/meat-slice.glb", "custom/coin.glb", "custom/boss-zombie.glb",
+  ...PROTAGONISTS.map((entry) => entry.model),
+  ...NAMED_CUSTOMERS.map((entry) => entry.model),
 ] as const;
 
 const SHOP_POSITION = new Vector3(-8, 0, -4);
@@ -128,6 +132,7 @@ const TOWER_POSITIONS: Record<TowerId, Vector3> = {
   frost: new Vector3(-5.2, 0, 5.7),
   cannon: new Vector3(3.5, 0, 5.6),
 };
+const TOWER_ANIMATION_LOD_DISTANCE = 24;
 
 export class StormGame {
   private readonly engine: Engine;
@@ -148,6 +153,7 @@ export class StormGame {
   private cow!: CowActor;
   private strongCow?: CowActor;
   private customer!: CustomerActor;
+  private readonly customerVariants = new Map<NamedCustomerId | "anonymous", CustomerActor>();
   private readonly towerActors = new Map<TowerId, TowerActor>();
   private readonly staff = new Map<EmployeeId, StaffActor>();
   private weaponModel?: TransformNode;
@@ -162,6 +168,7 @@ export class StormGame {
   private spawnTimer = 0;
   private enemiesToSpawn = 0;
   private customerCooldown = 2;
+  private stockedAtCycleStart = false;
   private nightBlend = 0;
   private elapsed = 0;
   private endShown = false;
@@ -275,6 +282,9 @@ export class StormGame {
       canvas.dataset.shadowMode = this.shadows ? "realtime" : "blob";
       canvas.dataset.postEffects = lowQuality ? "off" : "on";
       canvas.dataset.fogDensity = this.scene.fogDensity.toFixed(4);
+      canvas.dataset.saveVersion = this.state.version.toString();
+      canvas.dataset.protagonist = this.state.protagonistId;
+      canvas.dataset.customer = this.customer?.identity ?? "anonymous";
       if (this.player) {
         canvas.dataset.playerX = this.player.root.position.x.toFixed(2);
         canvas.dataset.playerZ = this.player.root.position.z.toFixed(2);
@@ -283,9 +293,20 @@ export class StormGame {
         canvas.dataset.cowsKilled = this.state.stats.cowsKilled.toString();
         canvas.dataset.playerKills = this.state.stats.playerKills.toString();
         canvas.dataset.activeZombies = this.zombies.filter((zombie) => zombie.alive).length.toString();
+        canvas.dataset.playerAnimation = this.player.currentAnimation || "none";
+        canvas.dataset.playerClips = this.player.animations.map((animation) => animation.name).sort().join(",");
+        canvas.dataset.towerAnimations = [...this.towerActors.values()]
+          .map((tower) => `${tower.id}:${tower.currentAnimation || "stopped"}`)
+          .join(",");
+        canvas.dataset.towerAnimationLod = [...this.towerActors.values()]
+          .map((tower) => `${tower.id}:${tower.animationLodPaused ? "paused" : "active"}`)
+          .join(",");
       }
     });
     this.input = new InputController(ui.joystick);
+    if (this.smokeMode) {
+      (window as Window & { __stormSelectProtagonist?: (id: ProtagonistId) => void }).__stormSelectProtagonist = (id) => this.selectProtagonist(id);
+    }
     this.createTerrain();
     this.createSnow();
     this.createDistantStorm();
@@ -304,7 +325,7 @@ export class StormGame {
       this.state.stallLevel = 4;
       this.state.displayedMeat = 6;
       this.state.towers = { ballista: 1, frost: 1, cannon: 1 };
-      this.state.employees = { ...this.state.employees, cashier: true, dog: true };
+      this.state.employees = { ...this.state.employees, cashier: 2, dog: 2 };
     }
     let loaded = 0;
     let nextAsset = 0;
@@ -348,7 +369,17 @@ export class StormGame {
     if (this.started) return;
     this.started = true;
     this.ui.enterGame();
-    this.ui.toast("暴風正在增強。先去東側牧場取肉。", "ice");
+    const protagonist = PROTAGONISTS.find((entry) => entry.id === this.state.protagonistId)!;
+    this.ui.toast(`「${protagonist.openingLine}」`, "ice");
+  }
+
+  selectProtagonist(id: ProtagonistId): void {
+    if ((!this.state.requiresProtagonistSelection && !this.smokeMode) || !PROTAGONISTS.some((entry) => entry.id === id)) return;
+    this.state.protagonistId = id;
+    this.state.requiresProtagonistSelection = false;
+    if (this.player) this.replacePlayerModel();
+    saveState(this.state);
+    this.ui.update(this.state);
   }
 
   startAttack(): void { this.input.startAttack(); }
@@ -650,9 +681,10 @@ export class StormGame {
   }
 
   private createActors(): void {
-    this.player = this.instantiateActor("survivor.glb", "player-survivor", new Vector3(-0.5, 0, -1.5), 1);
+    const protagonist = PROTAGONISTS.find((entry) => entry.id === this.state.protagonistId)!;
+    this.player = this.instantiateActor(protagonist.model, `player-${protagonist.id}`, new Vector3(-0.5, 0, -1.5), 1);
     this.player.root.position.y = this.heightAt(this.player.root.position.x, this.player.root.position.z);
-    this.playAnimation(this.player, "Idle", true);
+    this.playAnimation(this.player, "idle", true);
     this.addActorShadows(this.player);
 
     this.cow = {
@@ -672,13 +704,27 @@ export class StormGame {
     this.playAnimation(this.cow, "Eating", true);
     this.addActorShadows(this.cow);
 
-    this.customer = {
+    const anonymous: CustomerActor = {
       ...this.instantiateActor("customer.glb", "wandering-customer", new Vector3(-18, 0, -10), 0.88),
       phase: "hidden",
       timer: 0,
+      identity: null,
     };
-    this.customer.root.setEnabled(false);
-    this.addActorShadows(this.customer);
+    this.customerVariants.set("anonymous", anonymous);
+    for (const definition of NAMED_CUSTOMERS) {
+      const actor: CustomerActor = {
+        ...this.instantiateActor(definition.model, `customer-${definition.id}`, new Vector3(-18, 0, -10), 1),
+        phase: "hidden",
+        timer: 0,
+        identity: definition.id,
+      };
+      this.customerVariants.set(definition.id, actor);
+    }
+    for (const actor of this.customerVariants.values()) {
+      actor.root.setEnabled(false);
+      this.addActorShadows(actor);
+    }
+    this.customer = anonymous;
   }
 
   private createTowers(): void {
@@ -701,20 +747,22 @@ export class StormGame {
       padMaterial.alpha = 0.72;
       pad.material = padMaterial;
 
-      const root = new TransformNode(`${id}-tower-root`, this.scene);
-      root.position.set(position.x, this.heightAt(position.x, position.z), position.z);
       const towerFile: Record<TowerId, string> = {
         ballista: "custom/tower-ballista.glb",
         frost: "custom/tower-frost.glb",
         cannon: "custom/tower-cannon.glb",
       };
-      const model = this.instantiateStatic(towerFile[id], `${id}-custom-tower`);
-      model.parent = root;
-      const weapon = model.getChildTransformNodes(false).find((node) => node.name.includes("AimPivot")) ?? model;
+      const actor = this.instantiateActor(
+        towerFile[id],
+        `${id}-custom-tower`,
+        new Vector3(position.x, this.heightAt(position.x, position.z), position.z),
+        1,
+      );
+      const weapon = actor.root.getChildTransformNodes(false).find((node) => node.name.includes("AimPivot")) ?? actor.root;
       weapon.rotationQuaternion = null;
-      root.setEnabled(this.state.towers[id] > 0);
+      actor.root.setEnabled(this.state.towers[id] > 0);
       pad.setEnabled(this.state.towers[id] === 0);
-      this.towerActors.set(id, { id, root, weapon, pad, cooldown: 0 });
+      this.towerActors.set(id, { ...actor, id, weapon, pad, cooldown: 0, animationLodPaused: false });
     }
   }
 
@@ -808,9 +856,9 @@ export class StormGame {
       if (!this.state.stats.pastureVisited && Vector3.Distance(next, PASTURE_CENTER) < 5.5) this.state.stats.pastureVisited = true;
       const targetRotation = Math.atan2(direction.x, direction.z);
       this.player.root.rotation.y = this.lerpAngle(this.player.root.rotation.y, targetRotation, Math.min(1, dt * 13));
-      if (this.attackCooldown < 0.42) this.playAnimation(this.player, "Run", true);
+      if (!this.isAttackAnimation(this.player)) this.playAnimation(this.player, "run", true);
     } else if (this.attackCooldown <= 0) {
-      this.playAnimation(this.player, "Idle", true);
+      if (!this.isAttackAnimation(this.player)) this.playAnimation(this.player, "idle", true);
     }
   }
 
@@ -821,7 +869,7 @@ export class StormGame {
     if (renderCanvas) renderCanvas.dataset.lastAttack = Math.round(performance.now()).toString();
     const weapon = this.state.weapon;
     this.attackCooldown = weapon === "smg" ? 0.28 : weapon === "axe" ? 0.9 : 0.62;
-    this.playAnimation(this.player, "Slash", false);
+    this.playAnimation(this.player, weapon === "smg" ? "attack_ranged" : "attack_melee", false, true);
     if (weapon === "smg") {
       if (this.muzzleFlash) {
         this.muzzleFlash.setEnabled(true);
@@ -829,33 +877,37 @@ export class StormGame {
       }
       const target = this.findNearestZombie(this.player.root.position, 13) ?? this.findNearestCow(this.player.root.position, 16);
       if (target && "type" in target) {
-        for (let shot = 0; shot < 3; shot += 1) this.damageZombie(target, 2, "player");
+        for (let shot = 0; shot < 3; shot += 1) this.damageZombie(target, this.playerWeaponDamage(2), "player");
         return;
       }
       if (target) {
-        for (let shot = 0; shot < 3; shot += 1) this.damageCow(target, 2);
+        for (let shot = 0; shot < 3; shot += 1) this.damageCow(target, this.playerWeaponDamage(2));
         return;
       }
     } else if (weapon === "axe") {
       const targets = this.zombies.filter((zombie) => zombie.alive && Vector3.Distance(zombie.root.position, this.player.root.position) < 3.5);
-      for (const zombie of targets) this.damageZombie(zombie, 3, "player");
+      for (const zombie of targets) this.damageZombie(zombie, this.playerWeaponDamage(3), "player");
       const cows = this.allCows().filter((cow) => cow.alive && Vector3.Distance(cow.root.position, this.player.root.position) < 3.5);
-      for (const cow of cows) this.damageCow(cow, 2);
+      for (const cow of cows) this.damageCow(cow, this.playerWeaponDamage(3));
       this.createAttackRing(new Color3(0.95, 0.55, 0.24));
       if (targets.length + cows.length > 0) return;
     } else {
       const nearestZombie = this.findNearestZombie(this.player.root.position, 2.7);
       if (nearestZombie) {
-        this.damageZombie(nearestZombie, 2, "player");
+        this.damageZombie(nearestZombie, this.playerWeaponDamage(2), "player");
         return;
       }
       const nearestCow = this.findNearestCow(this.player.root.position, 2.8);
       if (nearestCow) {
-        this.damageCow(nearestCow, 1);
+        this.damageCow(nearestCow, this.playerWeaponDamage(2));
         return;
       }
     }
     this.ui.toast("揮砍落空——再靠近目標。", "ice");
+  }
+
+  private playerWeaponDamage(base: number): number {
+    return base + (this.state.protagonistId === "vet_sniper" ? 1 : 0);
   }
 
   private damageCow(cow: CowActor, damage: number): void {
@@ -877,7 +929,7 @@ export class StormGame {
       const angle = index / cow.meatYield * Math.PI * 2 + 0.3;
       root.position.set(cow.root.position.x + Math.cos(angle) * 0.9, cow.root.position.y + 0.45, cow.root.position.z + Math.sin(angle) * 0.9);
       root.rotation.set(0.2, angle, Math.PI / 2);
-      this.drops.push({ root, baseY: root.position.y, phase: index * 2.1 });
+      this.drops.push({ root, baseY: root.position.y, phase: index * 2.1, expiresAt: this.elapsed + 45 + index * 0.6 });
     }
     saveState(this.state);
     window.setTimeout(() => cow.root.setEnabled(false), 1100);
@@ -896,6 +948,11 @@ export class StormGame {
   private updateDrops(dt: number): void {
     for (let index = this.drops.length - 1; index >= 0; index -= 1) {
       const drop = this.drops[index];
+      if (drop.expiresAt <= this.elapsed) {
+        drop.root.dispose(false, true);
+        this.drops.splice(index, 1);
+        continue;
+      }
       drop.phase += dt * 2.7;
       drop.root.position.y = drop.baseY + Math.sin(drop.phase) * 0.12;
       drop.root.rotation.y += dt * 0.7;
@@ -933,7 +990,7 @@ export class StormGame {
     if (this.customer.phase === "arriving") {
       if (this.moveActorToward(this.customer, STALL_POSITION.add(new Vector3(0, 0, 1.3)), 2.25, dt)) {
         this.customer.phase = "buying";
-        this.customer.timer = this.state.employees.cashier ? 0.38 : 1.15;
+        this.customer.timer = this.state.employees.cashier >= 2 ? 0.28 : this.state.employees.cashier >= 1 ? 0.38 : 1.15;
         this.playAnimation(this.customer, "Idle", true);
       }
       return;
@@ -943,12 +1000,14 @@ export class StormGame {
       if (this.customer.timer <= 0) {
         if (this.state.displayedMeat > 0) {
           this.state.displayedMeat -= 1;
-          const income = 20 + (this.state.employees.cashier ? 5 : 0) + (this.state.pasture2Unlocked ? 5 : 0);
+          const income = this.meatSaleIncome();
           creditIncome(this.state, income);
           this.state.stats.sales += 1;
+          if (this.customer.identity) this.addCustomerAffinity(this.customer.identity);
           this.updateMeatVisuals();
           saveState(this.state);
-          this.ui.toast(`交易完成 · 收入 ✦ ${income}`, "warm");
+          const customer = NAMED_CUSTOMERS.find((entry) => entry.id === this.customer.identity);
+          this.ui.toast(`${customer ? customer.name : "交易"}結帳 · 收入 ✦ ${income}`, "warm");
         }
         this.customer.phase = "leaving";
         this.playAnimation(this.customer, "Walk", true);
@@ -958,16 +1017,80 @@ export class StormGame {
     if (this.moveActorToward(this.customer, new Vector3(-18, 0, -10), 2.5, dt)) {
       this.customer.root.setEnabled(false);
       this.customer.phase = "hidden";
-      this.customerCooldown = 2.2;
+      this.customerCooldown = this.state.employees.cashier >= 2 ? 1.9 : 2.2;
     }
   }
 
   private spawnCustomer(): void {
+    this.customer.root.setEnabled(false);
+    const familiarCount = NAMED_CUSTOMERS.filter((entry) => this.state.customerAffinity[entry.id] >= 6).length;
+    const weights: Array<[NamedCustomerId | "anonymous", number]> = [
+      ["anonymous", Math.max(0.35, 0.55 - familiarCount * 0.04)],
+      ...NAMED_CUSTOMERS.map((entry) => [entry.id, entry.weight + (this.state.customerAffinity[entry.id] >= 6 ? 0.04 : 0)] as [NamedCustomerId, number]),
+    ];
+    const total = weights.reduce((sum, entry) => sum + entry[1], 0);
+    let draw = Math.random() * total;
+    let selected: NamedCustomerId | "anonymous" = "anonymous";
+    for (const [id, weight] of weights) {
+      draw -= weight;
+      if (draw <= 0) {
+        selected = id;
+        break;
+      }
+    }
+    this.customer = this.customerVariants.get(selected)!;
     this.customer.root.position.set(-18, this.heightAt(-18, -10), -10);
     this.customer.root.setEnabled(true);
     this.customer.phase = "arriving";
     this.playAnimation(this.customer, "Walk", true);
-    this.ui.toast("遠方的旅人正朝肉舖走來。", "ice");
+    const named = this.customer.identity ? NAMED_CUSTOMERS.find((entry) => entry.id === this.customer.identity) : undefined;
+    this.ui.toast(named ? `${named.name} · ${named.role}：「${named.arrivalLine}」` : "遠方的旅人正朝肉舖走來。", "ice");
+  }
+
+  private meatSaleIncome(): number {
+    const cashierBonus = this.state.employees.cashier >= 2 ? 8 : this.state.employees.cashier >= 1 ? 5 : 0;
+    let income = 20 + cashierBonus + (this.state.pasture2Unlocked ? 5 : 0);
+    if (this.state.protagonistId === "butcher_matron") income = Math.floor(income * 1.1);
+    if (this.state.customerAffinity.lao_zhou >= 6) income += 1;
+    if (this.state.customerAffinity.kid_bao >= 6 && Math.random() < 0.05) {
+      income += 5;
+      this.ui.toast("小包把扣子換成真正的硬幣 · 小費 ✦ 5", "warm");
+    }
+    return income;
+  }
+
+  private addCustomerAffinity(id: NamedCustomerId): void {
+    if (this.state.customerAffinityWave !== this.state.wave) {
+      this.state.customerAffinityWave = this.state.wave;
+      this.state.customerAffinityGained = { lao_zhou: 0, nurse_lin: 0, kid_bao: 0, scout_he: 0 };
+    }
+    let requested = 1;
+    if (id === "lao_zhou" && this.state.employees.cashier >= 1) requested += 1;
+    if (id === "nurse_lin" && (this.stockedAtCycleStart || this.state.wave === 0 && this.state.displayedMeat >= 1)) requested += 1;
+    if (id === "kid_bao" && this.state.protagonistId === "butcher_matron") requested += 1;
+    if (id === "scout_he" && (this.state.weapon !== "machete" || Object.values(this.state.towers).some((level) => level > 0))) requested += 1;
+    const allowance = Math.max(0, 2 - this.state.customerAffinityGained[id]);
+    const gain = Math.min(requested, allowance, 10 - this.state.customerAffinity[id]);
+    if (gain <= 0) return;
+    this.state.customerAffinity[id] += gain;
+    this.state.customerAffinityGained[id] += gain;
+    const customer = NAMED_CUSTOMERS.find((entry) => entry.id === id)!;
+    for (const threshold of [3, 6, 10] as const) {
+      if (this.state.customerAffinity[id] < threshold) continue;
+      const rewardId = `aff_${id}_${threshold}`;
+      if (this.state.customerRewardsClaimed.includes(rewardId)) continue;
+      this.state.customerRewardsClaimed.push(rewardId);
+      if (threshold === 3) {
+        creditIncome(this.state, 40);
+        this.ui.toast(`${customer.name}開始認得這間店了 · ✦ 40`, "warm");
+      } else if (threshold === 6) {
+        this.ui.toast(`${customer.name}成了真正的常客 · ${customer.affinityBonus}`, "warm");
+      } else {
+        creditIncome(this.state, 120);
+        if (!this.state.quest.unlocks.includes(customer.friendMark)) this.state.quest.unlocks.push(customer.friendMark);
+        this.ui.toast(`${customer.name}把命也算在這盞燈上 · ✦ 120 · ${customer.friendMarkName}`, "warm");
+      }
+    }
   }
 
   private updateCow(dt: number): void {
@@ -1012,17 +1135,20 @@ export class StormGame {
 
   private hireEmployee(id: EmployeeId): void {
     const item = EMPLOYEES.find((employee) => employee.id === id);
-    if (!item || this.state.employees[id] || this.state.waveActive) return;
-    if (!this.requireChapter(SHOP_UNLOCK_CHAPTER.employeeShop)) return;
-    if (this.state.money < item.price) {
-      this.ui.toast(`雇用${item.name}尚缺 ✦ ${item.price - this.state.money}`, "danger");
+    const level = this.state.employees[id];
+    if (!item || level >= 2 || this.state.waveActive) return;
+    const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.employeeShop : SHOP_UNLOCK_CHAPTER.employeeUpgrade;
+    if (!this.requireChapter(unlockChapter)) return;
+    const price = level === 0 ? item.price : item.upgradePrice ?? 0;
+    if (this.state.money < price) {
+      this.ui.toast(`${level === 0 ? "雇用" : "升級"}${item.name}尚缺 ✦ ${price - this.state.money}`, "danger");
       return;
     }
-    this.state.money -= item.price;
-    this.state.employees[id] = true;
-    this.createStaff(id);
+    this.state.money -= price;
+    this.state.employees[id] = level === 0 ? 1 : 2;
+    if (level === 0) this.createStaff(id);
     saveState(this.state);
-    this.ui.toast(`${item.name}已加入肉舖。自動化開始運轉。`, "warm");
+    this.ui.toast(level === 0 ? `${item.name}已加入肉舖。自動化開始運轉。` : `${item.name}已升至 Lv2 · ${item.upgradeDescription}`, "warm");
     this.processQuests();
   }
 
@@ -1054,7 +1180,7 @@ export class StormGame {
     if (level >= 3) return;
     const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.defenseShop : SHOP_UNLOCK_CHAPTER.towerUpgrade;
     if (!this.requireChapter(unlockChapter)) return;
-    const cost = level === 0 ? definition.price : towerUpgradeCost(id, level);
+    const cost = towerCostForState(this.state, id, level);
     if (this.state.money < cost) {
       this.ui.toast(`${level === 0 ? "建造" : "升級"}${definition.name}尚缺 ✦ ${cost - this.state.money}`, "danger");
       return;
@@ -1207,14 +1333,15 @@ export class StormGame {
     const hunter = this.staff.get("hunter");
     if (hunter) {
       hunter.timer = Math.max(0, hunter.timer - dt);
+      const hunterLevel = this.state.employees.hunter;
       const target = this.allCows().find((cow) => cow.alive);
       if (target) {
         const distance = Vector3.Distance(hunter.root.position, target.root.position);
         if (distance > 2.35) {
-          this.moveActorToward(hunter, target.root.position, 2.15, dt);
+          this.moveActorToward(hunter, target.root.position, hunterLevel >= 2 ? 2.4 : 2.15, dt);
           this.playAnimation(hunter, "Run", true);
         } else if (hunter.timer <= 0) {
-          hunter.timer = 1.45;
+          hunter.timer = hunterLevel >= 2 ? 1.1 : 1.45;
           this.playAnimation(hunter, "Slash", false);
           this.damageCow(target, 1);
         }
@@ -1229,20 +1356,33 @@ export class StormGame {
     const dog = this.staff.get("dog");
     if (dog) {
       const capacity = this.state.stallLevel * 6;
-      const drop = this.drops[0];
+      const dogLevel = this.state.employees.dog;
+      const drop = dogLevel >= 2
+        ? this.drops.reduce<MeatDrop | undefined>((oldest, candidate) => !oldest || candidate.expiresAt < oldest.expiresAt ? candidate : oldest, undefined)
+        : this.drops[0];
       if (drop && this.state.displayedMeat < capacity) {
-        if (this.moveActorToward(dog, drop.root.position, 3.1, dt)) {
-          drop.root.dispose(false, true);
-          this.drops.shift();
-          this.state.displayedMeat += 1;
-          this.state.stats.meatCollected += 1;
-          this.state.stats.meatDeposited += 1;
+        if (this.moveActorToward(dog, drop.root.position, dogLevel >= 2 ? 3.72 : 3.1, dt)) {
+          const picked = [drop];
+          if (dogLevel >= 2 && capacity - this.state.displayedMeat >= 2) {
+            const second = this.drops
+              .filter((candidate) => candidate !== drop && Vector3.Distance(candidate.root.position, drop.root.position) <= 2.5)
+              .sort((a, b) => a.expiresAt - b.expiresAt)[0];
+            if (second) picked.push(second);
+          }
+          for (const item of picked) {
+            item.root.dispose(false, true);
+            const index = this.drops.indexOf(item);
+            if (index >= 0) this.drops.splice(index, 1);
+          }
+          this.state.displayedMeat += picked.length;
+          this.state.stats.meatCollected += picked.length;
+          this.state.stats.meatDeposited += picked.length;
           this.updateMeatVisuals();
           saveState(this.state);
         }
       } else {
         const post = STALL_POSITION.add(new Vector3(2.5, 0, -0.4));
-        if (Vector3.Distance(dog.root.position, post) > 0.4) this.moveActorToward(dog, post, 2.35, dt);
+        if (Vector3.Distance(dog.root.position, post) > 0.4) this.moveActorToward(dog, post, dogLevel >= 2 ? 2.82 : 2.35, dt);
       }
     }
   }
@@ -1257,6 +1397,7 @@ export class StormGame {
     this.spawnTimer = 0.4;
     this.state.enemiesRemaining = this.enemiesToSpawn;
     this.waveStartedStock = this.state.displayedMeat;
+    this.stockedAtCycleStart = this.waveStartedStock >= 2;
     this.wavePlayerKills = 0;
     this.waveTowerKills = 0;
     this.waveStartTime = performance.now();
@@ -1295,8 +1436,11 @@ export class StormGame {
         this.playAnimation(zombie, "Idle_Attack", true);
         if (zombie.attackTimer <= 0) {
           zombie.attackTimer = zombie.type === "runner" ? 0.58 : zombie.type === "boss" ? 1.15 : 0.82;
-          this.state.baseHealth -= zombie.damage;
-          this.state.stats.damageTaken += zombie.damage;
+          const blocked = this.state.customerAffinity.nurse_lin >= 6 && Math.random() < 0.08;
+          const damage = Math.max(0, zombie.damage - (blocked ? 1 : 0));
+          this.state.baseHealth -= damage;
+          this.state.stats.damageTaken += damage;
+          if (blocked) this.ui.toast("林護理留下的繃帶穩住了壁壘 · 減免 1 傷", "ice");
           if ((zombie.type === "brute" || zombie.type === "boss") && this.state.displayedMeat > 0) {
             this.state.displayedMeat -= 1;
             this.waveStockLost = true;
@@ -1349,12 +1493,22 @@ export class StormGame {
     this.zombies.push(zombie);
   }
 
-  private updateTowers(dt: number): void {
-    if (!this.state.waveActive) return;
+  private updateTowers(_dt: number): void {
     for (const tower of this.towerActors.values()) {
       const level = this.state.towers[tower.id];
       if (level <= 0) continue;
-      if (tower.id === "frost") tower.weapon.rotation.z += dt * (0.8 + level * 0.2);
+      const animationTooFar = Vector3.Distance(this.player.root.position, tower.root.position) > TOWER_ANIMATION_LOD_DISTANCE;
+      if (animationTooFar !== tower.animationLodPaused) {
+        tower.animationLodPaused = animationTooFar;
+        if (animationTooFar) {
+          for (const animation of tower.animations) {
+            animation.stop();
+            animation.reset();
+          }
+          tower.currentAnimation = "";
+        }
+      }
+      if (!this.state.waveActive) continue;
       const range = tower.id === "cannon" ? 19 + level : 17 + level * 1.5;
       const target = this.findNearestZombie(tower.root.position, range);
       if (!target) continue;
@@ -1362,6 +1516,7 @@ export class StormGame {
       tower.weapon.rotation.y = Math.atan2(delta.x, delta.z);
       if (tower.cooldown > 0) continue;
       tower.cooldown = tower.id === "ballista" ? 0.98 - level * 0.12 : tower.id === "frost" ? 1.25 - level * 0.14 : 2.35 - level * 0.25;
+      if (!tower.animationLodPaused) this.playTowerAnimation(tower, "attack");
       let projectile: TransformNode;
       if (tower.id === "ballista") {
         projectile = this.instantiateStatic("tower/arrow.glb", `tower-arrow-${this.elapsed}`);
@@ -1435,7 +1590,7 @@ export class StormGame {
     if (!zombie.alive) return;
     zombie.alive = false;
     this.playAnimation(zombie, "Death", false);
-    creditIncome(this.state, zombie.reward);
+    creditIncome(this.state, zombie.reward + (this.state.customerAffinity.scout_he >= 6 ? 1 : 0));
     this.state.stats.zombiesKilled += 1;
     if (source === "player") {
       this.state.stats.playerKills += 1;
@@ -1545,7 +1700,7 @@ export class StormGame {
       this.ui.setPrompt("AUTO", "靠近攤位自動陳列", true);
     } else if (this.state.towers.ballista === 0 && Vector3.Distance(this.player.root.position, TOWER_POSITIONS.ballista) < 4) {
       const unlocked = hasCompletedChapter(this.state, SHOP_UNLOCK_CHAPTER.defenseShop);
-      this.ui.setPrompt(this.ui.touchMode ? "整備" : "B", unlocked ? "建造獵風弩塔 · ✦ 60" : "完成手冊第 5 章解鎖防線", true);
+      this.ui.setPrompt(this.ui.touchMode ? "整備" : "B", unlocked ? `建造獵風弩塔 · ✦ ${towerCostForState(this.state, "ballista", 0)}` : "完成手冊第 5 章解鎖防線", true);
     } else {
       this.ui.setPrompt(this.ui.touchMode ? "搖桿" : "WASD", this.ui.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "穿越雪地 · 空白鍵揮砍", true);
     }
@@ -1567,6 +1722,23 @@ export class StormGame {
     return { root, animations: entries.animationGroups, currentAnimation: "" };
   }
 
+  private replacePlayerModel(): void {
+    const previous = this.player;
+    const definition = PROTAGONISTS.find((entry) => entry.id === this.state.protagonistId)!;
+    const replacement = this.instantiateActor(definition.model, `player-${definition.id}`, previous.root.position.clone(), 1);
+    replacement.root.rotation.copyFrom(previous.root.rotation);
+    this.weaponModel?.dispose(false, true);
+    this.weaponModel = undefined;
+    this.muzzleFlash = undefined;
+    for (const visual of this.carriedVisuals) visual.parent = replacement.root;
+    for (const animation of previous.animations) animation.dispose();
+    previous.root.dispose(false, false);
+    this.player = replacement;
+    this.playAnimation(this.player, "idle", true);
+    this.createWeaponModel();
+    this.addActorShadows(this.player);
+  }
+
   private instantiateStatic(file: string, name: string): TransformNode {
     const container = this.assets.get(file)!;
     const entries = container.instantiateModelsToScene((source) => `${name}-${source}`, false);
@@ -1576,8 +1748,8 @@ export class StormGame {
     return root;
   }
 
-  private playAnimation(actor: Actor, name: string, loop: boolean): void {
-    if (actor.currentAnimation === name) return;
+  private playAnimation(actor: Actor, name: string, loop: boolean, restart = false): void {
+    if (actor.currentAnimation === name && !restart) return;
     for (const animation of actor.animations) animation.stop();
     const selected = actor.animations.find((animation) => animation.name === name)
       ?? actor.animations.find((animation) => animation.name.toLowerCase().includes(name.toLowerCase()));
@@ -1589,10 +1761,27 @@ export class StormGame {
       selected.onAnimationGroupEndObservable.addOnce(() => {
         if (actor.currentAnimation === name && actor.root.isEnabled()) {
           actor.currentAnimation = "";
-          this.playAnimation(actor, "Idle", true);
+          this.playAnimation(actor, "idle", true);
         }
       });
     }
+  }
+
+  private isAttackAnimation(actor: Actor): boolean {
+    return actor.currentAnimation.startsWith("attack_");
+  }
+
+  private playTowerAnimation(tower: TowerActor, name: string): void {
+    for (const animation of tower.animations) animation.stop();
+    const selected = tower.animations.find((animation) => animation.name === name)
+      ?? tower.animations.find((animation) => animation.name.toLowerCase().includes(name.toLowerCase()));
+    if (!selected) return;
+    selected.reset();
+    selected.play(false);
+    tower.currentAnimation = name;
+    selected.onAnimationGroupEndObservable.addOnce(() => {
+      if (tower.currentAnimation === name) tower.currentAnimation = "";
+    });
   }
 
   private addActorShadows(actor: Actor): void {
@@ -1715,10 +1904,18 @@ export class StormGame {
 
   private createWeaponModel(): void {
     this.weaponModel?.dispose(false, true);
+    this.muzzleFlash = undefined;
     const root = new TransformNode(`player-weapon-${this.state.weapon}`, this.scene);
-    root.parent = this.player.root;
-    root.position.set(0.52, 1.18, 0.24);
+    const socket = this.player.root.getChildTransformNodes(false).find((node) => node.name.includes("WeaponSocket"));
+    root.parent = socket ?? this.player.root;
+    root.position.set(socket ? 0 : 0.52, socket ? 0 : 1.18, socket ? 0 : 0.24);
     root.rotation.set(0.12, 0, -0.18);
+    if (this.state.protagonistId === "butcher_matron" && this.state.weapon === "machete") {
+      // Her authored cleaver is already bound to hand.R and carries the full melee arc.
+      root.setEnabled(false);
+      this.weaponModel = root;
+      return;
+    }
     const metal = new PBRMaterial(`weapon-metal-${this.state.weapon}`, this.scene);
     metal.albedoColor = this.state.weapon === "axe" ? new Color3(0.35, 0.42, 0.43) : new Color3(0.18, 0.22, 0.23);
     metal.metallic = 0.78;
@@ -1748,7 +1945,7 @@ export class StormGame {
       head.material = metal;
       this.castShadows(head);
     } else {
-      root.position.set(0.42, 1.12, 0.44);
+      root.position.set(socket ? -0.1 : 0.42, socket ? -0.06 : 1.12, socket ? 0.2 : 0.44);
       root.rotation.x = Math.PI / 2;
       const body = MeshBuilder.CreateBox("smg-body", { width: 0.45, height: 0.38, depth: 1.05 }, this.scene);
       body.parent = root;

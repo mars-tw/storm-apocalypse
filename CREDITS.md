@@ -67,6 +67,13 @@ CC0 法律文字：<https://creativecommons.org/publicdomain/zero/1.0/>
 - 成品：`public/models/custom/`
 - 本批 GLB 合計 398,880 bytes（約 0.38 MiB），未包含任何 Quaternius、Kenney 或其他現成模型網格。
 
+## 本專案原創 — Blender 程式生成動畫資產 R2
+
+- 三位可選主角與三座防禦塔均由 Blender 5.1 `bpy` 從零重建；未沿用 Quaternius 主角網格、骨架或動畫。
+- 主角使用本專案同構 18 骨 Armature 與 `idle`／`run`／`attack_melee`／`attack_ranged` 四段 24fps 動畫；塔使用本專案物件動畫 `attack`。
+- 成品：`public/models/custom/characters/protagonist-*.glb`、`public/models/custom/tower-*.glb`；共 690,136 bytes。
+- 可重跑腳本：`tools/blender/build_animation_r2.py`；模型、材質、骨架、keyframe 與 GLB 均不依賴外部貼圖或第三方動畫資料。
+
 ## Alpha 擴充的程序模型
 
 - 迴旋斧、衝鋒槍與槍口火光由 Babylon.js 基礎幾何在執行期組合，未加入第三方素材。
