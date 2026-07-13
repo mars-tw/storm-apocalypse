@@ -191,7 +191,7 @@ export class StormGame {
   async initialize(): Promise<void> {
     let loaded = 0;
     await Promise.all(ASSET_FILES.map(async (file) => {
-      const container = await LoadAssetContainerAsync(`/models/${file}`, this.scene);
+      const container = await LoadAssetContainerAsync(`${import.meta.env.BASE_URL}models/${file}`, this.scene);
       this.assets.set(file, container);
       loaded += 1;
       this.ui.setLoading(loaded / ASSET_FILES.length * 0.82, `載入北境資產 · ${loaded} / ${ASSET_FILES.length}`);
