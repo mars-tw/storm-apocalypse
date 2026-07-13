@@ -57,3 +57,11 @@ CC0 法律文字：<https://creativecommons.org/publicdomain/zero/1.0/>
 - Quaternius 自包含 glTF 以 `@gltf-transform/cli` 封裝成 GLB，未改造動畫或重製網格。
 - Kenney GLB 保留原始網格；使用外部調色盤貼圖的套件保留其 `Textures/colormap.png` 相對路徑。
 - 成品 `public/models/` 目前約 5 MB，低於 15 MB 預算。
+
+## Alpha 擴充的程序模型
+
+- 迴旋斧、衝鋒槍與槍口火光由 Babylon.js 基礎幾何在執行期組合，未加入第三方素材。
+- 寒霜塔核心、火砲炮管、強化牛角與牧羊犬低模由 Babylon.js 基礎幾何在執行期組合，未加入第三方素材。
+- 獵人與收銀員沿用上列 Quaternius Zombie Apocalypse Kit 的 CC0 角色；強化牛沿用 Ultimate Animated Animals Pack 的 CC0 牛模型。
+- 場景、角色與殭屍皆從單一 `AssetContainer` 來源建立實例；沒有複製 GLB 檔。`public/models/` 總量維持約 4.93 MB，低於 25 MB 上限。
+- 以 glTF-Transform 4.4.1 檢視最大兩個動畫檔：`cow.glb` 1.86 MB（13 段動畫）、`zombie.glb` 0.83 MB（15 段動畫），皆無外部貼圖依賴或必要擴充。現階段總資產僅 4.70 MiB，動畫 keyframe 佔比高，因此保留標準 GLB，避免為少量網格收益額外加入 Draco／Meshopt 解碼器與首屏成本。

@@ -18,6 +18,7 @@ import {
   PBRMaterial,
   PointLight,
   Scene,
+  SceneInstrumentation,
   ShadowGenerator,
   StandardMaterial,
   Texture,
@@ -28,8 +29,10 @@ import {
   VertexData,
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
+import { EMPLOYEES, TOWERS, WEAPONS, towerUpgradeCost } from "./content";
 import { InputController } from "./input";
-import { saveState, type RuntimeState } from "./state";
+import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
+import { saveState, type EmployeeId, type RuntimeState, type TowerId, type WeaponId } from "./state";
 import type { UiController } from "./ui";
 
 interface Actor {
@@ -40,17 +43,30 @@ interface Actor {
 
 interface CowActor extends Actor {
   hp: number;
+  maxHp: number;
+  meatYield: number;
+  strong: boolean;
   alive: boolean;
   isMoving: boolean;
   behaviorTimer: number;
   roamTarget: Vector3;
+  pastureCenter: Vector3;
 }
+
+type ZombieType = "walker" | "runner" | "brute" | "boss";
+type DamageSource = "player" | TowerId;
 
 interface ZombieActor extends Actor {
   hp: number;
+  maxHp: number;
   alive: boolean;
   speed: number;
+  baseSpeed: number;
   attackTimer: number;
+  damage: number;
+  reward: number;
+  type: ZombieType;
+  slowTimer: number;
 }
 
 interface MeatDrop {
@@ -64,6 +80,24 @@ interface Projectile {
   target: ZombieActor;
   progress: number;
   start: Vector3;
+  source: TowerId;
+  damage: number;
+  splash: number;
+  slow: number;
+}
+
+interface TowerActor {
+  id: TowerId;
+  root: TransformNode;
+  weapon: TransformNode;
+  pad: Mesh;
+  cooldown: number;
+}
+
+interface StaffActor extends Actor {
+  id: EmployeeId;
+  timer: number;
+  patrolIndex: number;
 }
 
 type CustomerPhase = "hidden" | "arriving" | "buying" | "leaving";
@@ -84,8 +118,13 @@ const ASSET_FILES = [
 
 const SHOP_POSITION = new Vector3(-8, 0, -4);
 const STALL_POSITION = new Vector3(-8, 0, -7.05);
-const TOWER_POSITION = new Vector3(-1, 0, 4.2);
 const PASTURE_CENTER = new Vector3(8.5, 0, 3.7);
+const PASTURE_2_CENTER = new Vector3(15.5, 0, -7.5);
+const TOWER_POSITIONS: Record<TowerId, Vector3> = {
+  ballista: new Vector3(-1, 0, 4.2),
+  frost: new Vector3(-5.2, 0, 5.7),
+  cannon: new Vector3(3.5, 0, 5.6),
+};
 
 export class StormGame {
   private readonly engine: Engine;
@@ -97,14 +136,17 @@ export class StormGame {
   private readonly skyLight: HemisphericLight;
   private readonly shadows: ShadowGenerator;
   private readonly glow: GlowLayer;
+  private readonly instrumentation: SceneInstrumentation;
   private readonly snowEmitter: TransformNode;
   private readonly shopLight: PointLight;
   private player!: Actor;
   private cow!: CowActor;
+  private strongCow?: CowActor;
   private customer!: CustomerActor;
-  private towerRoot!: TransformNode;
-  private towerWeapon!: TransformNode;
-  private towerPad!: Mesh;
+  private readonly towerActors = new Map<TowerId, TowerActor>();
+  private readonly staff = new Map<EmployeeId, StaffActor>();
+  private weaponModel?: TransformNode;
+  private muzzleFlash?: Mesh;
   private readonly zombies: ZombieActor[] = [];
   private readonly drops: MeatDrop[] = [];
   private readonly projectiles: Projectile[] = [];
@@ -112,22 +154,29 @@ export class StormGame {
   private readonly stockVisuals: TransformNode[] = [];
   private started = false;
   private attackCooldown = 0;
-  private towerCooldown = 0;
   private spawnTimer = 0;
   private enemiesToSpawn = 0;
   private customerCooldown = 2;
   private nightBlend = 0;
   private elapsed = 0;
-  private lastObjective = "";
   private endShown = false;
+  private statsTimer = 0;
+  private waveStartedStock = 0;
+  private waveStockLost = false;
+  private wavePlayerKills = 0;
+  private waveTowerKills = 0;
+  private waveStartTime = 0;
+  private campaignStartTime = performance.now();
 
   constructor(
     canvas: HTMLCanvasElement,
     private readonly ui: UiController,
     private readonly state: RuntimeState,
   ) {
+    this.state.quality = this.detectQuality();
     this.engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, powerPreference: "high-performance" }, true);
-    this.engine.setHardwareScalingLevel(Math.min(1.5, Math.max(1, window.devicePixelRatio * (matchMedia("(pointer: coarse)").matches ? 0.82 : 0.65))));
+    const scaleFactor = this.state.quality === "低" ? 1 : this.state.quality === "中" ? 0.82 : 0.65;
+    this.engine.setHardwareScalingLevel(Math.min(2, Math.max(1, window.devicePixelRatio * scaleFactor)));
     this.scene = new Scene(this.engine);
     this.scene.clearColor = new Color4(0.57, 0.69, 0.74, 1);
     this.scene.fogMode = Scene.FOGMODE_EXP2;
@@ -151,30 +200,40 @@ export class StormGame {
     this.sun.position = new Vector3(24, 35, -20);
     this.sun.intensity = 2.4;
     this.sun.diffuse = new Color3(1, 0.91, 0.79);
-    this.shadows = new ShadowGenerator(matchMedia("(pointer: coarse)").matches ? 1024 : 2048, this.sun, true);
+    const shadowSize = this.state.quality === "低" ? 512 : this.state.quality === "中" ? 1024 : 2048;
+    this.shadows = new ShadowGenerator(shadowSize, this.sun, true);
     this.shadows.usePercentageCloserFiltering = true;
     this.shadows.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
     this.shadows.bias = 0.002;
     this.shadows.normalBias = 0.03;
 
-    this.glow = new GlowLayer("warm-window-glow", this.scene, { mainTextureFixedSize: 512, blurKernelSize: 48 });
+    this.glow = new GlowLayer("warm-window-glow", this.scene, { mainTextureFixedSize: this.state.quality === "低" ? 256 : 512, blurKernelSize: this.state.quality === "低" ? 24 : 48 });
     this.glow.intensity = 0.48;
     const pipeline = new DefaultRenderingPipeline("storm-cinematic", true, this.scene, [this.camera]);
     pipeline.fxaaEnabled = true;
-    pipeline.bloomEnabled = true;
+    pipeline.bloomEnabled = this.state.quality !== "低";
     pipeline.bloomThreshold = 0.78;
     pipeline.bloomWeight = 0.2;
     pipeline.bloomKernel = 48;
     pipeline.imageProcessingEnabled = true;
     pipeline.imageProcessing.contrast = 1.16;
     pipeline.imageProcessing.exposure = 1.05;
-    pipeline.samples = matchMedia("(pointer: coarse)").matches ? 1 : 2;
+    pipeline.samples = this.state.quality === "高" ? 2 : 1;
 
     this.shopLight = new PointLight("shop-lantern-light", new Vector3(-8, 3.4, -6.1), this.scene);
     this.shopLight.diffuse = new Color3(1, 0.55, 0.25);
     this.shopLight.intensity = 16;
     this.shopLight.range = 13;
     this.snowEmitter = new TransformNode("snow-emitter", this.scene);
+    this.instrumentation = new SceneInstrumentation(this.scene);
+    this.scene.onAfterRenderObservable.add(() => {
+      this.state.currentFps = this.engine.getFps();
+      this.state.drawCalls = this.instrumentation.drawCallsCounter.current;
+      canvas.dataset.fps = Math.round(this.state.currentFps).toString();
+      canvas.dataset.drawCalls = this.state.drawCalls.toString();
+      canvas.dataset.activeMeshes = this.scene.getActiveMeshes().length.toString();
+      canvas.dataset.quality = this.state.quality;
+    });
     this.input = new InputController(ui.joystick);
     this.createTerrain();
     this.createSnow();
@@ -190,19 +249,29 @@ export class StormGame {
 
   async initialize(): Promise<void> {
     let loaded = 0;
+    const fileProgress = new Map<string, number>();
     await Promise.all(ASSET_FILES.map(async (file) => {
-      const container = await LoadAssetContainerAsync(`${import.meta.env.BASE_URL}models/${file}`, this.scene);
+      const container = await LoadAssetContainerAsync(`${import.meta.env.BASE_URL}models/${file}`, this.scene, {
+        onProgress: (event) => {
+          fileProgress.set(file, event.lengthComputable && event.total > 0 ? event.loaded / event.total : 0.35);
+          const aggregate = [...fileProgress.values()].reduce((sum, value) => sum + value, 0) / ASSET_FILES.length;
+          this.ui.setLoading(Math.min(0.82, aggregate * 0.82), `串流北境資產 · ${loaded} / ${ASSET_FILES.length}`);
+        },
+      });
       this.assets.set(file, container);
       loaded += 1;
+      fileProgress.set(file, 1);
       this.ui.setLoading(loaded / ASSET_FILES.length * 0.82, `載入北境資產 · ${loaded} / ${ASSET_FILES.length}`);
     }));
     this.ui.setLoading(0.86, "佈置牧場與肉舖…");
     this.buildEnvironment();
     this.createActors();
-    this.createTower();
+    this.createTowers();
+    this.createWeaponModel();
+    this.syncUnlockedContent();
     this.createMeatDisplays();
     this.ui.update(this.state);
-    this.updateObjective();
+    this.processQuests();
     this.ui.setLoading(0.96, "校準暴風光影…");
     await new Promise<void>((resolve) => window.setTimeout(resolve, 250));
   }
@@ -215,8 +284,15 @@ export class StormGame {
   }
 
   attack(): void { this.input.queueAttack(); }
-  buildTower(): void { this.input.queueBuild(); }
   startWave(): void { this.input.queueWave(); }
+
+  shopAction(category: "weapon" | "employee" | "pasture", id: string): void {
+    if (category === "weapon") this.buyWeapon(id as WeaponId);
+    else if (category === "employee") this.hireEmployee(id as EmployeeId);
+    else if (id === "pasture2") this.unlockPasture2();
+  }
+
+  towerAction(id: TowerId): void { this.buyOrUpgradeTower(id); }
 
   private createTerrain(): void {
     const ground = MeshBuilder.CreateGround("wind-carved-snow", { width: 56, height: 48, subdivisions: 72, updatable: true }, this.scene);
@@ -302,7 +378,8 @@ export class StormGame {
     flake.hasAlpha = true;
     flake.update(false);
 
-    const snow = new ParticleSystem("blizzard-snow", matchMedia("(pointer: coarse)").matches ? 900 : 1700, this.scene);
+    const snowCapacity = this.state.quality === "低" ? 420 : this.state.quality === "中" ? 900 : 1700;
+    const snow = new ParticleSystem("blizzard-snow", snowCapacity, this.scene);
     snow.particleTexture = flake;
     snow.emitter = this.snowEmitter.position;
     snow.minEmitBox = new Vector3(-20, 0, -16);
@@ -313,7 +390,7 @@ export class StormGame {
     snow.maxSize = 0.16;
     snow.minLifeTime = 2.1;
     snow.maxLifeTime = 4.2;
-    snow.emitRate = matchMedia("(pointer: coarse)").matches ? 240 : 520;
+    snow.emitRate = this.state.quality === "低" ? 120 : this.state.quality === "中" ? 240 : 520;
     snow.blendMode = ParticleSystem.BLENDMODE_STANDARD;
     snow.gravity = new Vector3(1.3, -2.4, 0.5);
     snow.direction1 = new Vector3(1.8, -1.2, -0.2);
@@ -512,10 +589,14 @@ export class StormGame {
     this.cow = {
       ...this.instantiateActor("cow.glb", "pasture-cow", PASTURE_CENTER, 0.39),
       hp: 3,
+      maxHp: 3,
+      meatYield: 3,
+      strong: false,
       alive: true,
       isMoving: false,
       behaviorTimer: 4,
       roamTarget: PASTURE_CENTER.clone(),
+      pastureCenter: PASTURE_CENTER.clone(),
     };
     this.cow.root.position.y = this.heightAt(this.cow.root.position.x, this.cow.root.position.z);
     this.cow.root.rotation.y = -0.7;
@@ -531,29 +612,71 @@ export class StormGame {
     this.addActorShadows(this.customer);
   }
 
-  private createTower(): void {
-    this.towerPad = MeshBuilder.CreateCylinder("tower-build-pad", { diameter: 3.3, height: 0.16, tessellation: 32 }, this.scene);
-    this.towerPad.position.set(TOWER_POSITION.x, this.heightAt(TOWER_POSITION.x, TOWER_POSITION.z) + 0.04, TOWER_POSITION.z);
-    const padMaterial = new PBRMaterial("tower-pad-material", this.scene);
-    padMaterial.albedoColor = new Color3(0.12, 0.3, 0.35);
-    padMaterial.emissiveColor = new Color3(0.04, 0.3, 0.38);
-    padMaterial.emissiveIntensity = 0.65;
-    padMaterial.metallic = 0.2;
-    padMaterial.roughness = 0.45;
-    padMaterial.alpha = 0.72;
-    this.towerPad.material = padMaterial;
+  private createTowers(): void {
+    const towerColors: Record<TowerId, Color3> = {
+      ballista: new Color3(0.16, 0.48, 0.55),
+      frost: new Color3(0.25, 0.72, 0.94),
+      cannon: new Color3(0.72, 0.27, 0.15),
+    };
+    for (const definition of TOWERS) {
+      const id = definition.id;
+      const position = TOWER_POSITIONS[id];
+      const pad = MeshBuilder.CreateCylinder(`${id}-tower-build-pad`, { diameter: 3.1, height: 0.16, tessellation: 32 }, this.scene);
+      pad.position.set(position.x, this.heightAt(position.x, position.z) + 0.04, position.z);
+      const padMaterial = new PBRMaterial(`${id}-tower-pad-material`, this.scene);
+      padMaterial.albedoColor = towerColors[id];
+      padMaterial.emissiveColor = towerColors[id].scale(0.7);
+      padMaterial.emissiveIntensity = 0.65;
+      padMaterial.metallic = 0.2;
+      padMaterial.roughness = 0.45;
+      padMaterial.alpha = 0.72;
+      pad.material = padMaterial;
 
-    this.towerRoot = new TransformNode("built-ballista-tower", this.scene);
-    this.towerRoot.position.set(TOWER_POSITION.x, this.heightAt(TOWER_POSITION.x, TOWER_POSITION.z), TOWER_POSITION.z);
-    const body = this.instantiateStatic("tower/tower-body.glb", "ballista-tower-body");
-    body.parent = this.towerRoot;
-    body.scaling.setAll(2.25);
-    this.towerWeapon = this.instantiateStatic("tower/tower-weapon.glb", "ballista-tower-weapon");
-    this.towerWeapon.parent = this.towerRoot;
-    this.towerWeapon.position.y = 3.2;
-    this.towerWeapon.scaling.setAll(1.7);
-    this.towerRoot.setEnabled(this.state.towerBuilt);
-    this.towerPad.setEnabled(!this.state.towerBuilt);
+      const root = new TransformNode(`${id}-tower-root`, this.scene);
+      root.position.set(position.x, this.heightAt(position.x, position.z), position.z);
+      const body = this.instantiateStatic("tower/tower-body.glb", `${id}-tower-body`);
+      body.parent = root;
+      body.scaling.setAll(2.2);
+      const weapon = new TransformNode(`${id}-tower-weapon-pivot`, this.scene);
+      weapon.parent = root;
+      weapon.position.y = 3.15;
+      if (id === "ballista") {
+        const model = this.instantiateStatic("tower/tower-weapon.glb", "ballista-tower-weapon");
+        model.parent = weapon;
+        model.scaling.setAll(1.7);
+      } else if (id === "frost") {
+        const orb = MeshBuilder.CreateIcoSphere("frost-orb", { radius: 0.62, subdivisions: 2 }, this.scene);
+        orb.parent = weapon;
+        const material = new PBRMaterial("frost-orb-material", this.scene);
+        material.albedoColor = new Color3(0.34, 0.78, 0.98);
+        material.emissiveColor = new Color3(0.12, 0.62, 0.9);
+        material.emissiveIntensity = 1.4;
+        material.roughness = 0.22;
+        orb.material = material;
+        const ring = MeshBuilder.CreateTorus("frost-orb-ring", { diameter: 1.75, thickness: 0.08, tessellation: 32 }, this.scene);
+        ring.parent = weapon;
+        ring.material = material;
+        this.castShadows(orb);
+      } else {
+        const barrel = MeshBuilder.CreateCylinder("cannon-barrel", { height: 2.3, diameter: 0.55, tessellation: 12 }, this.scene);
+        barrel.parent = weapon;
+        barrel.rotation.x = Math.PI / 2;
+        barrel.position.z = 0.7;
+        const material = new PBRMaterial("cannon-metal-material", this.scene);
+        material.albedoColor = new Color3(0.19, 0.21, 0.22);
+        material.metallic = 0.75;
+        material.roughness = 0.38;
+        barrel.material = material;
+        const collar = MeshBuilder.CreateSphere("cannon-collar", { diameter: 1.3, segments: 12 }, this.scene);
+        collar.parent = weapon;
+        collar.material = material;
+        this.castShadows(barrel);
+        this.castShadows(collar);
+      }
+      root.setEnabled(this.state.towers[id] > 0);
+      pad.setEnabled(this.state.towers[id] === 0);
+      this.towerActors.set(id, { id, root, weapon, pad, cooldown: 0 });
+    }
   }
 
   private createMeatDisplays(): void {
@@ -582,20 +705,43 @@ export class StormGame {
     this.updateDrops(dt);
     this.updateCustomer(dt);
     this.updateCow(dt);
+    this.updateStaff(dt);
     if (!this.started || this.endShown) return;
 
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
-    this.towerCooldown = Math.max(0, this.towerCooldown - dt);
+    for (const tower of this.towerActors.values()) tower.cooldown = Math.max(0, tower.cooldown - dt);
     this.handleMovement(dt);
     if (this.input.consumeAttack()) this.performAttack();
-    if (this.input.consumeBuild()) this.tryBuildTower();
+    if (this.input.consumeBuild()) this.buyOrUpgradeTower("ballista");
     if (this.input.consumeWave()) this.tryStartWave();
     this.autoDeposit();
     this.updateWave(dt);
-    this.updateTower();
+    this.updateTowers(dt);
     this.updateProjectiles(dt);
-    this.updateObjective();
+    this.processQuests();
     this.updateContextPrompt();
+    this.statsTimer += dt;
+    if (this.statsTimer >= 0.5) {
+      this.statsTimer = 0;
+      this.state.currentFps = this.engine.getFps();
+      this.state.drawCalls = this.instrumentation.drawCallsCounter.current;
+      (window as Window & { __stormDebug?: unknown }).__stormDebug = {
+        fps: Math.round(this.state.currentFps),
+        drawCalls: this.state.drawCalls,
+        activeMeshes: this.scene.getActiveMeshes().length,
+        totalMeshes: this.scene.meshes.length,
+        quality: this.state.quality,
+        wave: this.state.wave,
+        enemies: this.state.enemiesRemaining,
+        hardwareInstancing: true,
+        waveMetrics: {
+          stockAtStart: this.waveStartedStock,
+          playerKills: this.wavePlayerKills,
+          towerKills: this.waveTowerKills,
+          seconds: this.state.waveActive ? Math.round((performance.now() - this.waveStartTime) / 1000) : 0,
+        },
+      };
+    }
     this.ui.update(this.state);
   }
 
@@ -609,6 +755,7 @@ export class StormGame {
       next.z = Math.max(-20, Math.min(20, next.z));
       next.y = this.heightAt(next.x, next.z);
       this.player.root.position.copyFrom(next);
+      if (!this.state.stats.pastureVisited && Vector3.Distance(next, PASTURE_CENTER) < 5.5) this.state.stats.pastureVisited = true;
       const targetRotation = Math.atan2(direction.x, direction.z);
       this.player.root.rotation.y = this.lerpAngle(this.player.root.rotation.y, targetRotation, Math.min(1, dt * 13));
       if (this.attackCooldown < 0.42) this.playAnimation(this.player, "Run", true);
@@ -619,47 +766,78 @@ export class StormGame {
 
   private performAttack(): void {
     if (this.attackCooldown > 0) return;
-    this.attackCooldown = 0.62;
+    const weapon = this.state.weapon;
+    this.attackCooldown = weapon === "smg" ? 0.28 : weapon === "axe" ? 0.9 : 0.62;
     this.playAnimation(this.player, "Slash", false);
-    const nearestZombie = this.findNearestZombie(this.player.root.position, 2.7);
-    if (nearestZombie) {
-      nearestZombie.hp -= 2;
-      this.playAnimation(nearestZombie, "HitReact", false);
-      if (nearestZombie.hp <= 0) this.killZombie(nearestZombie);
-      return;
-    }
-    if (this.cow.alive && Vector3.Distance(this.player.root.position, this.cow.root.position) < 2.8) {
-      this.cow.hp -= 1;
-      this.playAnimation(this.cow, this.cow.hp > 0 ? "Idle_HitReact1" : "Death", false);
-      if (this.cow.hp <= 0) this.killCow();
-      else this.ui.toast(`牛隻生命 ${this.cow.hp} / 3`, "danger");
-      return;
+    if (weapon === "smg") {
+      if (this.muzzleFlash) {
+        this.muzzleFlash.setEnabled(true);
+        window.setTimeout(() => this.muzzleFlash?.setEnabled(false), 70);
+      }
+      const target = this.findNearestZombie(this.player.root.position, 13) ?? this.findNearestCow(this.player.root.position, 10);
+      if (target && "type" in target) {
+        for (let shot = 0; shot < 3; shot += 1) this.damageZombie(target, 2, "player");
+        return;
+      }
+      if (target) {
+        this.damageCow(target, 2);
+        return;
+      }
+    } else if (weapon === "axe") {
+      const targets = this.zombies.filter((zombie) => zombie.alive && Vector3.Distance(zombie.root.position, this.player.root.position) < 3.5);
+      for (const zombie of targets) this.damageZombie(zombie, 3, "player");
+      const cows = this.allCows().filter((cow) => cow.alive && Vector3.Distance(cow.root.position, this.player.root.position) < 3.5);
+      for (const cow of cows) this.damageCow(cow, 2);
+      this.createAttackRing(new Color3(0.95, 0.55, 0.24));
+      if (targets.length + cows.length > 0) return;
+    } else {
+      const nearestZombie = this.findNearestZombie(this.player.root.position, 2.7);
+      if (nearestZombie) {
+        this.damageZombie(nearestZombie, 2, "player");
+        return;
+      }
+      const nearestCow = this.findNearestCow(this.player.root.position, 2.8);
+      if (nearestCow) {
+        this.damageCow(nearestCow, 1);
+        return;
+      }
     }
     this.ui.toast("揮砍落空——再靠近目標。", "ice");
   }
 
-  private killCow(): void {
-    if (!this.cow.alive) return;
-    this.cow.alive = false;
-    this.playAnimation(this.cow, "Death", false);
-    this.ui.toast("取得新鮮肉品，靠近即可拾取。", "warm");
-    for (let index = 0; index < 3; index += 1) {
+  private damageCow(cow: CowActor, damage: number): void {
+    if (!cow.alive) return;
+    cow.hp -= damage;
+    this.playAnimation(cow, cow.hp > 0 ? "Idle_HitReact1" : "Death", false);
+    if (cow.hp <= 0) this.killCow(cow);
+    else this.ui.toast(`${cow.strong ? "強化牛" : "牛隻"}生命 ${cow.hp} / ${cow.maxHp}`, "danger");
+  }
+
+  private killCow(cow: CowActor): void {
+    if (!cow.alive) return;
+    cow.alive = false;
+    this.state.stats.cowsKilled += 1;
+    this.playAnimation(cow, "Death", false);
+    this.ui.toast(`${cow.strong ? "強化牛" : "牛隻"}倒下 · 掉落 ${cow.meatYield} 份肉`, "warm");
+    for (let index = 0; index < cow.meatYield; index += 1) {
       const root = this.createMeatPiece(`meat-drop-${this.elapsed}-${index}`, 0.55);
-      const angle = index / 3 * Math.PI * 2 + 0.3;
-      root.position.set(this.cow.root.position.x + Math.cos(angle) * 0.9, this.cow.root.position.y + 0.45, this.cow.root.position.z + Math.sin(angle) * 0.9);
+      const angle = index / cow.meatYield * Math.PI * 2 + 0.3;
+      root.position.set(cow.root.position.x + Math.cos(angle) * 0.9, cow.root.position.y + 0.45, cow.root.position.z + Math.sin(angle) * 0.9);
       root.rotation.set(0.2, angle, Math.PI / 2);
       this.drops.push({ root, baseY: root.position.y, phase: index * 2.1 });
     }
-    window.setTimeout(() => this.cow.root.setEnabled(false), 1100);
+    saveState(this.state);
+    window.setTimeout(() => cow.root.setEnabled(false), 1100);
     window.setTimeout(() => {
-      this.cow.root.position.set(PASTURE_CENTER.x + 1.5, this.heightAt(PASTURE_CENTER.x + 1.5, PASTURE_CENTER.z - 1), PASTURE_CENTER.z - 1);
-      this.cow.root.setEnabled(true);
-      this.cow.hp = 3;
-      this.cow.alive = true;
-      this.cow.behaviorTimer = 3;
-      this.playAnimation(this.cow, "Eating", true);
-      this.ui.toast("牧場又有牛隻進入圍欄。", "ice");
-    }, 9000);
+      const center = cow.pastureCenter;
+      cow.root.position.set(center.x + 1.2, this.heightAt(center.x + 1.2, center.z - 1), center.z - 1);
+      cow.root.setEnabled(true);
+      cow.hp = cow.maxHp;
+      cow.alive = true;
+      cow.behaviorTimer = 3;
+      this.playAnimation(cow, "Eating", true);
+      this.ui.toast(`${cow.strong ? "第二牧場的強化牛" : "牧場牛隻"}已重返圍欄。`, "ice");
+    }, cow.strong ? 12000 : 7000);
   }
 
   private updateDrops(dt: number): void {
@@ -672,6 +850,7 @@ export class StormGame {
       drop.root.dispose(false, true);
       this.drops.splice(index, 1);
       this.state.carriedMeat += 1;
+      this.state.stats.meatCollected += 1;
       this.updateMeatVisuals();
       this.ui.toast(`肉品裝袋 · ${this.state.carriedMeat} / 6`, "warm");
     }
@@ -684,6 +863,7 @@ export class StormGame {
     if (deposited <= 0) return;
     this.state.carriedMeat -= deposited;
     this.state.displayedMeat += deposited;
+    this.state.stats.meatDeposited += deposited;
     this.updateMeatVisuals();
     this.customerCooldown = Math.min(this.customerCooldown, 0.6);
     this.ui.toast(`${deposited} 份肉品已陳列，顧客正在前來。`, "warm");
@@ -691,6 +871,7 @@ export class StormGame {
 
   private updateCustomer(dt: number): void {
     if (!this.customer) return;
+    if (this.state.waveActive) return;
     if (this.customer.phase === "hidden") {
       this.customerCooldown -= dt;
       if (this.started && this.state.displayedMeat > 0 && this.customerCooldown <= 0) this.spawnCustomer();
@@ -699,7 +880,7 @@ export class StormGame {
     if (this.customer.phase === "arriving") {
       if (this.moveActorToward(this.customer, STALL_POSITION.add(new Vector3(0, 0, 1.3)), 2.25, dt)) {
         this.customer.phase = "buying";
-        this.customer.timer = 1.15;
+        this.customer.timer = this.state.employees.cashier ? 0.38 : 1.15;
         this.playAnimation(this.customer, "Idle", true);
       }
       return;
@@ -709,10 +890,13 @@ export class StormGame {
       if (this.customer.timer <= 0) {
         if (this.state.displayedMeat > 0) {
           this.state.displayedMeat -= 1;
-          this.state.money += 20;
+          const income = this.state.employees.cashier ? 25 : 20;
+          this.state.money += income;
+          this.state.stats.sales += 1;
+          this.state.stats.totalEarned += income;
           this.updateMeatVisuals();
           saveState(this.state);
-          this.ui.toast("交易完成 · 收入 ✦ 20", "warm");
+          this.ui.toast(`交易完成 · 收入 ✦ ${income}`, "warm");
         }
         this.customer.phase = "leaving";
         this.playAnimation(this.customer, "Walk", true);
@@ -735,52 +919,292 @@ export class StormGame {
   }
 
   private updateCow(dt: number): void {
-    if (!this.cow?.alive) return;
-    this.cow.behaviorTimer -= dt;
-    if (this.cow.behaviorTimer <= 0) {
-      this.cow.isMoving = !this.cow.isMoving;
-      this.cow.behaviorTimer = this.cow.isMoving ? 3 + Math.sin(this.elapsed) : 4.5 + Math.cos(this.elapsed);
-      if (this.cow.isMoving) {
-        const angle = this.elapsed * 1.7;
-        this.cow.roamTarget.set(PASTURE_CENTER.x + Math.cos(angle) * 3.1, 0, PASTURE_CENTER.z + Math.sin(angle * 1.31) * 2.6);
-        this.playAnimation(this.cow, "Walk", true);
-      } else {
-        this.playAnimation(this.cow, "Eating", true);
+    for (const cow of this.allCows()) {
+      if (!cow.alive) continue;
+      cow.behaviorTimer -= dt;
+      if (cow.behaviorTimer <= 0) {
+        cow.isMoving = !cow.isMoving;
+        cow.behaviorTimer = cow.isMoving ? 3 + Math.sin(this.elapsed) : 4.5 + Math.cos(this.elapsed);
+        if (cow.isMoving) {
+          const angle = this.elapsed * (cow.strong ? 1.23 : 1.7);
+          cow.roamTarget.set(cow.pastureCenter.x + Math.cos(angle) * 3.1, 0, cow.pastureCenter.z + Math.sin(angle * 1.31) * 2.6);
+          this.playAnimation(cow, "Walk", true);
+        } else {
+          this.playAnimation(cow, "Eating", true);
+        }
       }
+      if (cow.isMoving) this.moveActorToward(cow, cow.roamTarget, cow.strong ? 0.62 : 0.75, dt);
     }
-    if (this.cow.isMoving) this.moveActorToward(this.cow, this.cow.roamTarget, 0.75, dt);
   }
 
-  private tryBuildTower(): void {
-    if (this.state.towerBuilt) return;
-    if (this.state.money < 60) {
-      this.ui.toast(`尚缺 ✦ ${60 - this.state.money}，先把肉賣給顧客。`, "danger");
+  private buyWeapon(id: WeaponId): void {
+    const item = WEAPONS.find((weapon) => weapon.id === id);
+    if (!item || id === "machete" || this.state.weapon === id || this.state.waveActive) return;
+    if (id === "smg" && this.state.weapon === "machete") {
+      this.ui.toast("先掌握迴旋斧，才能購買衝鋒槍。", "danger");
       return;
     }
-    this.state.money -= 60;
-    this.state.towerBuilt = true;
-    this.towerRoot.setEnabled(true);
-    this.towerRoot.scaling.setAll(0.01);
-    this.towerPad.setEnabled(false);
+    if (this.state.money < item.price) {
+      this.ui.toast(`購買${item.name}尚缺 ✦ ${item.price - this.state.money}`, "danger");
+      return;
+    }
+    this.state.money -= item.price;
+    this.state.weapon = id;
+    this.createWeaponModel();
+    saveState(this.state);
+    this.ui.toast(`武器已升級：${item.name}`, "warm");
+    this.processQuests();
+  }
+
+  private hireEmployee(id: EmployeeId): void {
+    const item = EMPLOYEES.find((employee) => employee.id === id);
+    if (!item || this.state.employees[id] || this.state.waveActive) return;
+    if (this.state.money < item.price) {
+      this.ui.toast(`雇用${item.name}尚缺 ✦ ${item.price - this.state.money}`, "danger");
+      return;
+    }
+    this.state.money -= item.price;
+    this.state.employees[id] = true;
+    this.createStaff(id);
+    saveState(this.state);
+    this.ui.toast(`${item.name}已加入肉舖。自動化開始運轉。`, "warm");
+    this.processQuests();
+  }
+
+  private unlockPasture2(): void {
+    if (this.state.pasture2Unlocked || this.state.waveActive) return;
+    if (this.state.money < 260) {
+      this.ui.toast(`炸開第二牧場尚缺 ✦ ${260 - this.state.money}`, "danger");
+      return;
+    }
+    this.state.money -= 260;
+    this.state.pasture2Unlocked = true;
+    this.createStrongCow();
+    this.createExplosion(PASTURE_2_CENTER.add(new Vector3(-3.5, 0, 0)), 4.2);
+    saveState(this.state);
+    this.ui.toast("林線已炸開！第二牧場出現強化牛。", "warm");
+    this.processQuests();
+  }
+
+  private buyOrUpgradeTower(id: TowerId): void {
+    if (this.state.waveActive) {
+      this.ui.toast("夜襲中無法施工。", "danger");
+      return;
+    }
+    const tower = this.towerActors.get(id);
+    const definition = TOWERS.find((entry) => entry.id === id);
+    if (!tower || !definition) return;
+    const level = this.state.towers[id];
+    if (level >= 3) return;
+    const cost = level === 0 ? definition.price : towerUpgradeCost(id, level);
+    if (this.state.money < cost) {
+      this.ui.toast(`${level === 0 ? "建造" : "升級"}${definition.name}尚缺 ✦ ${cost - this.state.money}`, "danger");
+      return;
+    }
+    this.state.money -= cost;
+    this.state.towers[id] = level + 1;
+    this.state.towerBuilt = this.state.towers.ballista > 0;
+    tower.root.setEnabled(true);
+    tower.pad.setEnabled(false);
+    tower.root.scaling.setAll(level === 0 ? 0.01 : 1);
     const animateBuild = (): void => {
-      const next = Math.min(1, this.towerRoot.scaling.x + 0.065);
-      this.towerRoot.scaling.setAll(1 + Math.sin(next * Math.PI) * 0.06);
+      const current = tower.root.scaling.x;
+      const next = Math.min(1, current + 0.085);
+      tower.root.scaling.setAll(next + Math.sin(next * Math.PI) * 0.08);
       if (next < 1) requestAnimationFrame(animateBuild);
-      else this.towerRoot.scaling.setAll(1);
+      else tower.root.scaling.setAll(1 + this.state.towers[id] * 0.025);
     };
     animateBuild();
+    this.createAttackRing(id === "frost" ? new Color3(0.25, 0.76, 1) : id === "cannon" ? new Color3(1, 0.31, 0.08) : new Color3(0.86, 0.66, 0.32), tower.root.position);
     saveState(this.state);
-    this.ui.toast("獵風弩塔完工。鐘聲可以敲響了。", "warm");
+    this.ui.toast(`${definition.name}${level === 0 ? "完工" : `升至 Lv.${level + 1}`}。`, "warm");
+    this.processQuests();
+  }
+
+  private syncUnlockedContent(): void {
+    if (this.state.pasture2Unlocked) this.createStrongCow();
+    for (const id of Object.keys(this.state.employees) as EmployeeId[]) {
+      if (this.state.employees[id]) this.createStaff(id);
+    }
+  }
+
+  private createStrongCow(): void {
+    if (this.strongCow) return;
+    for (const node of this.scene.transformNodes) {
+      if ((node.name.startsWith("snow-pine-") || node.name.startsWith("forest-rock-")) && Vector3.Distance(node.position, PASTURE_2_CENTER) < 6.2) node.setEnabled(false);
+    }
+    const fenceOffsets: Array<[number, number, number]> = [];
+    for (let offset = -4; offset <= 4; offset += 2) {
+      fenceOffsets.push([offset, -4.2, 0], [offset, 4.2, 0], [-5, offset, Math.PI / 2], [5, offset, Math.PI / 2]);
+    }
+    for (const [x, z, rotation] of fenceOffsets) {
+      const fence = this.instantiateStatic("fence.glb", `pasture-2-fence-${x}-${z}`);
+      const px = PASTURE_2_CENTER.x + x;
+      const pz = PASTURE_2_CENTER.z + z;
+      fence.position.set(px, this.heightAt(px, pz), pz);
+      fence.rotation.y = rotation;
+      fence.scaling.setAll(1.25);
+    }
+    this.createWorldRing("pasture-2-unlocked-ring", PASTURE_2_CENTER, 9.2, new Color3(0.78, 0.29, 0.11));
+    this.strongCow = {
+      ...this.instantiateActor("cow.glb", "pasture-2-strong-cow", PASTURE_2_CENTER, 0.5),
+      hp: 9,
+      maxHp: 9,
+      meatYield: 6,
+      strong: true,
+      alive: true,
+      isMoving: false,
+      behaviorTimer: 3.5,
+      roamTarget: PASTURE_2_CENTER.clone(),
+      pastureCenter: PASTURE_2_CENTER.clone(),
+    };
+    this.strongCow.root.position.y = this.heightAt(PASTURE_2_CENTER.x, PASTURE_2_CENTER.z);
+    this.playAnimation(this.strongCow, "Eating", true);
+    this.addActorShadows(this.strongCow);
+    const hornMaterial = new PBRMaterial("strong-cow-horn-material", this.scene);
+    hornMaterial.albedoColor = new Color3(0.88, 0.72, 0.45);
+    hornMaterial.roughness = 0.8;
+    for (const side of [-1, 1]) {
+      const horn = MeshBuilder.CreateCylinder(`strong-cow-horn-${side}`, { height: 1.7, diameterTop: 0, diameterBottom: 0.34, tessellation: 8 }, this.scene);
+      horn.parent = this.strongCow.root;
+      horn.position.set(side * 1.05, 3.3, 1.45);
+      horn.rotation.z = side * 0.85;
+      horn.material = hornMaterial;
+      this.castShadows(horn);
+    }
+    const collar = MeshBuilder.CreateTorus("strong-cow-ember-collar", { diameter: 2.4, thickness: 0.16, tessellation: 24 }, this.scene);
+    collar.parent = this.strongCow.root;
+    collar.position.y = 2.2;
+    collar.rotation.x = Math.PI / 2;
+    const collarMaterial = new PBRMaterial("strong-cow-collar-material", this.scene);
+    collarMaterial.albedoColor = new Color3(0.62, 0.16, 0.08);
+    collarMaterial.emissiveColor = new Color3(0.36, 0.04, 0.01);
+    collar.material = collarMaterial;
+  }
+
+  private createStaff(id: EmployeeId): void {
+    if (this.staff.has(id)) return;
+    let staff: StaffActor;
+    if (id === "dog") {
+      staff = { ...this.createProceduralDog(), id, timer: 0, patrolIndex: 0 };
+    } else {
+      const position = id === "hunter" ? new Vector3(5.5, 0, 1) : STALL_POSITION.add(new Vector3(1.7, 0, 1));
+      const actor = this.instantiateActor(id === "hunter" ? "survivor.glb" : "customer.glb", `staff-${id}`, position, id === "hunter" ? 0.82 : 0.85);
+      actor.root.position.y = this.heightAt(position.x, position.z);
+      this.playAnimation(actor, "Idle", true);
+      this.addActorShadows(actor);
+      staff = { ...actor, id, timer: 0, patrolIndex: 0 };
+    }
+    this.staff.set(id, staff);
+  }
+
+  private createProceduralDog(): Actor {
+    const root = new TransformNode("staff-shepherd-dog", this.scene);
+    root.position.set(-5.8, this.heightAt(-5.8, -5.5), -5.5);
+    const fur = new PBRMaterial("dog-fur-material", this.scene);
+    fur.albedoColor = new Color3(0.18, 0.13, 0.09);
+    fur.roughness = 0.95;
+    const tan = new PBRMaterial("dog-tan-material", this.scene);
+    tan.albedoColor = new Color3(0.68, 0.42, 0.2);
+    tan.roughness = 0.9;
+    const body = MeshBuilder.CreateCapsule("dog-body", { height: 1.55, radius: 0.42, tessellation: 8 }, this.scene);
+    body.parent = root;
+    body.rotation.x = Math.PI / 2;
+    body.position.y = 0.72;
+    body.material = fur;
+    const head = MeshBuilder.CreateIcoSphere("dog-head", { radius: 0.43, subdivisions: 1 }, this.scene);
+    head.parent = root;
+    head.position.set(0, 0.95, 0.82);
+    head.material = tan;
+    const muzzle = MeshBuilder.CreateBox("dog-muzzle", { width: 0.38, height: 0.25, depth: 0.48 }, this.scene);
+    muzzle.parent = root;
+    muzzle.position.set(0, 0.84, 1.16);
+    muzzle.material = tan;
+    for (const side of [-1, 1]) {
+      const ear = MeshBuilder.CreateCylinder(`dog-ear-${side}`, { height: 0.55, diameterTop: 0, diameterBottom: 0.28, tessellation: 5 }, this.scene);
+      ear.parent = root;
+      ear.position.set(side * 0.25, 1.35, 0.77);
+      ear.material = fur;
+      for (const z of [-0.45, 0.45]) {
+        const leg = MeshBuilder.CreateCylinder(`dog-leg-${side}-${z}`, { height: 0.68, diameter: 0.16, tessellation: 6 }, this.scene);
+        leg.parent = root;
+        leg.position.set(side * 0.28, 0.34, z);
+        leg.material = tan;
+        this.castShadows(leg);
+      }
+      this.castShadows(ear);
+    }
+    const tail = MeshBuilder.CreateCylinder("dog-tail", { height: 0.9, diameter: 0.14, tessellation: 6 }, this.scene);
+    tail.parent = root;
+    tail.position.set(0, 0.95, -0.9);
+    tail.rotation.x = -0.75;
+    tail.material = fur;
+    this.castShadows(body);
+    this.castShadows(head);
+    return { root, animations: [], currentAnimation: "" };
+  }
+
+  private updateStaff(dt: number): void {
+    if (!this.started) return;
+    const hunter = this.staff.get("hunter");
+    if (hunter) {
+      hunter.timer = Math.max(0, hunter.timer - dt);
+      const target = this.allCows().find((cow) => cow.alive);
+      if (target) {
+        const distance = Vector3.Distance(hunter.root.position, target.root.position);
+        if (distance > 2.35) {
+          this.moveActorToward(hunter, target.root.position, 2.15, dt);
+          this.playAnimation(hunter, "Run", true);
+        } else if (hunter.timer <= 0) {
+          hunter.timer = 1.45;
+          this.playAnimation(hunter, "Slash", false);
+          this.damageCow(target, 1);
+        }
+      }
+    }
+    const cashier = this.staff.get("cashier");
+    if (cashier) {
+      const post = STALL_POSITION.add(new Vector3(1.7, 0, 1));
+      if (Vector3.Distance(cashier.root.position, post) > 0.35) this.moveActorToward(cashier, post, 1.7, dt);
+      else this.playAnimation(cashier, "Idle", true);
+    }
+    const dog = this.staff.get("dog");
+    if (dog) {
+      const capacity = this.state.stallLevel * 6;
+      const drop = this.drops[0];
+      if (drop && this.state.displayedMeat < capacity) {
+        if (this.moveActorToward(dog, drop.root.position, 3.1, dt)) {
+          drop.root.dispose(false, true);
+          this.drops.shift();
+          this.state.displayedMeat += 1;
+          this.state.stats.meatCollected += 1;
+          this.state.stats.meatDeposited += 1;
+          this.updateMeatVisuals();
+          saveState(this.state);
+        }
+      } else {
+        const post = STALL_POSITION.add(new Vector3(2.5, 0, -0.4));
+        if (Vector3.Distance(dog.root.position, post) > 0.4) this.moveActorToward(dog, post, 2.35, dt);
+      }
+    }
   }
 
   private tryStartWave(): void {
-    if (!this.state.towerBuilt || this.state.waveActive || this.state.wave >= 3) return;
+    if (!Object.values(this.state.towers).some((level) => level > 0) || this.state.waveActive || this.state.wave >= 30) return;
     this.state.waveActive = true;
-    this.state.baseHealth = Math.min(100, this.state.baseHealth + 15);
-    this.enemiesToSpawn = 2 + this.state.wave * 2;
+    this.state.baseHealth = Math.min(100, this.state.baseHealth + 12);
+    const waveNumber = this.state.wave + 1;
+    this.enemiesToSpawn = Math.min(42, 4 + Math.ceil(waveNumber * 1.22));
+    if (waveNumber % 10 === 0) this.enemiesToSpawn += 1;
     this.spawnTimer = 0.4;
     this.state.enemiesRemaining = this.enemiesToSpawn;
-    this.ui.toast(`警報：第 ${this.state.wave + 1} 波屍群穿越北境！`, "danger");
+    this.waveStartedStock = this.state.displayedMeat;
+    this.wavePlayerKills = 0;
+    this.waveTowerKills = 0;
+    this.waveStartTime = performance.now();
+    this.waveStockLost = false;
+    assignLoopQuest(this.state, waveNumber);
+    this.ui.toast(`警報：第 ${waveNumber} 波${waveNumber % 10 === 0 ? " Boss " : "屍群"}穿越北境！`, "danger");
   }
 
   private updateWave(dt: number): void {
@@ -790,23 +1214,31 @@ export class StormGame {
       if (this.spawnTimer <= 0) {
         this.spawnZombie(this.enemiesToSpawn);
         this.enemiesToSpawn -= 1;
-        this.spawnTimer = 1.15;
+        this.spawnTimer = Math.max(0.38, 0.86 - this.state.wave * 0.014);
       }
     }
     for (const zombie of this.zombies) {
       if (!zombie.alive) continue;
+      zombie.slowTimer = Math.max(0, zombie.slowTimer - dt);
       const target = SHOP_POSITION.add(new Vector3(0, 0, 1.8));
       const distance = Vector3.Distance(zombie.root.position, target);
       if (distance > 2.5) {
-        this.moveActorToward(zombie, target, zombie.speed, dt);
+        const slowFactor = zombie.slowTimer > 0 ? 0.55 : 1;
+        this.moveActorToward(zombie, target, zombie.baseSpeed * slowFactor, dt);
         this.playAnimation(zombie, "Walk", true);
       } else {
         zombie.attackTimer -= dt;
         this.playAnimation(zombie, "Idle_Attack", true);
         if (zombie.attackTimer <= 0) {
-          zombie.attackTimer = 0.8;
-          this.state.baseHealth -= 6;
-          this.ui.toast("殭屍正在破壞肉舖壁壘！", "danger");
+          zombie.attackTimer = zombie.type === "runner" ? 0.58 : zombie.type === "boss" ? 1.15 : 0.82;
+          this.state.baseHealth -= zombie.damage;
+          this.state.stats.damageTaken += zombie.damage;
+          if ((zombie.type === "brute" || zombie.type === "boss") && this.state.displayedMeat > 0) {
+            this.state.displayedMeat -= 1;
+            this.waveStockLost = true;
+            this.updateMeatVisuals();
+          }
+          this.ui.toast(`${this.zombieLabel(zombie.type)}正在破壞肉舖壁壘！`, "danger");
           if (this.state.baseHealth <= 0) {
             this.finishGame(false);
             return;
@@ -818,41 +1250,86 @@ export class StormGame {
   }
 
   private spawnZombie(order: number): void {
+    const wave = this.state.wave + 1;
     const x = -6 + ((order * 4.7) % 12);
     const z = 20 - (order % 2) * 1.8;
-    const actor = this.instantiateActor("zombie.glb", `zombie-wave-${this.state.wave + 1}-${order}-${this.elapsed}`, new Vector3(x, 0, z), 0.94 + this.state.wave * 0.04);
+    const type: ZombieType = wave % 10 === 0 && order === 1
+      ? "boss"
+      : wave >= 8 && order % 5 === 0
+        ? "brute"
+        : wave >= 4 && order % 3 === 0
+          ? "runner"
+          : "walker";
+    const scale = type === "boss" ? 2.05 : type === "brute" ? 1.4 : type === "runner" ? 0.82 : 0.98;
+    const actor = this.instantiateActor("zombie.glb", `zombie-${type}-${wave}-${order}-${this.elapsed}`, new Vector3(x, 0, z), scale);
+    const baseHp = 3 + Math.floor(wave * 0.72);
+    const hp = Math.round(baseHp * (type === "boss" ? 8 : type === "brute" ? 2.35 : type === "runner" ? 0.72 : 1));
+    const speed = (0.92 + wave * 0.025) * (type === "runner" ? 1.75 : type === "brute" ? 0.72 : type === "boss" ? 0.62 : 1);
     const zombie: ZombieActor = {
       ...actor,
-      hp: 3 + this.state.wave * 2,
+      hp,
+      maxHp: hp,
       alive: true,
-      speed: 0.95 + this.state.wave * 0.15 + (order % 2) * 0.08,
+      speed,
+      baseSpeed: speed,
       attackTimer: 0.2,
+      damage: type === "boss" ? 16 : type === "brute" ? 10 : type === "runner" ? 5 : 6,
+      reward: type === "boss" ? 100 + wave * 5 : type === "brute" ? 14 : type === "runner" ? 8 : 6,
+      type,
+      slowTimer: 0,
     };
     zombie.root.position.y = this.heightAt(x, z);
     this.playAnimation(zombie, "Walk", true);
     this.addActorShadows(zombie);
+    this.addZombieTypeVisual(zombie);
     this.zombies.push(zombie);
   }
 
-  private updateTower(): void {
-    if (!this.state.towerBuilt || !this.state.waveActive) return;
-    const target = this.findNearestZombie(this.towerRoot.position, 17);
-    if (!target) return;
-    const delta = target.root.position.subtract(this.towerRoot.position);
-    this.towerWeapon.rotation.y = Math.atan2(delta.x, delta.z);
-    if (this.towerCooldown > 0) return;
-    this.towerCooldown = 0.92;
-    const arrow = this.instantiateStatic("tower/arrow.glb", `tower-arrow-${this.elapsed}`);
-    arrow.position.copyFrom(this.towerRoot.position.add(new Vector3(0, 3.5, 0)));
-    arrow.scaling.setAll(1.8);
-    this.projectiles.push({ root: arrow, target, progress: 0, start: arrow.position.clone() });
+  private updateTowers(dt: number): void {
+    if (!this.state.waveActive) return;
+    for (const tower of this.towerActors.values()) {
+      const level = this.state.towers[tower.id];
+      if (level <= 0) continue;
+      if (tower.id === "frost") tower.weapon.rotation.z += dt * (0.8 + level * 0.2);
+      const range = tower.id === "cannon" ? 19 + level : 17 + level * 1.5;
+      const target = this.findNearestZombie(tower.root.position, range);
+      if (!target) continue;
+      const delta = target.root.position.subtract(tower.root.position);
+      tower.weapon.rotation.y = Math.atan2(delta.x, delta.z);
+      if (tower.cooldown > 0) continue;
+      tower.cooldown = tower.id === "ballista" ? 0.98 - level * 0.12 : tower.id === "frost" ? 1.25 - level * 0.14 : 2.35 - level * 0.25;
+      let projectile: TransformNode;
+      if (tower.id === "ballista") {
+        projectile = this.instantiateStatic("tower/arrow.glb", `tower-arrow-${this.elapsed}`);
+        projectile.scaling.setAll(1.8);
+      } else {
+        const sphere = MeshBuilder.CreateIcoSphere(`${tower.id}-projectile-${this.elapsed}`, { radius: tower.id === "frost" ? 0.23 : 0.38, subdivisions: 1 }, this.scene);
+        const material = new PBRMaterial(`${tower.id}-projectile-material-${this.elapsed}`, this.scene);
+        material.albedoColor = tower.id === "frost" ? new Color3(0.45, 0.88, 1) : new Color3(0.2, 0.16, 0.12);
+        material.emissiveColor = tower.id === "frost" ? new Color3(0.16, 0.68, 1) : new Color3(1, 0.24, 0.04);
+        material.emissiveIntensity = 1.5;
+        sphere.material = material;
+        projectile = sphere;
+      }
+      projectile.position.copyFrom(tower.root.position.add(new Vector3(0, 3.5, 0)));
+      this.projectiles.push({
+        root: projectile,
+        target,
+        progress: 0,
+        start: projectile.position.clone(),
+        source: tower.id,
+        damage: tower.id === "ballista" ? 2 + level : tower.id === "frost" ? 1 + level : 4 + level * 2,
+        splash: tower.id === "cannon" ? 3 + level * 0.45 : 0,
+        slow: tower.id === "frost" ? 1.7 + level * 0.65 : 0,
+      });
+    }
   }
 
   private updateProjectiles(dt: number): void {
     for (let index = this.projectiles.length - 1; index >= 0; index -= 1) {
       const projectile = this.projectiles[index];
       if (!projectile.target.alive) {
-        projectile.root.dispose(false, true);
+        projectile.root.dispose(false, projectile.source !== "ballista");
         this.projectiles.splice(index, 1);
         continue;
       }
@@ -863,32 +1340,78 @@ export class StormGame {
       projectile.root.rotation.y = Math.atan2(direction.x, direction.z);
       projectile.root.position.y += Math.sin(projectile.progress * Math.PI) * 1.4;
       if (projectile.progress < 1) continue;
-      projectile.target.hp -= 2;
-      this.playAnimation(projectile.target, "HitReact", false);
-      if (projectile.target.hp <= 0) this.killZombie(projectile.target);
-      projectile.root.dispose(false, true);
+      const victims = projectile.splash > 0
+        ? this.zombies.filter((zombie) => zombie.alive && Vector3.Distance(zombie.root.position, projectile.target.root.position) <= projectile.splash)
+        : [projectile.target];
+      for (const victim of victims) {
+        if (projectile.slow > 0) {
+          victim.slowTimer = Math.max(victim.slowTimer, projectile.slow);
+          if (addLoopProgress(this.state, "frost-hits")) this.ui.toast(`循環任務完成 · ✦ ${this.state.quest.loop?.reward ?? 0}`, "ice");
+        }
+        this.damageZombie(victim, projectile.damage, projectile.source);
+      }
+      if (projectile.source === "cannon") {
+        this.createExplosion(projectile.target.root.position, projectile.splash);
+        if (victims.length >= 3 && addLoopProgress(this.state, "cannon-combo")) this.ui.toast(`循環任務完成 · ✦ ${this.state.quest.loop?.reward ?? 0}`, "warm");
+      }
+      projectile.root.dispose(false, projectile.source !== "ballista");
       this.projectiles.splice(index, 1);
     }
   }
 
-  private killZombie(zombie: ZombieActor): void {
+  private damageZombie(zombie: ZombieActor, damage: number, source: DamageSource): void {
+    if (!zombie.alive) return;
+    zombie.hp -= damage;
+    this.state.stats.damageDealt += damage;
+    this.playAnimation(zombie, "HitReact", false);
+    if (zombie.hp <= 0) this.killZombie(zombie, source);
+  }
+
+  private killZombie(zombie: ZombieActor, source: DamageSource): void {
     if (!zombie.alive) return;
     zombie.alive = false;
     this.playAnimation(zombie, "Death", false);
-    this.state.money += 5;
+    this.state.money += zombie.reward;
+    this.state.stats.zombiesKilled += 1;
+    if (source === "player") {
+      this.state.stats.playerKills += 1;
+      this.wavePlayerKills += 1;
+      if (addLoopProgress(this.state, "player-kills")) this.ui.toast(`親手清場完成 · ✦ ${this.state.quest.loop?.reward ?? 0}`, "warm");
+    } else {
+      this.state.stats.towerKills += 1;
+      this.waveTowerKills += 1;
+      if (addLoopProgress(this.state, "tower-kills")) this.ui.toast(`箭雨校準完成 · ✦ ${this.state.quest.loop?.reward ?? 0}`, "ice");
+    }
     this.state.enemiesRemaining = Math.max(0, this.state.enemiesRemaining - 1);
     window.setTimeout(() => zombie.root.setEnabled(false), 1700);
   }
 
   private completeWave(): void {
+    if (!this.waveStockLost && addLoopProgress(this.state, "stock-safe")) this.ui.toast(`完整貨架完成 · ✦ ${this.state.quest.loop?.reward ?? 0}`, "warm");
+    if (this.state.baseHealth >= 75 && addLoopProgress(this.state, "healthy-wall")) this.ui.toast(`不退防線完成 · ✦ ${this.state.quest.loop?.reward ?? 0}`, "ice");
     this.state.waveActive = false;
     this.state.wave += 1;
     this.state.bestWave = Math.max(this.state.bestWave, this.state.wave);
-    const reward = 20 + this.state.wave * 10;
+    this.state.stats.wavesCleared = Math.max(this.state.stats.wavesCleared, this.state.wave);
+    const reward = 28 + this.state.wave * 12 + (this.state.wave % 10 === 0 ? 120 : 0);
     this.state.money += reward;
     saveState(this.state);
     this.ui.toast(`第 ${this.state.wave} 波已清除 · 防守獎金 ✦ ${reward}`, "warm");
-    if (this.state.wave >= 3) window.setTimeout(() => this.finishGame(true), 900);
+    this.processQuests();
+    const cleared = this.zombies.filter((zombie) => !zombie.alive);
+    window.setTimeout(() => {
+      for (const zombie of cleared) {
+        for (const animation of zombie.animations) animation.dispose();
+        zombie.root.dispose(false, false);
+        const index = this.zombies.indexOf(zombie);
+        if (index >= 0) this.zombies.splice(index, 1);
+      }
+    }, 1800);
+    if (this.state.wave >= 30) {
+      this.state.stats.campaignWins += 1;
+      saveState(this.state);
+      window.setTimeout(() => this.finishGame(true), 900);
+    }
   }
 
   private finishGame(won: boolean): void {
@@ -896,9 +1419,17 @@ export class StormGame {
     this.endShown = true;
     this.state.waveActive = false;
     if (won) saveState(this.state);
+    const minutes = Math.max(1, Math.round((performance.now() - this.campaignStartTime) / 60000));
     this.ui.showResult(won, won
-      ? `你守住三波夜襲，肉舖仍在風雪中營業。本次累積資金 ✦ ${this.state.money}。完整 30 波戰役將在後續版本開放。`
-      : `肉舖壁壘遭到突破。保留資金與已建設施，重新集結後再戰。`);
+      ? `第三十次鐘聲穿過風牆，北境肉舖仍在營業。你成為「北境守望者」。`
+      : `肉舖壁壘遭到突破。永久資金、任務、武器、員工與建設都已保留，重新集結後再戰。`, [
+      ["守過波次", `${this.state.wave} / 30`],
+      ["累計擊殺", `${this.state.stats.zombiesKilled}`],
+      ["獵物", `${this.state.stats.cowsKilled}`],
+      ["總營收", `✦ ${this.state.stats.totalEarned}`],
+      ["剩餘資金", `✦ ${this.state.money}`],
+      ["本輪時間", `${minutes} 分`],
+    ]);
   }
 
   private updateAtmosphere(dt: number): void {
@@ -924,41 +1455,21 @@ export class StormGame {
     this.snowEmitter.position.copyFrom(this.camera.target.add(new Vector3(-2, 10, 0)));
   }
 
-  private updateObjective(): void {
-    let id = "hunt";
-    let content: [string, string, string] = ["01", "前往東側牧場", "接近牛隻，按空白鍵或攻擊鍵揮動砍刀。"];
-    if (this.state.waveActive) {
-      id = "defend";
-      content = ["05", `守住第 ${this.state.wave + 1} 波`, "弩塔會自動射擊；你也能靠近殭屍揮砍支援。"];
-    } else if (this.state.wave >= 3) {
-      id = "complete";
-      content = ["06", "北境暫時安全", "三波驗證完成。後續版本將延伸至三十波。"];
-    } else if (this.state.towerBuilt) {
-      id = "wave";
-      content = ["04", "敲響守夜鐘", `按下畫面下方按鈕，啟動第 ${this.state.wave + 1} 波夜襲。`];
-    } else if (this.state.money >= 60) {
-      id = "build";
-      content = ["03", "建造獵風弩塔", "資金已足夠。點擊右上建造按鈕建立第一道防線。"];
-    } else if (this.state.displayedMeat > 0) {
-      id = "sell";
-      content = ["03", "等待旅人購買", "肉品已上架。顧客會沿雪徑抵達並自動付款。"];
-    } else if (this.state.carriedMeat > 0) {
-      id = "deliver";
-      content = ["02", "把肉送回肉舖", "走近西側亮著暖燈的紅色攤位，肉品會自動陳列。"];
+  private processQuests(): void {
+    const completions = updateMainQuests(this.state);
+    for (const [index, completion] of completions.entries()) {
+      window.setTimeout(() => this.ui.completeQuest(completion), index * 820);
     }
-    if (id === this.lastObjective) return;
-    this.lastObjective = id;
-    this.ui.setObjective(...content);
   }
 
   private updateContextPrompt(): void {
     if (this.state.waveActive && this.findNearestZombie(this.player.root.position, 3.1)) {
       this.ui.setPrompt("SPACE", "揮砍殭屍", true);
-    } else if (this.cow.alive && Vector3.Distance(this.player.root.position, this.cow.root.position) < 3.3) {
-      this.ui.setPrompt("SPACE", "揮砍牛隻", true);
+    } else if (this.findNearestCow(this.player.root.position, 3.3)) {
+      this.ui.setPrompt("SPACE", `${this.state.weapon === "smg" ? "掃射" : this.state.weapon === "axe" ? "橫掃" : "揮砍"}牛隻`, true);
     } else if (this.state.carriedMeat > 0 && Vector3.Distance(this.player.root.position, STALL_POSITION) < 5) {
       this.ui.setPrompt("AUTO", "靠近攤位自動陳列", true);
-    } else if (!this.state.towerBuilt && Vector3.Distance(this.player.root.position, TOWER_POSITION) < 4) {
+    } else if (this.state.towers.ballista === 0 && Vector3.Distance(this.player.root.position, TOWER_POSITIONS.ballista) < 4) {
       this.ui.setPrompt("B", "建造獵風弩塔 · ✦ 60", true);
     } else {
       this.ui.setPrompt("WASD", "穿越雪地 · 空白鍵揮砍", true);
@@ -967,7 +1478,7 @@ export class StormGame {
 
   private instantiateActor(file: string, name: string, position: Vector3, scale: number): Actor {
     const container = this.assets.get(file)!;
-    const entries = container.instantiateModelsToScene((source) => `${name}-${source}`, false, { doNotInstantiate: true });
+    const entries = container.instantiateModelsToScene((source) => `${name}-${source}`, false, { doNotInstantiate: false });
     const root = new TransformNode(name, this.scene);
     for (const node of entries.rootNodes) node.parent = root;
     root.position.copyFrom(position);
@@ -1008,7 +1519,7 @@ export class StormGame {
   }
 
   private castShadows(mesh: AbstractMesh): void {
-    mesh.receiveShadows = true;
+    if (mesh.getClassName() !== "InstancedMesh") mesh.receiveShadows = true;
     this.shadows.addShadowCaster(mesh, true);
   }
 
@@ -1107,6 +1618,176 @@ export class StormGame {
     particles.gravity = new Vector3(0, 1, 0);
     particles.blendMode = ParticleSystem.BLENDMODE_ADD;
     particles.start();
+  }
+
+  private createWeaponModel(): void {
+    this.weaponModel?.dispose(false, true);
+    const root = new TransformNode(`player-weapon-${this.state.weapon}`, this.scene);
+    root.parent = this.player.root;
+    root.position.set(0.52, 1.18, 0.24);
+    root.rotation.set(0.12, 0, -0.18);
+    const metal = new PBRMaterial(`weapon-metal-${this.state.weapon}`, this.scene);
+    metal.albedoColor = this.state.weapon === "axe" ? new Color3(0.35, 0.42, 0.43) : new Color3(0.18, 0.22, 0.23);
+    metal.metallic = 0.78;
+    metal.roughness = 0.34;
+    const wood = new PBRMaterial(`weapon-grip-${this.state.weapon}`, this.scene);
+    wood.albedoColor = new Color3(0.27, 0.13, 0.07);
+    wood.roughness = 0.9;
+    if (this.state.weapon === "machete") {
+      const grip = MeshBuilder.CreateCylinder("machete-grip", { height: 0.72, diameter: 0.17, tessellation: 8 }, this.scene);
+      grip.parent = root;
+      grip.material = wood;
+      const blade = MeshBuilder.CreateBox("machete-blade", { width: 0.14, height: 1.22, depth: 0.08 }, this.scene);
+      blade.parent = root;
+      blade.position.y = 0.88;
+      blade.rotation.z = -0.06;
+      blade.material = metal;
+      this.castShadows(blade);
+    } else if (this.state.weapon === "axe") {
+      const handle = MeshBuilder.CreateCylinder("axe-handle", { height: 1.75, diameter: 0.16, tessellation: 8 }, this.scene);
+      handle.parent = root;
+      handle.position.y = 0.35;
+      handle.material = wood;
+      const head = MeshBuilder.CreateCylinder("axe-head", { height: 0.2, diameterTop: 0.42, diameterBottom: 0.92, tessellation: 6 }, this.scene);
+      head.parent = root;
+      head.position.set(0, 1.18, 0);
+      head.rotation.z = Math.PI / 2;
+      head.material = metal;
+      this.castShadows(head);
+    } else {
+      root.position.set(0.42, 1.12, 0.44);
+      root.rotation.x = Math.PI / 2;
+      const body = MeshBuilder.CreateBox("smg-body", { width: 0.45, height: 0.38, depth: 1.05 }, this.scene);
+      body.parent = root;
+      body.material = metal;
+      const barrel = MeshBuilder.CreateCylinder("smg-barrel", { height: 0.9, diameter: 0.11, tessellation: 8 }, this.scene);
+      barrel.parent = root;
+      barrel.position.z = 0.9;
+      barrel.rotation.x = Math.PI / 2;
+      barrel.material = metal;
+      const magazine = MeshBuilder.CreateBox("smg-magazine", { width: 0.23, height: 0.62, depth: 0.27 }, this.scene);
+      magazine.parent = root;
+      magazine.position.set(0, -0.42, 0.05);
+      magazine.rotation.x = -0.18;
+      magazine.material = wood;
+      const flash = MeshBuilder.CreateIcoSphere("smg-muzzle-flash", { radius: 0.24, subdivisions: 1 }, this.scene);
+      flash.parent = root;
+      flash.position.z = 1.38;
+      const flashMaterial = new PBRMaterial("smg-muzzle-flash-material", this.scene);
+      flashMaterial.albedoColor = new Color3(1, 0.62, 0.08);
+      flashMaterial.emissiveColor = new Color3(1, 0.18, 0.01);
+      flashMaterial.emissiveIntensity = 2;
+      flash.material = flashMaterial;
+      flash.setEnabled(false);
+      this.muzzleFlash = flash;
+      this.castShadows(body);
+    }
+    this.weaponModel = root;
+  }
+
+  private createAttackRing(color: Color3, position = this.player.root.position): void {
+    const ring = MeshBuilder.CreateTorus(`attack-ring-${this.elapsed}`, { diameter: 2.2, thickness: 0.08, tessellation: 32 }, this.scene);
+    ring.position.set(position.x, this.heightAt(position.x, position.z) + 0.15, position.z);
+    const material = new PBRMaterial(`attack-ring-material-${this.elapsed}`, this.scene);
+    material.albedoColor = color;
+    material.emissiveColor = color;
+    material.emissiveIntensity = 1.2;
+    material.alpha = 0.8;
+    ring.material = material;
+    let progress = 0;
+    const animate = (): void => {
+      progress += 0.12;
+      ring.scaling.setAll(1 + progress * 2.4);
+      material.alpha = Math.max(0, 0.8 - progress);
+      if (progress < 0.85) requestAnimationFrame(animate);
+      else ring.dispose(false, true);
+    };
+    animate();
+  }
+
+  private createExplosion(position: Vector3, radius: number): void {
+    const blast = MeshBuilder.CreateIcoSphere(`cannon-blast-${this.elapsed}`, { radius: 0.5, subdivisions: 2 }, this.scene);
+    blast.position.set(position.x, this.heightAt(position.x, position.z) + 0.8, position.z);
+    const material = new PBRMaterial(`cannon-blast-material-${this.elapsed}`, this.scene);
+    material.albedoColor = new Color3(1, 0.24, 0.03);
+    material.emissiveColor = new Color3(1, 0.08, 0.01);
+    material.emissiveIntensity = 2.5;
+    material.alpha = 0.82;
+    blast.material = material;
+    const light = new PointLight(`cannon-blast-light-${this.elapsed}`, blast.position.clone(), this.scene);
+    light.diffuse = new Color3(1, 0.24, 0.04);
+    light.intensity = this.state.quality === "低" ? 0 : 12;
+    light.range = radius * 2.2;
+    let progress = 0;
+    const animate = (): void => {
+      progress += 0.15;
+      blast.scaling.setAll(1 + progress * radius);
+      material.alpha = Math.max(0, 0.82 - progress);
+      light.intensity *= 0.62;
+      if (progress < 0.9) requestAnimationFrame(animate);
+      else {
+        blast.dispose(false, true);
+        light.dispose();
+      }
+    };
+    animate();
+  }
+
+  private addZombieTypeVisual(zombie: ZombieActor): void {
+    const colors: Record<ZombieType, Color3> = {
+      walker: new Color3(0.36, 0.55, 0.28),
+      runner: new Color3(0.75, 0.64, 0.14),
+      brute: new Color3(0.55, 0.18, 0.12),
+      boss: new Color3(0.48, 0.08, 0.26),
+    };
+    const ring = MeshBuilder.CreateTorus(`${zombie.type}-type-tint`, { diameter: 1.45, thickness: zombie.type === "boss" ? 0.12 : 0.06, tessellation: 20 }, this.scene);
+    ring.parent = zombie.root;
+    ring.position.y = 0.08;
+    const material = new PBRMaterial(`${zombie.type}-shared-tint-${this.elapsed}`, this.scene);
+    material.albedoColor = colors[zombie.type];
+    material.emissiveColor = colors[zombie.type].scale(zombie.type === "walker" ? 0.2 : 0.65);
+    material.emissiveIntensity = 1;
+    ring.material = material;
+    if (zombie.type === "brute" || zombie.type === "boss") {
+      for (const side of [-1, 1]) {
+        const plate = MeshBuilder.CreateBox(`${zombie.type}-plate-${side}`, { width: 0.62, height: 0.28, depth: 0.52 }, this.scene);
+        plate.parent = zombie.root;
+        plate.position.set(side * 0.48, 1.65, 0);
+        plate.rotation.z = side * 0.25;
+        plate.material = material;
+      }
+    }
+  }
+
+  private allCows(): CowActor[] {
+    return this.strongCow ? [this.cow, this.strongCow] : [this.cow];
+  }
+
+  private findNearestCow(origin: Vector3, range: number): CowActor | undefined {
+    let nearest: CowActor | undefined;
+    let bestDistance = range;
+    for (const cow of this.allCows()) {
+      if (!cow.alive) continue;
+      const distance = Vector3.Distance(origin, cow.root.position);
+      if (distance < bestDistance) {
+        nearest = cow;
+        bestDistance = distance;
+      }
+    }
+    return nearest;
+  }
+
+  private zombieLabel(type: ZombieType): string {
+    return type === "runner" ? "奔行者" : type === "brute" ? "蠻屍" : type === "boss" ? "巨型 Boss" : "行屍";
+  }
+
+  private detectQuality(): "低" | "中" | "高" {
+    const coarse = matchMedia("(pointer: coarse)").matches;
+    const cores = navigator.hardwareConcurrency || 4;
+    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
+    if (memory <= 3 || cores <= 4 || coarse && window.devicePixelRatio >= 3) return "低";
+    if (coarse || memory <= 6 || cores <= 6) return "中";
+    return "高";
   }
 
   private findNearestZombie(origin: Vector3, range: number): ZombieActor | undefined {

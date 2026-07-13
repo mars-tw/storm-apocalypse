@@ -12,8 +12,9 @@ async function bootstrap(): Promise<void> {
   const game = new StormGame(canvas, ui, loadState());
   ui.onStart = () => game.start();
   ui.onAttack = () => game.attack();
-  ui.onBuild = () => game.buildTower();
   ui.onWave = () => game.startWave();
+  ui.onShopAction = (category, id) => game.shopAction(category, id);
+  ui.onTowerAction = (id) => game.towerAction(id);
   ui.onReset = () => resetSave();
 
   try {
