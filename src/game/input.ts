@@ -4,6 +4,7 @@ export class InputController {
   private readonly keys = new Set<string>();
   private joystick = Vector2.Zero();
   private attackQueued = false;
+  private attackHeld = false;
   private buildQueued = false;
   private waveQueued = false;
   private joystickPointer: number | null = null;
@@ -18,6 +19,7 @@ export class InputController {
     joystickZone.addEventListener("pointermove", this.onJoystickMove);
     joystickZone.addEventListener("pointerup", this.onJoystickUp);
     joystickZone.addEventListener("pointercancel", this.onJoystickUp);
+    window.addEventListener("blur", this.onBlur);
   }
 
   get movement(): Vector2 {
@@ -29,8 +31,17 @@ export class InputController {
     return combined.lengthSquared() > 1 ? combined.normalize() : combined;
   }
 
-  queueAttack(): void {
+  startAttack(): void {
     this.attackQueued = true;
+    this.attackHeld = true;
+  }
+
+  stopAttack(): void {
+    this.attackHeld = false;
+  }
+
+  get isAttackHeld(): boolean {
+    return this.attackHeld;
   }
 
   queueBuild(): void {
@@ -62,17 +73,25 @@ export class InputController {
   private readonly onKeyDown = (event: KeyboardEvent): void => {
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) event.preventDefault();
     this.keys.add(event.code);
-    if (!event.repeat && (event.code === "Space" || event.code === "KeyE")) this.attackQueued = true;
+    if (event.code === "Space" || event.code === "KeyE") {
+      if (!event.repeat) this.attackQueued = true;
+      this.attackHeld = true;
+    }
     if (!event.repeat && event.code === "KeyB") this.buildQueued = true;
     if (!event.repeat && event.code === "KeyN") this.waveQueued = true;
   };
 
   private readonly onKeyUp = (event: KeyboardEvent): void => {
     this.keys.delete(event.code);
+    if (event.code === "Space" || event.code === "KeyE") {
+      this.attackHeld = this.keys.has("Space") || this.keys.has("KeyE");
+    }
   };
 
   private readonly onJoystickDown = (event: PointerEvent): void => {
+    event.preventDefault();
     this.joystickPointer = event.pointerId;
+    this.joystickZone.classList.add("is-pressed");
     this.joystickZone.setPointerCapture(event.pointerId);
     const bounds = this.joystickZone.getBoundingClientRect();
     this.joystickCenter.set(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
@@ -86,7 +105,18 @@ export class InputController {
   private readonly onJoystickUp = (event: PointerEvent): void => {
     if (event.pointerId !== this.joystickPointer) return;
     this.joystickPointer = null;
+    this.joystickZone.classList.remove("is-pressed");
     this.joystick.setAll(0);
+    this.knob.style.transform = "translate3d(0, 0, 0)";
+  };
+
+  private readonly onBlur = (): void => {
+    this.keys.clear();
+    this.attackHeld = false;
+    this.attackQueued = false;
+    this.joystickPointer = null;
+    this.joystick.setAll(0);
+    this.joystickZone.classList.remove("is-pressed");
     this.knob.style.transform = "translate3d(0, 0, 0)";
   };
 

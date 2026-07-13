@@ -19,6 +19,7 @@ export class UiController {
   private readonly baseHealth: HTMLElement;
   private readonly baseHealthFill: HTMLElement;
   private readonly questPanel: HTMLElement;
+  private readonly panelScrim: HTMLElement;
   private readonly questToggle: HTMLButtonElement;
   private readonly questChapter: HTMLElement;
   private readonly questTitle: HTMLElement;
@@ -43,7 +44,8 @@ export class UiController {
   private renderedChapter = 0;
 
   onStart: () => void = () => undefined;
-  onAttack: () => void = () => undefined;
+  onAttackStart: () => void = () => undefined;
+  onAttackEnd: () => void = () => undefined;
   onWave: () => void = () => undefined;
   onReset: () => void = () => undefined;
   onShopAction: (category: ShopCategory, id: string) => void = () => undefined;
@@ -69,6 +71,7 @@ export class UiController {
       </header>
 
       <button class="panel-toggle panel-toggle--quest" id="quest-toggle" aria-label="開關生存手冊" aria-controls="quest-panel" aria-expanded="false">手冊 01 · 0/1</button>
+      <div class="panel-scrim" id="panel-scrim" aria-hidden="true"></div>
       <aside class="quest-panel" id="quest-panel">
         <div class="quest-panel__line"><span id="quest-chapter">生存手冊 · 01 / 15</span><i></i><button id="quest-close" aria-label="收合生存手冊">×</button></div>
         <h2 id="quest-title">前往東側牧場</h2>
@@ -128,6 +131,7 @@ export class UiController {
     this.performance = get("performance-chip");
     this.baseHealth = get("base-health");
     this.baseHealthFill = get("base-health-fill");
+    this.panelScrim = get("panel-scrim");
     this.questPanel = get("quest-panel");
     this.questToggle = get("quest-toggle");
     this.questChapter = get("quest-chapter");
@@ -151,31 +155,66 @@ export class UiController {
     this.resultCopy = get("result-copy");
     this.resultStats = get("result-stats");
 
+    const clearPressed = (): void => {
+      for (const button of root.querySelectorAll("button.is-pressed")) button.classList.remove("is-pressed");
+    };
+    root.addEventListener("pointerdown", (event) => {
+      (event.target as HTMLElement).closest<HTMLButtonElement>("button:not(:disabled)")?.classList.add("is-pressed");
+    });
+    root.addEventListener("pointerup", clearPressed);
+    root.addEventListener("pointercancel", clearPressed);
+    window.addEventListener("blur", () => {
+      clearPressed();
+      this.onAttackEnd();
+    });
+
+    const bindImmediate = (button: HTMLButtonElement, action: () => void): void => {
+      button.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || button.disabled) return;
+        event.preventDefault();
+        action();
+      });
+      button.addEventListener("click", (event) => {
+        if (event.detail === 0) action();
+      });
+    };
+    const shopToggle = get<HTMLButtonElement>("shop-toggle");
+    const setOpenPanel = (panel: "quest" | "shop" | null): void => {
+      const questOpen = panel === "quest";
+      const shopOpen = panel === "shop";
+      this.questPanel.classList.toggle("is-open", questOpen);
+      this.commandPanel.classList.toggle("is-open", shopOpen);
+      this.questToggle.setAttribute("aria-expanded", String(questOpen));
+      shopToggle.setAttribute("aria-expanded", String(shopOpen));
+      this.panelScrim.classList.toggle("is-active", this.touchMode && (questOpen || shopOpen));
+    };
+
     this.startButton.addEventListener("click", () => this.onStart());
-    this.attackButton.addEventListener("pointerdown", (event) => { event.preventDefault(); this.onAttack(); });
-    this.waveButton.addEventListener("click", () => this.onWave());
+    this.attackButton.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      this.attackButton.setPointerCapture(event.pointerId);
+      this.onAttackStart();
+    });
+    const stopAttack = (event: PointerEvent): void => {
+      if (this.attackButton.hasPointerCapture(event.pointerId)) this.attackButton.releasePointerCapture(event.pointerId);
+      this.attackButton.classList.remove("is-pressed");
+      this.onAttackEnd();
+    };
+    this.attackButton.addEventListener("pointerup", stopAttack);
+    this.attackButton.addEventListener("pointercancel", stopAttack);
+    this.attackButton.addEventListener("contextmenu", (event) => event.preventDefault());
+    bindImmediate(this.waveButton, () => this.onWave());
     get("result-button").addEventListener("click", () => location.reload());
     get("reset-button").addEventListener("click", () => this.onReset());
-    const shopToggle = get<HTMLButtonElement>("shop-toggle");
-    shopToggle.addEventListener("click", () => {
-      this.questPanel.classList.remove("is-open");
-      this.commandPanel.classList.toggle("is-open");
-      this.questToggle.setAttribute("aria-expanded", "false");
-      shopToggle.setAttribute("aria-expanded", String(this.commandPanel.classList.contains("is-open")));
-    });
-    get("shop-close").addEventListener("click", () => {
-      this.commandPanel.classList.remove("is-open");
-      shopToggle.setAttribute("aria-expanded", "false");
-    });
-    this.questToggle.addEventListener("click", () => {
-      this.commandPanel.classList.remove("is-open");
-      this.questPanel.classList.toggle("is-open");
-      shopToggle.setAttribute("aria-expanded", "false");
-      this.questToggle.setAttribute("aria-expanded", String(this.questPanel.classList.contains("is-open")));
-    });
-    get("quest-close").addEventListener("click", () => {
-      this.questPanel.classList.remove("is-open");
-      this.questToggle.setAttribute("aria-expanded", "false");
+    bindImmediate(shopToggle, () => setOpenPanel(this.commandPanel.classList.contains("is-open") ? null : "shop"));
+    bindImmediate(get<HTMLButtonElement>("shop-close"), () => setOpenPanel(null));
+    bindImmediate(this.questToggle, () => setOpenPanel(this.questPanel.classList.contains("is-open") ? null : "quest"));
+    bindImmediate(get<HTMLButtonElement>("quest-close"), () => setOpenPanel(null));
+    this.panelScrim.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setOpenPanel(null);
     });
     this.commandPanel.addEventListener("click", (event) => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(".shop-item");

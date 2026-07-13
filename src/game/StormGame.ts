@@ -167,6 +167,8 @@ export class StormGame {
   private waveTowerKills = 0;
   private waveStartTime = 0;
   private campaignStartTime = performance.now();
+  private attackCount = 0;
+  private readonly smokeMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke");
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -236,6 +238,11 @@ export class StormGame {
       if (this.player) {
         canvas.dataset.playerX = this.player.root.position.x.toFixed(2);
         canvas.dataset.playerZ = this.player.root.position.z.toFixed(2);
+        canvas.dataset.weapon = this.state.weapon;
+        canvas.dataset.attackCount = this.attackCount.toString();
+        canvas.dataset.cowsKilled = this.state.stats.cowsKilled.toString();
+        canvas.dataset.playerKills = this.state.stats.playerKills.toString();
+        canvas.dataset.activeZombies = this.zombies.filter((zombie) => zombie.alive).length.toString();
       }
     });
     this.input = new InputController(ui.joystick);
@@ -245,7 +252,7 @@ export class StormGame {
 
     window.addEventListener("resize", () => this.engine.resize());
     this.engine.runRenderLoop(() => {
-      const dt = Math.min(this.engine.getDeltaTime() / 1000, 0.05);
+      const dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.05);
       this.update(dt);
       this.scene.render();
     });
@@ -287,7 +294,8 @@ export class StormGame {
     this.ui.toast("暴風正在增強。先去東側牧場取肉。", "ice");
   }
 
-  attack(): void { this.input.queueAttack(); }
+  startAttack(): void { this.input.startAttack(); }
+  stopAttack(): void { this.input.stopAttack(); }
   startWave(): void { this.input.queueWave(); }
 
   shopAction(category: "weapon" | "employee" | "pasture", id: string): void {
@@ -715,7 +723,8 @@ export class StormGame {
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
     for (const tower of this.towerActors.values()) tower.cooldown = Math.max(0, tower.cooldown - dt);
     this.handleMovement(dt);
-    if (this.input.consumeAttack()) this.performAttack();
+    const attackRequested = this.input.consumeAttack() || this.state.weapon === "smg" && this.input.isAttackHeld;
+    if (attackRequested) this.performAttack();
     if (this.input.consumeBuild()) this.buyOrUpgradeTower("ballista");
     if (this.input.consumeWave()) this.tryStartWave();
     this.autoDeposit();
@@ -772,6 +781,7 @@ export class StormGame {
 
   private performAttack(): void {
     if (this.attackCooldown > 0) return;
+    this.attackCount += 1;
     const renderCanvas = this.engine.getRenderingCanvas();
     if (renderCanvas) renderCanvas.dataset.lastAttack = Math.round(performance.now()).toString();
     const weapon = this.state.weapon;
@@ -782,13 +792,13 @@ export class StormGame {
         this.muzzleFlash.setEnabled(true);
         window.setTimeout(() => this.muzzleFlash?.setEnabled(false), 70);
       }
-      const target = this.findNearestZombie(this.player.root.position, 13) ?? this.findNearestCow(this.player.root.position, 10);
+      const target = this.findNearestZombie(this.player.root.position, 13) ?? this.findNearestCow(this.player.root.position, 16);
       if (target && "type" in target) {
         for (let shot = 0; shot < 3; shot += 1) this.damageZombie(target, 2, "player");
         return;
       }
       if (target) {
-        this.damageCow(target, 2);
+        for (let shot = 0; shot < 3; shot += 1) this.damageCow(target, 2);
         return;
       }
     } else if (weapon === "axe") {
@@ -1809,6 +1819,7 @@ export class StormGame {
   }
 
   private detectQuality(): "低" | "中" | "高" {
+    if (this.smokeMode) return "低";
     const coarse = matchMedia("(pointer: coarse)").matches;
     const touch = navigator.maxTouchPoints > 0 || coarse;
     const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
