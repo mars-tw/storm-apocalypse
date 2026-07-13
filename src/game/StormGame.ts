@@ -113,8 +113,10 @@ const ASSET_FILES = [
   "pine-a.glb", "pine-b.glb", "rock.glb",
   "fence.glb", "fence-gate.glb", "holiday/cabin-wall.glb", "holiday/cabin-wreath.glb",
   "holiday/cabin-window.glb", "holiday/cabin-door.glb", "holiday/cabin-roof.glb", "holiday/cabin-roof-point.glb",
-  "holiday/lantern.glb", "holiday/bench.glb", "tower/tower-body.glb", "tower/tower-weapon.glb",
-  "tower/arrow.glb", "campfire-stones.glb",
+  "holiday/lantern.glb", "tower/arrow.glb", "campfire-stones.glb",
+  "custom/butcher-stall.glb", "custom/cash-register.glb", "custom/doghouse.glb",
+  "custom/tower-ballista.glb", "custom/tower-frost.glb", "custom/tower-cannon.glb",
+  "custom/meat-slice.glb", "custom/coin.glb", "custom/boss-zombie.glb",
 ] as const;
 
 const SHOP_POSITION = new Vector3(-8, 0, -4);
@@ -176,6 +178,7 @@ export class StormGame {
   private performanceTier = 0;
   private renderPixelRatio = 1;
   private readonly smokeMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke");
+  private readonly showcaseMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("showcase");
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -297,6 +300,12 @@ export class StormGame {
   }
 
   async initialize(): Promise<void> {
+    if (this.showcaseMode) {
+      this.state.stallLevel = 4;
+      this.state.displayedMeat = 6;
+      this.state.towers = { ballista: 1, frost: 1, cannon: 1 };
+      this.state.employees = { ...this.state.employees, cashier: true, dog: true };
+    }
     let loaded = 0;
     let nextAsset = 0;
     const fileProgress = new Map<string, number>();
@@ -510,7 +519,24 @@ export class StormGame {
     place("holiday/cabin-roof-point.glb", new Vector3(3.12, 2.46, 0), Math.PI, 1.62);
     place("holiday/lantern.glb", new Vector3(-1.15, 2.25, -2.23), Math.PI, 1.25);
     place("holiday/lantern.glb", new Vector3(1.15, 2.25, -2.23), Math.PI, 1.25);
-    place("holiday/bench.glb", new Vector3(0, 0.05, -3.1), 0, 2.2);
+    place("custom/butcher-stall.glb", new Vector3(0, 0, -3.05), 0, 1);
+
+    const checkout = this.instantiateStatic("custom/cash-register.glb", "butcher-checkout");
+    checkout.position.set(-5.65, this.heightAt(-5.65, -6.3), -6.3);
+    checkout.rotation.y = -Math.PI / 2;
+    checkout.scaling.setAll(0.82);
+
+    const doghouse = this.instantiateStatic("custom/doghouse.glb", "shepherd-doghouse");
+    doghouse.position.set(-5.15, this.heightAt(-5.15, -8.45), -8.45);
+    doghouse.rotation.y = -0.28;
+    doghouse.scaling.setAll(0.84);
+
+    for (let index = 0; index < 3; index += 1) {
+      const coin = this.instantiateStatic("custom/coin.glb", `checkout-coin-${index}`);
+      coin.position.set(-5.48 + index * 0.08, checkout.position.y + 1.7 + index * 0.025, -6.18 + index * 0.04);
+      coin.rotation.set(Math.PI / 2, index * 0.35, 0);
+      coin.scaling.setAll(0.2);
+    }
 
     const signTexture = new DynamicTexture("butcher-sign-texture", { width: 512, height: 192 }, this.scene, true);
     const context = signTexture.getContext() as unknown as CanvasRenderingContext2D;
@@ -546,24 +572,6 @@ export class StormGame {
       glowPane.position.set(x, 1.5 + shop.position.y, -5.74);
       glowPane.rotation.y = Math.PI;
       glowPane.material = warmWindow;
-    }
-
-    const awningMaterial = new PBRMaterial("market-awning", this.scene);
-    awningMaterial.albedoColor = new Color3(0.33, 0.06, 0.045);
-    awningMaterial.roughness = 0.78;
-    const awning = MeshBuilder.CreateBox("weathered-red-awning", { width: 5.2, height: 0.16, depth: 2.1 }, this.scene);
-    awning.position.set(-8, 2.5 + this.heightAt(-8, -6.4), -6.45);
-    awning.rotation.x = -0.14;
-    awning.material = awningMaterial;
-    this.castShadows(awning);
-    const postMaterial = new PBRMaterial("dark-timber", this.scene);
-    postMaterial.albedoColor = new Color3(0.18, 0.09, 0.055);
-    postMaterial.roughness = 0.9;
-    for (const x of [-10.35, -5.65]) {
-      const post = MeshBuilder.CreateCylinder(`market-post-${x}`, { height: 2.7, diameter: 0.16, tessellation: 8 }, this.scene);
-      post.position.set(x, 1.35 + this.heightAt(x, -6.45), -6.45);
-      post.material = postMaterial;
-      this.castShadows(post);
     }
 
     this.createCampfire(new Vector3(-11.8, 0, 1.8));
@@ -695,45 +703,15 @@ export class StormGame {
 
       const root = new TransformNode(`${id}-tower-root`, this.scene);
       root.position.set(position.x, this.heightAt(position.x, position.z), position.z);
-      const body = this.instantiateStatic("tower/tower-body.glb", `${id}-tower-body`);
-      body.parent = root;
-      body.scaling.setAll(2.2);
-      const weapon = new TransformNode(`${id}-tower-weapon-pivot`, this.scene);
-      weapon.parent = root;
-      weapon.position.y = 3.15;
-      if (id === "ballista") {
-        const model = this.instantiateStatic("tower/tower-weapon.glb", "ballista-tower-weapon");
-        model.parent = weapon;
-        model.scaling.setAll(1.7);
-      } else if (id === "frost") {
-        const orb = MeshBuilder.CreateIcoSphere("frost-orb", { radius: 0.62, subdivisions: 2 }, this.scene);
-        orb.parent = weapon;
-        const material = new PBRMaterial("frost-orb-material", this.scene);
-        material.albedoColor = new Color3(0.34, 0.78, 0.98);
-        material.emissiveColor = new Color3(0.12, 0.62, 0.9);
-        material.emissiveIntensity = 1.4;
-        material.roughness = 0.22;
-        orb.material = material;
-        const ring = MeshBuilder.CreateTorus("frost-orb-ring", { diameter: 1.75, thickness: 0.08, tessellation: 32 }, this.scene);
-        ring.parent = weapon;
-        ring.material = material;
-        this.castShadows(orb);
-      } else {
-        const barrel = MeshBuilder.CreateCylinder("cannon-barrel", { height: 2.3, diameter: 0.55, tessellation: 12 }, this.scene);
-        barrel.parent = weapon;
-        barrel.rotation.x = Math.PI / 2;
-        barrel.position.z = 0.7;
-        const material = new PBRMaterial("cannon-metal-material", this.scene);
-        material.albedoColor = new Color3(0.19, 0.21, 0.22);
-        material.metallic = 0.75;
-        material.roughness = 0.38;
-        barrel.material = material;
-        const collar = MeshBuilder.CreateSphere("cannon-collar", { diameter: 1.3, segments: 12 }, this.scene);
-        collar.parent = weapon;
-        collar.material = material;
-        this.castShadows(barrel);
-        this.castShadows(collar);
-      }
+      const towerFile: Record<TowerId, string> = {
+        ballista: "custom/tower-ballista.glb",
+        frost: "custom/tower-frost.glb",
+        cannon: "custom/tower-cannon.glb",
+      };
+      const model = this.instantiateStatic(towerFile[id], `${id}-custom-tower`);
+      model.parent = root;
+      const weapon = model.getChildTransformNodes(false).find((node) => node.name.includes("AimPivot")) ?? model;
+      weapon.rotationQuaternion = null;
       root.setEnabled(this.state.towers[id] > 0);
       pad.setEnabled(this.state.towers[id] === 0);
       this.towerActors.set(id, { id, root, weapon, pad, cooldown: 0 });
@@ -1346,8 +1324,8 @@ export class StormGame {
         : wave >= 4 && order % 3 === 0
           ? "runner"
           : "walker";
-    const scale = type === "boss" ? 2.05 : type === "brute" ? 1.4 : type === "runner" ? 0.82 : 0.98;
-    const actor = this.instantiateActor("zombie.glb", `zombie-${type}-${wave}-${order}-${this.elapsed}`, new Vector3(x, 0, z), scale);
+    const scale = type === "boss" ? 1.05 : type === "brute" ? 1.4 : type === "runner" ? 0.82 : 0.98;
+    const actor = this.instantiateActor(type === "boss" ? "custom/boss-zombie.glb" : "zombie.glb", `zombie-${type}-${wave}-${order}-${this.elapsed}`, new Vector3(x, 0, z), scale);
     const baseHp = 3 + Math.floor(wave * 0.72);
     const hp = Math.round(baseHp * (type === "boss" ? 8 : type === "brute" ? 2.35 : type === "runner" ? 0.72 : 1));
     const speed = (0.92 + wave * 0.025) * (type === "runner" ? 1.75 : type === "brute" ? 0.72 : type === "boss" ? 0.62 : 1);
@@ -1675,33 +1653,8 @@ export class StormGame {
   }
 
   private createMeatPiece(name: string, scale: number): TransformNode {
-    const root = new TransformNode(name, this.scene);
+    const root = this.instantiateStatic("custom/meat-slice.glb", name);
     root.scaling.setAll(scale);
-    const meatMaterial = this.scene.getMaterialByName("fresh-meat-material") as PBRMaterial | null ?? (() => {
-      const material = new PBRMaterial("fresh-meat-material", this.scene);
-      material.albedoColor = new Color3(0.55, 0.055, 0.035);
-      material.roughness = 0.6;
-      material.clearCoat.isEnabled = true;
-      material.clearCoat.intensity = 0.25;
-      return material;
-    })();
-    const fatMaterial = this.scene.getMaterialByName("marrow-material") as PBRMaterial | null ?? (() => {
-      const material = new PBRMaterial("marrow-material", this.scene);
-      material.albedoColor = new Color3(0.94, 0.78, 0.62);
-      material.roughness = 0.75;
-      return material;
-    })();
-    const steak = MeshBuilder.CreateCapsule(`${name}-steak`, { height: 1.35, radius: 0.48, tessellation: 12 }, this.scene);
-    steak.parent = root;
-    steak.scaling.z = 0.34;
-    steak.material = meatMaterial;
-    const bone = MeshBuilder.CreateCylinder(`${name}-bone`, { height: 0.39, diameter: 0.34, tessellation: 12 }, this.scene);
-    bone.parent = root;
-    bone.position.set(0.15, 0.19, 0.18);
-    bone.rotation.x = Math.PI / 2;
-    bone.material = fatMaterial;
-    this.castShadows(steak);
-    this.castShadows(bone);
     return root;
   }
 
@@ -1888,7 +1841,7 @@ export class StormGame {
     material.emissiveColor = colors[zombie.type].scale(zombie.type === "walker" ? 0.2 : 0.65);
     material.emissiveIntensity = 1;
     ring.material = material;
-    if (zombie.type === "brute" || zombie.type === "boss") {
+    if (zombie.type === "brute") {
       for (const side of [-1, 1]) {
         const plate = MeshBuilder.CreateBox(`${zombie.type}-plate-${side}`, { width: 0.62, height: 0.28, depth: 0.52 }, this.scene);
         plate.parent = zombie.root;
