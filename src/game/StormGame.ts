@@ -31,6 +31,7 @@ import {
 import "@babylonjs/loaders/glTF";
 import { EMPLOYEES, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerUpgradeCost } from "./content";
 import { InputController } from "./input";
+import { detectDeviceQuality, type QualityLevel } from "./quality";
 import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
 import { creditIncome, saveState, type EmployeeId, type RuntimeState, type TowerId, type WeaponId } from "./state";
 import type { UiController } from "./ui";
@@ -287,7 +288,7 @@ export class StormGame {
     this.createDistantStorm();
 
     window.addEventListener("resize", () => this.engine.resize());
-    if (lowQuality) window.setInterval(() => this.monitorMobilePerformance(), 2000);
+    window.setInterval(() => this.monitorPerformance(), 2000);
     this.engine.runRenderLoop(() => {
       const dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.1);
       this.update(dt);
@@ -1920,8 +1921,8 @@ export class StormGame {
     return type === "runner" ? "奔行者" : type === "brute" ? "蠻屍" : type === "boss" ? "巨型 Boss" : "行屍";
   }
 
-  private monitorMobilePerformance(): void {
-    if (this.state.quality !== "低" || !this.started || document.hidden || this.performanceTier >= 2) return;
+  private monitorPerformance(): void {
+    if (!this.started || document.hidden || this.performanceTier >= 2) return;
     const fps = this.engine.getFps();
     if (!Number.isFinite(fps) || fps <= 0) return;
     if (fps >= 28) {
@@ -1942,17 +1943,16 @@ export class StormGame {
     }
   }
 
-  private detectQuality(): "低" | "中" | "高" {
-    if (this.smokeMode) return "低";
-    const coarse = matchMedia("(pointer: coarse)").matches;
-    const touch = navigator.maxTouchPoints > 0 || coarse;
-    const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      || /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-    const cores = navigator.hardwareConcurrency || 4;
-    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
-    if (mobileUa || touch && window.innerWidth <= 1024 || memory <= 3 || cores <= 4) return "低";
-    if (coarse || memory <= 6 || cores <= 6) return "中";
-    return "高";
+  private detectQuality(): QualityLevel {
+    return detectDeviceQuality({
+      smokeMode: this.smokeMode,
+      userAgent: navigator.userAgent,
+      maxTouchPoints: navigator.maxTouchPoints,
+      coarsePointer: matchMedia("(pointer: coarse)").matches,
+      viewportWidth: window.innerWidth,
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+    });
   }
 
   private findNearestZombie(origin: Vector3, range: number): ZombieActor | undefined {

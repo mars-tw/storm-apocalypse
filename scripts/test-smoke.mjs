@@ -7,6 +7,8 @@ import { chromium } from "playwright";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const url = process.env.SMOKE_URL ?? "http://127.0.0.1:4173/storm-apocalypse/?smoke=1";
+const qualityUrl = new URL(url);
+qualityUrl.searchParams.delete("smoke");
 const saveKey = "storm-apocalypse-save-v1";
 const scenarioFilter = process.env.SMOKE_SCENARIO;
 const loadTimeout = 180_000;
@@ -124,6 +126,33 @@ async function newPage(browser, config) {
       consoleErrors.length ? `console: ${consoleErrors.join(" | ")}` : "",
       networkErrors.length ? `network: ${networkErrors.slice(0, 4).join(" | ")}` : "",
     ].filter(Boolean).join(" | "));
+  }
+}
+
+async function checkQualityDetection(browser, config) {
+  const context = await browser.newContext({
+    viewport: config.viewport,
+    hasTouch: config.touch,
+    isMobile: config.mobile,
+    deviceScaleFactor: 1,
+    userAgent: config.userAgent,
+  });
+  await context.addInitScript(({ cores, memory }) => {
+    Object.defineProperty(navigator, "hardwareConcurrency", { configurable: true, get: () => cores });
+    Object.defineProperty(navigator, "deviceMemory", { configurable: true, get: () => memory });
+  }, { cores: config.cores, memory: config.memory });
+  const page = await context.newPage();
+  try {
+    await page.goto(qualityUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
+    const canvas = page.locator("#game-canvas");
+    await canvas.waitFor({ state: "visible", timeout: 15_000 });
+    await page.waitForFunction(() => Boolean(document.querySelector("#game-canvas")?.dataset.quality), undefined, { timeout: 15_000 });
+    const quality = await canvas.getAttribute("data-quality");
+    const shadowMode = await canvas.getAttribute("data-shadow-mode");
+    const passed = quality === config.expectedQuality && shadowMode === config.expectedShadow;
+    record(config.label, "automatic quality", passed, `quality=${quality}, shadow=${shadowMode}, cores=${String(config.cores)}, memory=${String(config.memory)}`);
+  } finally {
+    await context.close();
   }
 }
 
@@ -328,6 +357,22 @@ try {
   await ensureServer();
   const browser = await chromium.launch({ headless: true, args: ["--use-angle=swiftshader"] });
   try {
+    if (!scenarioFilter && !captureOnly) {
+      const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125 Safari/537.36";
+      const mobileUa = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36";
+      for (const config of [
+        { label: "quality/4-core desktop", viewport: { width: 1440, height: 900 }, touch: false, mobile: false, userAgent: desktopUa, cores: 4, memory: 4, expectedQuality: "中", expectedShadow: "realtime" },
+        { label: "quality/missing desktop metrics", viewport: { width: 1440, height: 900 }, touch: false, mobile: false, userAgent: desktopUa, cores: undefined, memory: undefined, expectedQuality: "中", expectedShadow: "realtime" },
+        { label: "quality/compact constrained touch", viewport: { width: 900, height: 700 }, touch: true, mobile: false, userAgent: desktopUa, cores: 4, memory: 4, expectedQuality: "低", expectedShadow: "blob" },
+        { label: "quality/mobile", viewport: { width: 390, height: 844 }, touch: true, mobile: true, userAgent: mobileUa, cores: 8, memory: 8, expectedQuality: "低", expectedShadow: "blob" },
+      ]) {
+        try {
+          await checkQualityDetection(browser, config);
+        } catch (error) {
+          record(config.label, "automatic quality", false, error instanceof Error ? error.message : String(error));
+        }
+      }
+    }
     for (const scenario of [
       ["1440×900", () => runCombat(browser, { viewport: { width: 1440, height: 900 }, touch: false })],
       ["390×844", () => runCombat(browser, { viewport: { width: 390, height: 844 }, touch: true })],
