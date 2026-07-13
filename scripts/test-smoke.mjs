@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
@@ -7,6 +9,9 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const url = process.env.SMOKE_URL ?? "http://127.0.0.1:4173/storm-apocalypse/?smoke=1";
 const saveKey = "storm-apocalypse-save-v1";
 const scenarioFilter = process.env.SMOKE_SCENARIO;
+const loadTimeout = 180_000;
+const screenshotDir = process.env.SMOKE_SCREENSHOT_DIR;
+const captureOnly = process.env.SMOKE_CAPTURE_ONLY === "1";
 const results = [];
 let server;
 
@@ -95,16 +100,40 @@ async function newPage(browser, config) {
   await context.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: fixture() });
   const page = await context.newPage();
   const consoleErrors = [];
+  const networkErrors = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
   page.on("pageerror", (error) => consoleErrors.push(error.message));
-  await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.locator("#start-button").waitFor({ state: "visible", timeout: 20_000 });
-  await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: 20_000 });
-  await page.locator("#start-button").click();
-  await page.locator("#intro").waitFor({ state: "detached", timeout: 3_000 });
-  return { context, page, consoleErrors };
+  page.on("requestfailed", (request) => networkErrors.push(`${request.url()}: ${request.failure()?.errorText ?? "failed"}`));
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: loadTimeout });
+    await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
+    await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
+    await page.locator("#start-button").click();
+    await page.locator("#intro").waitFor({ state: "detached", timeout: 15_000 });
+    const screenshotPath = screenshotDir && !captureOnly ? await captureScreenshot(page, config) : undefined;
+    return { context, page, consoleErrors, screenshotPath };
+  } catch (error) {
+    const loadingText = await page.locator("#loading-text").textContent().catch(() => null);
+    await context.close();
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error([
+      detail,
+      loadingText ? `loader: ${loadingText}` : "",
+      consoleErrors.length ? `console: ${consoleErrors.join(" | ")}` : "",
+      networkErrors.length ? `network: ${networkErrors.slice(0, 4).join(" | ")}` : "",
+    ].filter(Boolean).join(" | "));
+  }
+}
+
+async function captureScreenshot(page, config) {
+  if (!screenshotDir) return undefined;
+  const directory = resolve(root, screenshotDir);
+  await mkdir(directory, { recursive: true });
+  const screenshotPath = resolve(directory, `${config.viewport.width}x${config.viewport.height}.png`);
+  await page.screenshot({ path: screenshotPath, timeout: 120_000 });
+  return screenshotPath;
 }
 
 async function readSave(page) {
@@ -222,8 +251,22 @@ async function checkTouchLayout(page, label) {
 
 async function runCombat(browser, config) {
   const label = `${config.viewport.width}×${config.viewport.height}`;
-  const { context, page, consoleErrors } = await newPage(browser, config);
+  const { context, page, consoleErrors, screenshotPath } = await newPage(browser, config);
   try {
+    if (captureOnly) {
+      if (config.touch) await page.locator("#wave-button").click();
+      else await page.keyboard.press("n");
+      await page.waitForFunction(() => document.querySelector("#hud-wave")?.textContent?.includes("夜襲"), undefined, { timeout: 15_000 });
+      await page.waitForTimeout(3_500);
+      const capturedPath = await captureScreenshot(page, config);
+      const canvas = page.locator("#game-canvas");
+      const quality = await canvas.getAttribute("data-quality");
+      const renderScale = await canvas.getAttribute("data-render-scale");
+      const shadowMode = await canvas.getAttribute("data-shadow-mode");
+      const fogDensity = await canvas.getAttribute("data-fog-density");
+      record(label, "visual capture", Boolean(capturedPath), `quality=${quality}, renderScale=${renderScale}, shadow=${shadowMode}, fog=${fogDensity}`);
+      return;
+    }
     if (config.touch) await checkTouchLayout(page, label);
     await buySmg(page, config.touch);
     const before = await readSave(page);
@@ -263,8 +306,17 @@ async function runCombat(browser, config) {
 
 async function runLayout(browser, viewport) {
   const label = `${viewport.width}×${viewport.height}`;
-  const { context, page, consoleErrors } = await newPage(browser, { viewport, touch: true });
+  const config = { viewport, touch: true };
+  const { context, page, consoleErrors } = await newPage(browser, config);
   try {
+    if (captureOnly) {
+      await page.locator("#wave-button").click();
+      await page.waitForFunction(() => document.querySelector("#hud-wave")?.textContent?.includes("夜襲"), undefined, { timeout: 15_000 });
+      await page.waitForTimeout(3_500);
+      const screenshotPath = await captureScreenshot(page, config);
+      record(label, "visual capture", Boolean(screenshotPath), screenshotPath ?? "no screenshot");
+      return;
+    }
     await checkTouchLayout(page, label);
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {

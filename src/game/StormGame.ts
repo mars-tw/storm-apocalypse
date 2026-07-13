@@ -134,11 +134,13 @@ export class StormGame {
   private readonly assets = new Map<string, AssetContainer>();
   private readonly sun: DirectionalLight;
   private readonly skyLight: HemisphericLight;
-  private readonly shadows: ShadowGenerator;
-  private readonly glow: GlowLayer;
+  private readonly shadows?: ShadowGenerator;
   private readonly instrumentation: SceneInstrumentation;
   private readonly snowEmitter: TransformNode;
   private readonly shopLight: PointLight;
+  private snowParticles?: ParticleSystem;
+  private readonly ambientParticles: ParticleSystem[] = [];
+  private blobShadowMaterial?: StandardMaterial;
   private player!: Actor;
   private cow!: CowActor;
   private strongCow?: CowActor;
@@ -168,6 +170,10 @@ export class StormGame {
   private waveStartTime = 0;
   private campaignStartTime = performance.now();
   private attackCount = 0;
+  private uiUpdateTimer = 0;
+  private lowFpsSamples = 0;
+  private performanceTier = 0;
+  private renderPixelRatio = 1;
   private readonly smokeMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke");
 
   constructor(
@@ -176,15 +182,32 @@ export class StormGame {
     private readonly state: RuntimeState,
   ) {
     this.state.quality = this.detectQuality();
-    this.engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, powerPreference: "high-performance" }, true);
-    const scaleFactor = this.state.quality === "低" ? 1 : this.state.quality === "中" ? 0.82 : 0.65;
-    this.engine.setHardwareScalingLevel(Math.min(2, Math.max(1, window.devicePixelRatio * scaleFactor)));
+    const lowQuality = this.state.quality === "低";
+    const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
+    this.renderPixelRatio = lowQuality
+      ? Math.min(1, devicePixelRatio)
+      : this.state.quality === "中"
+        ? Math.min(1, devicePixelRatio)
+        : Math.min(1.25, devicePixelRatio);
+    this.engine = new Engine(canvas, !lowQuality, {
+      preserveDrawingBuffer: !lowQuality,
+      stencil: !lowQuality,
+      powerPreference: "high-performance",
+    }, false);
+    // Hardware scaling is the inverse of the desired pixel ratio in Babylon.
+    // Low quality therefore renders at no more than one backing pixel per CSS pixel,
+    // even on 3x DPR phones, and can step down further when FPS stays below target.
+    this.engine.setHardwareScalingLevel(1 / this.renderPixelRatio);
     this.scene = new Scene(this.engine);
-    this.scene.clearColor = new Color4(0.57, 0.69, 0.74, 1);
+    this.scene.clearColor = lowQuality
+      ? new Color4(0.045, 0.095, 0.15, 1)
+      : new Color4(0.57, 0.69, 0.74, 1);
     this.scene.fogMode = Scene.FOGMODE_EXP2;
-    this.scene.fogDensity = 0.012;
-    this.scene.fogColor = new Color3(0.58, 0.68, 0.72);
-    this.scene.environmentIntensity = 0.72;
+    this.scene.fogDensity = lowQuality ? 0.0045 : 0.012;
+    this.scene.fogColor = lowQuality
+      ? new Color3(0.065, 0.13, 0.19)
+      : new Color3(0.58, 0.68, 0.72);
+    this.scene.environmentIntensity = lowQuality ? 0.44 : 0.72;
 
     this.camera = new ArcRotateCamera("follow-camera", -Math.PI * 0.28, 1.02, 19, new Vector3(0, 1.2, 0), this.scene);
     this.camera.lowerRadiusLimit = 14;
@@ -195,32 +218,39 @@ export class StormGame {
     this.camera.inputs.clear();
 
     this.skyLight = new HemisphericLight("polar-skylight", new Vector3(0.2, 1, 0.1), this.scene);
-    this.skyLight.intensity = 1.05;
-    this.skyLight.diffuse = new Color3(0.72, 0.84, 0.9);
-    this.skyLight.groundColor = new Color3(0.12, 0.18, 0.22);
+    this.skyLight.intensity = lowQuality ? 0.7 : 1.05;
+    this.skyLight.diffuse = lowQuality ? new Color3(0.42, 0.61, 0.74) : new Color3(0.72, 0.84, 0.9);
+    this.skyLight.groundColor = lowQuality ? new Color3(0.035, 0.07, 0.11) : new Color3(0.12, 0.18, 0.22);
     this.sun = new DirectionalLight("low-winter-sun", new Vector3(-0.52, -1, 0.38), this.scene);
     this.sun.position = new Vector3(24, 35, -20);
-    this.sun.intensity = 2.4;
+    this.sun.intensity = lowQuality ? 1.65 : 2.4;
     this.sun.diffuse = new Color3(1, 0.91, 0.79);
-    const shadowSize = this.state.quality === "低" ? 512 : this.state.quality === "中" ? 1024 : 2048;
-    this.shadows = new ShadowGenerator(shadowSize, this.sun, true);
-    this.shadows.usePercentageCloserFiltering = true;
-    this.shadows.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
-    this.shadows.bias = 0.002;
-    this.shadows.normalBias = 0.03;
+    if (!lowQuality) {
+      const shadowSize = this.state.quality === "中" ? 1024 : 2048;
+      this.shadows = new ShadowGenerator(shadowSize, this.sun, true);
+      this.shadows.usePercentageCloserFiltering = true;
+      this.shadows.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
+      this.shadows.bias = 0.002;
+      this.shadows.normalBias = 0.03;
 
-    this.glow = new GlowLayer("warm-window-glow", this.scene, { mainTextureFixedSize: this.state.quality === "低" ? 256 : 512, blurKernelSize: this.state.quality === "低" ? 24 : 48 });
-    this.glow.intensity = 0.48;
-    const pipeline = new DefaultRenderingPipeline("storm-cinematic", true, this.scene, [this.camera]);
-    pipeline.fxaaEnabled = true;
-    pipeline.bloomEnabled = this.state.quality !== "低";
-    pipeline.bloomThreshold = 0.78;
-    pipeline.bloomWeight = 0.2;
-    pipeline.bloomKernel = 48;
-    pipeline.imageProcessingEnabled = true;
-    pipeline.imageProcessing.contrast = 1.16;
-    pipeline.imageProcessing.exposure = 1.05;
-    pipeline.samples = this.state.quality === "高" ? 2 : 1;
+      const glow = new GlowLayer("warm-window-glow", this.scene, { mainTextureFixedSize: 512, blurKernelSize: 48 });
+      glow.intensity = 0.48;
+      const pipeline = new DefaultRenderingPipeline("storm-cinematic", true, this.scene, [this.camera]);
+      pipeline.fxaaEnabled = true;
+      pipeline.bloomEnabled = true;
+      pipeline.bloomThreshold = 0.78;
+      pipeline.bloomWeight = 0.2;
+      pipeline.bloomKernel = 48;
+      pipeline.imageProcessingEnabled = true;
+      pipeline.imageProcessing.contrast = 1.16;
+      pipeline.imageProcessing.exposure = 1.05;
+      pipeline.samples = this.state.quality === "高" ? 2 : 1;
+    } else {
+      // Keep low-quality color grading in the material pass: no FXAA, bloom,
+      // glow render target, MSAA, or image-processing post-process is allocated.
+      this.scene.imageProcessingConfiguration.contrast = 1.32;
+      this.scene.imageProcessingConfiguration.exposure = 0.88;
+    }
 
     this.shopLight = new PointLight("shop-lantern-light", new Vector3(-8, 3.4, -6.1), this.scene);
     this.shopLight.diffuse = new Color3(1, 0.55, 0.25);
@@ -235,6 +265,12 @@ export class StormGame {
       canvas.dataset.drawCalls = this.state.drawCalls.toString();
       canvas.dataset.activeMeshes = this.scene.getActiveMeshes().length.toString();
       canvas.dataset.quality = this.state.quality;
+      canvas.dataset.renderScale = this.renderPixelRatio.toFixed(2);
+      canvas.dataset.devicePixelRatio = devicePixelRatio.toFixed(2);
+      canvas.dataset.performanceTier = this.performanceTier.toString();
+      canvas.dataset.shadowMode = this.shadows ? "realtime" : "blob";
+      canvas.dataset.postEffects = lowQuality ? "off" : "on";
+      canvas.dataset.fogDensity = this.scene.fogDensity.toFixed(4);
       if (this.player) {
         canvas.dataset.playerX = this.player.root.position.x.toFixed(2);
         canvas.dataset.playerZ = this.player.root.position.z.toFixed(2);
@@ -251,8 +287,9 @@ export class StormGame {
     this.createDistantStorm();
 
     window.addEventListener("resize", () => this.engine.resize());
+    if (lowQuality) window.setInterval(() => this.monitorMobilePerformance(), 2000);
     this.engine.runRenderLoop(() => {
-      const dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.05);
+      const dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.1);
       this.update(dt);
       this.scene.render();
     });
@@ -260,8 +297,9 @@ export class StormGame {
 
   async initialize(): Promise<void> {
     let loaded = 0;
+    let nextAsset = 0;
     const fileProgress = new Map<string, number>();
-    await Promise.all(ASSET_FILES.map(async (file) => {
+    const loadAsset = async (file: (typeof ASSET_FILES)[number]): Promise<void> => {
       const container = await LoadAssetContainerAsync(`${import.meta.env.BASE_URL}models/${file}`, this.scene, {
         onProgress: (event) => {
           fileProgress.set(file, event.lengthComputable && event.total > 0 ? event.loaded / event.total : 0.35);
@@ -273,7 +311,16 @@ export class StormGame {
       loaded += 1;
       fileProgress.set(file, 1);
       this.ui.setLoading(loaded / ASSET_FILES.length * 0.82, `載入北境資產 · ${loaded} / ${ASSET_FILES.length}`);
-    }));
+    };
+    const loadWorker = async (): Promise<void> => {
+      while (nextAsset < ASSET_FILES.length) {
+        const file = ASSET_FILES[nextAsset];
+        nextAsset += 1;
+        await loadAsset(file);
+      }
+    };
+    const loadConcurrency = this.state.quality === "低" ? 3 : 5;
+    await Promise.all(Array.from({ length: loadConcurrency }, () => loadWorker()));
     this.ui.setLoading(0.86, "佈置牧場與肉舖…");
     this.buildEnvironment();
     this.createActors();
@@ -319,7 +366,7 @@ export class StormGame {
     VertexData.ComputeNormals(positions, indices, normals);
     ground.updateVerticesData(VertexBuffer.PositionKind, positions);
     ground.updateVerticesData(VertexBuffer.NormalKind, normals);
-    ground.receiveShadows = true;
+    ground.receiveShadows = Boolean(this.shadows);
 
     const snow = new PBRMaterial("powder-snow", this.scene);
     snow.albedoColor = new Color3(0.78, 0.87, 0.89);
@@ -342,7 +389,7 @@ export class StormGame {
     skirtMaterial.albedoColor = new Color3(0.29, 0.39, 0.43);
     skirtMaterial.roughness = 1;
     underSnow.material = skirtMaterial;
-    underSnow.receiveShadows = true;
+    underSnow.receiveShadows = Boolean(this.shadows);
   }
 
   private createSnowTexture(): DynamicTexture {
@@ -390,8 +437,9 @@ export class StormGame {
     flake.hasAlpha = true;
     flake.update(false);
 
-    const snowCapacity = this.state.quality === "低" ? 420 : this.state.quality === "中" ? 900 : 1700;
+    const snowCapacity = this.state.quality === "低" ? 220 : this.state.quality === "中" ? 900 : 1700;
     const snow = new ParticleSystem("blizzard-snow", snowCapacity, this.scene);
+    this.snowParticles = snow;
     snow.particleTexture = flake;
     snow.emitter = this.snowEmitter.position;
     snow.minEmitBox = new Vector3(-20, 0, -16);
@@ -402,7 +450,7 @@ export class StormGame {
     snow.maxSize = 0.16;
     snow.minLifeTime = 2.1;
     snow.maxLifeTime = 4.2;
-    snow.emitRate = this.state.quality === "低" ? 120 : this.state.quality === "中" ? 240 : 520;
+    snow.emitRate = this.state.quality === "低" ? 55 : this.state.quality === "中" ? 240 : 520;
     snow.blendMode = ParticleSystem.BLENDMODE_STANDARD;
     snow.gravity = new Vector3(1.3, -2.4, 0.5);
     snow.direction1 = new Vector3(1.8, -1.2, -0.2);
@@ -588,7 +636,7 @@ export class StormGame {
       path.rotation.y = Math.atan2(end.x - start.x, end.z - start.z);
       path.position.set(midpoint.x, this.heightAt(midpoint.x, midpoint.z) + 0.025, midpoint.z);
       path.material = pathMaterial;
-      path.receiveShadows = true;
+      path.receiveShadows = Boolean(this.shadows);
     }
   }
 
@@ -745,6 +793,10 @@ export class StormGame {
         totalMeshes: this.scene.meshes.length,
         quality: this.state.quality,
         targetFps: 30,
+        renderPixelRatio: this.renderPixelRatio,
+        performanceTier: this.performanceTier,
+        shadowMode: this.shadows ? "realtime" : "blob",
+        fogDensity: this.scene.fogDensity,
         wave: this.state.wave,
         enemies: this.state.enemiesRemaining,
         playerPosition: { x: Number(this.player.root.position.x.toFixed(2)), z: Number(this.player.root.position.z.toFixed(2)) },
@@ -757,7 +809,11 @@ export class StormGame {
         },
       };
     }
-    this.ui.update(this.state);
+    this.uiUpdateTimer += dt;
+    if (this.state.quality !== "低" || this.uiUpdateTimer >= 0.1) {
+      this.uiUpdateTimer = 0;
+      this.ui.update(this.state);
+    }
   }
 
   private handleMovement(dt: number): void {
@@ -1115,9 +1171,9 @@ export class StormGame {
       const actor = this.instantiateActor(id === "hunter" ? "survivor.glb" : "customer.glb", `staff-${id}`, position, id === "hunter" ? 0.82 : 0.85);
       actor.root.position.y = this.heightAt(position.x, position.z);
       this.playAnimation(actor, "Idle", true);
-      this.addActorShadows(actor);
       staff = { ...actor, id, timer: 0, patrolIndex: 0 };
     }
+    this.addActorShadows(staff);
     this.staff.set(id, staff);
   }
 
@@ -1465,14 +1521,23 @@ export class StormGame {
     const targetNight = this.state.waveActive ? 1 : 0;
     this.nightBlend += (targetNight - this.nightBlend) * Math.min(1, dt * 1.15);
     const microCycle = Math.sin(this.elapsed * 0.045) * 0.08;
-    this.sun.intensity = 2.35 - this.nightBlend * 1.58 + microCycle;
-    this.skyLight.intensity = 1.05 - this.nightBlend * 0.57;
-    this.shopLight.intensity = 14 + this.nightBlend * 12;
-    this.scene.fogDensity = 0.012 + this.nightBlend * 0.008;
-    const dayFog = new Color3(0.58, 0.68, 0.72);
-    const nightFog = new Color3(0.11, 0.2, 0.29);
+    const lowQuality = this.state.quality === "低";
+    this.sun.intensity = lowQuality
+      ? 1.62 - this.nightBlend * 0.82 + microCycle * 0.45
+      : 2.35 - this.nightBlend * 1.58 + microCycle;
+    this.skyLight.intensity = lowQuality
+      ? 0.7 - this.nightBlend * 0.27
+      : 1.05 - this.nightBlend * 0.57;
+    this.shopLight.intensity = (lowQuality ? 11 : 14) + this.nightBlend * (lowQuality ? 9 : 12);
+    this.scene.fogDensity = lowQuality
+      ? 0.0045 + this.nightBlend * 0.003
+      : 0.012 + this.nightBlend * 0.008;
+    const dayFog = lowQuality ? new Color3(0.065, 0.13, 0.19) : new Color3(0.58, 0.68, 0.72);
+    const nightFog = lowQuality ? new Color3(0.025, 0.065, 0.115) : new Color3(0.11, 0.2, 0.29);
     this.scene.fogColor.copyFrom(Color3.Lerp(dayFog, nightFog, this.nightBlend));
-    const clear = Color3.Lerp(new Color3(0.57, 0.69, 0.74), new Color3(0.045, 0.09, 0.16), this.nightBlend);
+    const clear = lowQuality
+      ? Color3.Lerp(new Color3(0.045, 0.095, 0.15), new Color3(0.012, 0.035, 0.075), this.nightBlend)
+      : Color3.Lerp(new Color3(0.57, 0.69, 0.74), new Color3(0.045, 0.09, 0.16), this.nightBlend);
     this.scene.clearColor.set(clear.r, clear.g, clear.b, 1);
   }
 
@@ -1552,10 +1617,46 @@ export class StormGame {
   }
 
   private addActorShadows(actor: Actor): void {
+    if (!this.shadows) {
+      this.createBlobShadow(actor.root);
+      return;
+    }
     for (const mesh of actor.root.getChildMeshes()) this.castShadows(mesh);
   }
 
+  private createBlobShadow(root: TransformNode): void {
+    if (root.getChildMeshes().some((mesh) => mesh.name === `${root.name}-blob-shadow`)) return;
+    if (!this.blobShadowMaterial) {
+      const material = new StandardMaterial("mobile-blob-shadow-material", this.scene);
+      material.diffuseColor = Color3.Black();
+      material.emissiveColor = new Color3(0.008, 0.015, 0.022);
+      material.specularColor = Color3.Black();
+      material.alpha = 0.24;
+      material.disableLighting = true;
+      material.backFaceCulling = false;
+      this.blobShadowMaterial = material;
+    }
+    const radius = root.name.includes("cow") || root.name.includes("boss")
+      ? 1.08
+      : root.name.includes("dog")
+        ? 0.72
+        : 0.62;
+    const blob = MeshBuilder.CreateDisc(`${root.name}-blob-shadow`, { radius, tessellation: 12 }, this.scene);
+    const inverseScale = 1 / Math.max(0.01, root.scaling.x);
+    blob.parent = root;
+    blob.position.y = 0.035 * inverseScale;
+    blob.rotation.x = Math.PI / 2;
+    blob.scaling.setAll(inverseScale);
+    blob.material = this.blobShadowMaterial;
+    blob.isPickable = false;
+    blob.receiveShadows = false;
+  }
+
   private castShadows(mesh: AbstractMesh): void {
+    if (!this.shadows) {
+      mesh.receiveShadows = false;
+      return;
+    }
     if (mesh.getClassName() !== "InstancedMesh") mesh.receiveShadows = true;
     this.shadows.addShadowCaster(mesh, true);
   }
@@ -1638,7 +1739,8 @@ export class StormGame {
     context.fillRect(0, 0, 24, 24);
     flame.hasAlpha = true;
     flame.update();
-    const particles = new ParticleSystem("campfire-flames", 120, this.scene);
+    const particles = new ParticleSystem("campfire-flames", this.state.quality === "低" ? 48 : 120, this.scene);
+    this.ambientParticles.push(particles);
     particles.particleTexture = flame;
     particles.emitter = fireLight.position;
     particles.minEmitBox = new Vector3(-0.2, 0, -0.2);
@@ -1649,7 +1751,7 @@ export class StormGame {
     particles.maxSize = 0.38;
     particles.minLifeTime = 0.22;
     particles.maxLifeTime = 0.62;
-    particles.emitRate = 85;
+    particles.emitRate = this.state.quality === "低" ? 32 : 85;
     particles.direction1 = new Vector3(-0.15, 1.2, -0.15);
     particles.direction2 = new Vector3(0.15, 2.1, 0.15);
     particles.gravity = new Vector3(0, 1, 0);
@@ -1816,6 +1918,28 @@ export class StormGame {
 
   private zombieLabel(type: ZombieType): string {
     return type === "runner" ? "奔行者" : type === "brute" ? "蠻屍" : type === "boss" ? "巨型 Boss" : "行屍";
+  }
+
+  private monitorMobilePerformance(): void {
+    if (this.state.quality !== "低" || !this.started || document.hidden || this.performanceTier >= 2) return;
+    const fps = this.engine.getFps();
+    if (!Number.isFinite(fps) || fps <= 0) return;
+    if (fps >= 28) {
+      this.lowFpsSamples = Math.max(0, this.lowFpsSamples - 1);
+      return;
+    }
+    this.lowFpsSamples += 1;
+    if (this.lowFpsSamples < 3) return;
+
+    this.lowFpsSamples = 0;
+    this.performanceTier += 1;
+    this.renderPixelRatio = this.performanceTier === 1 ? 0.8 : 0.65;
+    this.engine.setHardwareScalingLevel(1 / this.renderPixelRatio);
+    this.engine.resize();
+    if (this.snowParticles) this.snowParticles.emitRate = this.performanceTier === 1 ? 32 : 18;
+    for (const particles of this.ambientParticles) {
+      particles.emitRate = this.performanceTier === 1 ? 18 : 10;
+    }
   }
 
   private detectQuality(): "低" | "中" | "高" {
