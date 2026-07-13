@@ -121,6 +121,7 @@ function migrate(input: unknown): SaveState {
   const stats = record(raw.stats);
   const weapon = raw.weapon === "axe" || raw.weapon === "smg" ? raw.weapon : "machete";
   const wave = finite(raw.wave, 0, 0, 30);
+  const money = finite(raw.money, DEFAULT_SAVE.money);
   const ballista = finite(towers.ballista, oldTowerBuilt ? 1 : 0, 0, 3);
   const loopRaw = record(quest.loop);
   const loop = typeof loopRaw.id === "string" && loopRaw.id.length > 0 ? {
@@ -141,7 +142,7 @@ function migrate(input: unknown): SaveState {
 
   return {
     version: SAVE_VERSION,
-    money: finite(raw.money, DEFAULT_SAVE.money),
+    money,
     wave,
     stallLevel: finite(raw.stallLevel, 1, 1, 4),
     towerBuilt: ballista > 0,
@@ -170,7 +171,7 @@ function migrate(input: unknown): SaveState {
       meatCollected: finite(stats.meatCollected, 0),
       meatDeposited: finite(stats.meatDeposited, 0),
       sales: finite(stats.sales, 0),
-      totalEarned: finite(stats.totalEarned, 0),
+      totalEarned: Math.max(finite(stats.totalEarned, 0), Math.max(0, money - DEFAULT_SAVE.money)),
       zombiesKilled: finite(stats.zombiesKilled, 0),
       playerKills: finite(stats.playerKills, 0),
       towerKills: finite(stats.towerKills, 0),
@@ -231,6 +232,13 @@ export function saveState(state: RuntimeState): void {
   } catch {
     // 無痕模式或儲存空間不足時，遊戲仍可繼續運作。
   }
+}
+
+export function creditIncome(state: RuntimeState, amount: number): number {
+  const income = Math.max(0, Math.floor(amount));
+  state.money += income;
+  state.stats.totalEarned += income;
+  return income;
 }
 
 export function resetSave(): void {

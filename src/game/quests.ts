@@ -1,5 +1,5 @@
-import { LOOP_QUESTS, MAIN_QUESTS, type LoopQuestDefinition, type MainQuestDefinition } from "./content";
-import { saveState, type RuntimeState } from "./state";
+import { LOOP_QUESTS, MAIN_QUESTS, type LoopQuestContext, type LoopQuestDefinition, type MainQuestDefinition } from "./content";
+import { creditIncome, saveState, type RuntimeState } from "./state";
 
 export interface QuestCompletion {
   chapter: number;
@@ -15,10 +15,13 @@ export function updateMainQuests(state: RuntimeState): QuestCompletion[] {
   const completions: QuestCompletion[] = [];
   let quest = currentMainQuest(state);
   while (quest && quest.progress(state) >= quest.target) {
-    state.money += quest.rewardGold;
-    if (!state.quest.completed.includes(quest.chapter)) state.quest.completed.push(quest.chapter);
+    const firstCompletion = !state.quest.completed.includes(quest.chapter);
+    if (firstCompletion) {
+      creditIncome(state, quest.rewardGold);
+      state.quest.completed.push(quest.chapter);
+      completions.push({ chapter: quest.chapter, title: quest.title, reward: quest.rewardLabel });
+    }
     if (quest.rewardUnlock && !state.quest.unlocks.includes(quest.rewardUnlock)) state.quest.unlocks.push(quest.rewardUnlock);
-    completions.push({ chapter: quest.chapter, title: quest.title, reward: quest.rewardLabel });
     state.quest.chapter = quest.chapter + 1;
     if (quest.rewardUnlock === "repair") state.baseHealth = 100;
     quest = currentMainQuest(state);
@@ -27,17 +30,21 @@ export function updateMainQuests(state: RuntimeState): QuestCompletion[] {
   return completions;
 }
 
-export function assignLoopQuest(state: RuntimeState, wave: number): void {
-  if (state.quest.loop?.wave === wave) return;
-  const available = LOOP_QUESTS.filter((quest) => quest.available(state));
-  const quest = available[(wave - 1) % available.length] ?? LOOP_QUESTS[0];
-  const target = Math.min(quest.target(wave), quest.id.includes("kills") ? 5 + wave * 2 : Number.MAX_SAFE_INTEGER);
+export function assignLoopQuest(state: RuntimeState, context: LoopQuestContext): void {
+  const wave = context.wave;
+  const existing = state.quest.loop;
+  const existingDefinition = LOOP_QUESTS.find((quest) => quest.id === existing?.id);
+  if (existing?.wave === wave && (existing.claimed || existingDefinition?.available(state, context))) return;
+  const rotationStart = (wave - 1) % LOOP_QUESTS.length;
+  const quest = Array.from({ length: LOOP_QUESTS.length }, (_, offset) => LOOP_QUESTS[(rotationStart + offset) % LOOP_QUESTS.length])
+    .find((candidate) => candidate.available(state, context)) ?? LOOP_QUESTS[2];
+  const target = Math.min(quest.target(wave), quest.id.includes("kills") ? context.enemyCount : Number.MAX_SAFE_INTEGER);
   state.quest.loop = {
     id: quest.id,
     wave,
     progress: 0,
     target,
-    reward: 20 + wave * (quest.id === "player-kills" || quest.id === "tower-kills" ? 3 : 2),
+    reward: quest.rewardBase + wave * quest.rewardPerWave,
     completed: false,
     claimed: false,
   };
@@ -56,7 +63,7 @@ export function addLoopProgress(state: RuntimeState, id: string, amount = 1): bo
   loop.completed = true;
   if (!loop.claimed) {
     loop.claimed = true;
-    state.money += loop.reward;
+    creditIncome(state, loop.reward);
   }
   saveState(state);
   return true;

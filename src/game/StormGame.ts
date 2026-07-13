@@ -29,10 +29,10 @@ import {
   VertexData,
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
-import { EMPLOYEES, TOWERS, WEAPONS, towerUpgradeCost } from "./content";
+import { EMPLOYEES, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerUpgradeCost } from "./content";
 import { InputController } from "./input";
 import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
-import { saveState, type EmployeeId, type RuntimeState, type TowerId, type WeaponId } from "./state";
+import { creditIncome, saveState, type EmployeeId, type RuntimeState, type TowerId, type WeaponId } from "./state";
 import type { UiController } from "./ui";
 
 interface Actor {
@@ -233,6 +233,10 @@ export class StormGame {
       canvas.dataset.drawCalls = this.state.drawCalls.toString();
       canvas.dataset.activeMeshes = this.scene.getActiveMeshes().length.toString();
       canvas.dataset.quality = this.state.quality;
+      if (this.player) {
+        canvas.dataset.playerX = this.player.root.position.x.toFixed(2);
+        canvas.dataset.playerZ = this.player.root.position.z.toFixed(2);
+      }
     });
     this.input = new InputController(ui.joystick);
     this.createTerrain();
@@ -731,8 +735,10 @@ export class StormGame {
         activeMeshes: this.scene.getActiveMeshes().length,
         totalMeshes: this.scene.meshes.length,
         quality: this.state.quality,
+        targetFps: 30,
         wave: this.state.wave,
         enemies: this.state.enemiesRemaining,
+        playerPosition: { x: Number(this.player.root.position.x.toFixed(2)), z: Number(this.player.root.position.z.toFixed(2)) },
         hardwareInstancing: true,
         waveMetrics: {
           stockAtStart: this.waveStartedStock,
@@ -766,6 +772,8 @@ export class StormGame {
 
   private performAttack(): void {
     if (this.attackCooldown > 0) return;
+    const renderCanvas = this.engine.getRenderingCanvas();
+    if (renderCanvas) renderCanvas.dataset.lastAttack = Math.round(performance.now()).toString();
     const weapon = this.state.weapon;
     this.attackCooldown = weapon === "smg" ? 0.28 : weapon === "axe" ? 0.9 : 0.62;
     this.playAnimation(this.player, "Slash", false);
@@ -890,10 +898,9 @@ export class StormGame {
       if (this.customer.timer <= 0) {
         if (this.state.displayedMeat > 0) {
           this.state.displayedMeat -= 1;
-          const income = this.state.employees.cashier ? 25 : 20;
-          this.state.money += income;
+          const income = 20 + (this.state.employees.cashier ? 5 : 0) + (this.state.pasture2Unlocked ? 5 : 0);
+          creditIncome(this.state, income);
           this.state.stats.sales += 1;
-          this.state.stats.totalEarned += income;
           this.updateMeatVisuals();
           saveState(this.state);
           this.ui.toast(`交易完成 · 收入 ✦ ${income}`, "warm");
@@ -940,6 +947,8 @@ export class StormGame {
   private buyWeapon(id: WeaponId): void {
     const item = WEAPONS.find((weapon) => weapon.id === id);
     if (!item || id === "machete" || this.state.weapon === id || this.state.waveActive) return;
+    const unlockChapter = id === "axe" ? SHOP_UNLOCK_CHAPTER.axe : SHOP_UNLOCK_CHAPTER.smg;
+    if (!this.requireChapter(unlockChapter)) return;
     if (id === "smg" && this.state.weapon === "machete") {
       this.ui.toast("先掌握迴旋斧，才能購買衝鋒槍。", "danger");
       return;
@@ -959,6 +968,7 @@ export class StormGame {
   private hireEmployee(id: EmployeeId): void {
     const item = EMPLOYEES.find((employee) => employee.id === id);
     if (!item || this.state.employees[id] || this.state.waveActive) return;
+    if (!this.requireChapter(SHOP_UNLOCK_CHAPTER.employeeShop)) return;
     if (this.state.money < item.price) {
       this.ui.toast(`雇用${item.name}尚缺 ✦ ${item.price - this.state.money}`, "danger");
       return;
@@ -973,6 +983,7 @@ export class StormGame {
 
   private unlockPasture2(): void {
     if (this.state.pasture2Unlocked || this.state.waveActive) return;
+    if (!this.requireChapter(SHOP_UNLOCK_CHAPTER.pasture2)) return;
     if (this.state.money < 260) {
       this.ui.toast(`炸開第二牧場尚缺 ✦ ${260 - this.state.money}`, "danger");
       return;
@@ -996,6 +1007,8 @@ export class StormGame {
     if (!tower || !definition) return;
     const level = this.state.towers[id];
     if (level >= 3) return;
+    const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.defenseShop : SHOP_UNLOCK_CHAPTER.towerUpgrade;
+    if (!this.requireChapter(unlockChapter)) return;
     const cost = level === 0 ? definition.price : towerUpgradeCost(id, level);
     if (this.state.money < cost) {
       this.ui.toast(`${level === 0 ? "建造" : "升級"}${definition.name}尚缺 ✦ ${cost - this.state.money}`, "danger");
@@ -1203,7 +1216,13 @@ export class StormGame {
     this.waveTowerKills = 0;
     this.waveStartTime = performance.now();
     this.waveStockLost = false;
-    assignLoopQuest(this.state, waveNumber);
+    assignLoopQuest(this.state, {
+      wave: waveNumber,
+      enemyCount: this.enemiesToSpawn,
+      startingStock: this.waveStartedStock,
+      startingHealth: this.state.baseHealth,
+      hasStockThreat: waveNumber % 10 === 0 || waveNumber >= 8 && this.enemiesToSpawn >= 5,
+    });
     this.ui.toast(`警報：第 ${waveNumber} 波${waveNumber % 10 === 0 ? " Boss " : "屍群"}穿越北境！`, "danger");
   }
 
@@ -1274,7 +1293,7 @@ export class StormGame {
       baseSpeed: speed,
       attackTimer: 0.2,
       damage: type === "boss" ? 16 : type === "brute" ? 10 : type === "runner" ? 5 : 6,
-      reward: type === "boss" ? 100 + wave * 5 : type === "brute" ? 14 : type === "runner" ? 8 : 6,
+      reward: type === "boss" ? 25 + wave : type === "brute" ? 5 : type === "runner" ? 3 : 2,
       type,
       slowTimer: 0,
     };
@@ -1371,7 +1390,7 @@ export class StormGame {
     if (!zombie.alive) return;
     zombie.alive = false;
     this.playAnimation(zombie, "Death", false);
-    this.state.money += zombie.reward;
+    creditIncome(this.state, zombie.reward);
     this.state.stats.zombiesKilled += 1;
     if (source === "player") {
       this.state.stats.playerKills += 1;
@@ -1393,8 +1412,8 @@ export class StormGame {
     this.state.wave += 1;
     this.state.bestWave = Math.max(this.state.bestWave, this.state.wave);
     this.state.stats.wavesCleared = Math.max(this.state.stats.wavesCleared, this.state.wave);
-    const reward = 28 + this.state.wave * 12 + (this.state.wave % 10 === 0 ? 120 : 0);
-    this.state.money += reward;
+    const reward = 16 + Math.min(this.state.wave, 10) * 3 + Math.max(0, this.state.wave - 10) + (this.state.wave % 10 === 0 ? 35 : 0);
+    creditIncome(this.state, reward);
     saveState(this.state);
     this.ui.toast(`第 ${this.state.wave} 波已清除 · 防守獎金 ✦ ${reward}`, "warm");
     this.processQuests();
@@ -1426,7 +1445,7 @@ export class StormGame {
       ["守過波次", `${this.state.wave} / 30`],
       ["累計擊殺", `${this.state.stats.zombiesKilled}`],
       ["獵物", `${this.state.stats.cowsKilled}`],
-      ["總營收", `✦ ${this.state.stats.totalEarned}`],
+      ["累計總收入", `✦ ${this.state.stats.totalEarned}`],
       ["剩餘資金", `✦ ${this.state.money}`],
       ["本輪時間", `${minutes} 分`],
     ]);
@@ -1463,17 +1482,25 @@ export class StormGame {
   }
 
   private updateContextPrompt(): void {
+    const attackKey = this.ui.touchMode ? "揮砍鈕" : "SPACE";
     if (this.state.waveActive && this.findNearestZombie(this.player.root.position, 3.1)) {
-      this.ui.setPrompt("SPACE", "揮砍殭屍", true);
+      this.ui.setPrompt(attackKey, "攻擊殭屍", true);
     } else if (this.findNearestCow(this.player.root.position, 3.3)) {
-      this.ui.setPrompt("SPACE", `${this.state.weapon === "smg" ? "掃射" : this.state.weapon === "axe" ? "橫掃" : "揮砍"}牛隻`, true);
+      this.ui.setPrompt(attackKey, `${this.state.weapon === "smg" ? "掃射" : this.state.weapon === "axe" ? "橫掃" : "揮砍"}牛隻`, true);
     } else if (this.state.carriedMeat > 0 && Vector3.Distance(this.player.root.position, STALL_POSITION) < 5) {
       this.ui.setPrompt("AUTO", "靠近攤位自動陳列", true);
     } else if (this.state.towers.ballista === 0 && Vector3.Distance(this.player.root.position, TOWER_POSITIONS.ballista) < 4) {
-      this.ui.setPrompt("B", "建造獵風弩塔 · ✦ 60", true);
+      const unlocked = hasCompletedChapter(this.state, SHOP_UNLOCK_CHAPTER.defenseShop);
+      this.ui.setPrompt(this.ui.touchMode ? "整備" : "B", unlocked ? "建造獵風弩塔 · ✦ 60" : "完成手冊第 5 章解鎖防線", true);
     } else {
-      this.ui.setPrompt("WASD", "穿越雪地 · 空白鍵揮砍", true);
+      this.ui.setPrompt(this.ui.touchMode ? "搖桿" : "WASD", this.ui.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "穿越雪地 · 空白鍵揮砍", true);
     }
+  }
+
+  private requireChapter(chapter: number): boolean {
+    if (hasCompletedChapter(this.state, chapter)) return true;
+    this.ui.toast(`🔒 完成手冊第 ${chapter} 章解鎖`, "ice");
+    return false;
   }
 
   private instantiateActor(file: string, name: string, position: Vector3, scale: number): Actor {
@@ -1783,9 +1810,12 @@ export class StormGame {
 
   private detectQuality(): "低" | "中" | "高" {
     const coarse = matchMedia("(pointer: coarse)").matches;
+    const touch = navigator.maxTouchPoints > 0 || coarse;
+    const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      || /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
     const cores = navigator.hardwareConcurrency || 4;
     const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 4;
-    if (memory <= 3 || cores <= 4 || coarse && window.devicePixelRatio >= 3) return "低";
+    if (mobileUa || touch && window.innerWidth <= 1024 || memory <= 3 || cores <= 4) return "低";
     if (coarse || memory <= 6 || cores <= 6) return "中";
     return "高";
   }

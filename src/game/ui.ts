@@ -1,4 +1,4 @@
-import { EMPLOYEES, MAIN_QUESTS, TOWERS, WEAPONS, towerUpgradeCost } from "./content";
+import { EMPLOYEES, MAIN_QUESTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerUpgradeCost } from "./content";
 import { currentLoopDefinition, currentMainQuest, type QuestCompletion } from "./quests";
 import type { EmployeeId, RuntimeState, TowerId } from "./state";
 
@@ -6,6 +6,7 @@ type ShopCategory = "weapon" | "employee" | "pasture";
 
 export class UiController {
   readonly joystick: HTMLElement;
+  readonly touchMode: boolean;
   private readonly intro: HTMLElement;
   private readonly loadingBar: HTMLElement;
   private readonly loadingText: HTMLElement;
@@ -18,6 +19,7 @@ export class UiController {
   private readonly baseHealth: HTMLElement;
   private readonly baseHealthFill: HTMLElement;
   private readonly questPanel: HTMLElement;
+  private readonly questToggle: HTMLButtonElement;
   private readonly questChapter: HTMLElement;
   private readonly questTitle: HTMLElement;
   private readonly questLog: HTMLElement;
@@ -48,6 +50,12 @@ export class UiController {
   onTowerAction: (id: TowerId) => void = () => undefined;
 
   constructor(root: HTMLElement) {
+    const coarsePointer = matchMedia("(pointer: coarse)").matches;
+    const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      || /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+    this.touchMode = coarsePointer || mobileUa || navigator.maxTouchPoints > 0 && window.innerWidth <= 1100;
+    root.classList.toggle("is-touch", this.touchMode);
+    const startHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "WASD 移動 · 空白鍵攻擊";
     root.innerHTML = `
       <div class="vignette"></div>
       <header class="hud hud--top">
@@ -60,7 +68,7 @@ export class UiController {
         <div class="hud-status"><div class="wave-chip"><small>30 波戰役</small><b id="hud-wave">黎明 · 0 / 30</b></div><small id="performance-chip">高畫質</small></div>
       </header>
 
-      <button class="panel-toggle panel-toggle--quest" id="quest-toggle" aria-label="開關生存手冊">手冊</button>
+      <button class="panel-toggle panel-toggle--quest" id="quest-toggle" aria-label="開關生存手冊" aria-controls="quest-panel" aria-expanded="false">手冊 01 · 0/1</button>
       <aside class="quest-panel" id="quest-panel">
         <div class="quest-panel__line"><span id="quest-chapter">生存手冊 · 01 / 15</span><i></i><button id="quest-close" aria-label="收合生存手冊">×</button></div>
         <h2 id="quest-title">前往東側牧場</h2>
@@ -74,7 +82,7 @@ export class UiController {
         </section>
       </aside>
 
-      <button class="panel-toggle panel-toggle--shop" id="shop-toggle">整備</button>
+      <button class="panel-toggle panel-toggle--shop" id="shop-toggle" aria-label="開關整備商店" aria-controls="command-panel" aria-expanded="false">整備</button>
       <aside class="command-panel" id="command-panel">
         <div class="command-panel__head"><div><small>北境補給站</small><b>武裝與自動化</b></div><button id="shop-close" aria-label="關閉整備商店">×</button></div>
         <section><h3>武器鏈</h3><div class="shop-grid">${WEAPONS.map((item) => `<button class="shop-item" data-category="weapon" data-id="${item.id}"><span><b>${item.name}</b><small>${item.description}</small></span><em data-price="weapon-${item.id}"></em></button>`).join("")}</div></section>
@@ -97,7 +105,7 @@ export class UiController {
           <p>在永夜暴雪中狩獵、經營最後一間肉舖，<br>並在三十次鐘聲裡守住僅存的燈火。</p>
           <div class="intro__features"><span>30 波戰役</span><span>經營 × 塔防</span><span>本地存檔</span></div>
           <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
-          <button class="start-button" id="start-button" disabled><span>踏 入 暴 風</span><small>WASD 移動 · 空白鍵攻擊</small></button>
+          <button class="start-button" id="start-button" disabled><span>踏 入 暴 風</span><small>${startHint}</small></button>
         </div>
         <div class="intro__side"><span>THE LAST BUTCHER</span><i></i><small>TAIPEI / LOCAL SAVE</small></div>
       </section>
@@ -121,6 +129,7 @@ export class UiController {
     this.baseHealth = get("base-health");
     this.baseHealthFill = get("base-health-fill");
     this.questPanel = get("quest-panel");
+    this.questToggle = get("quest-toggle");
     this.questChapter = get("quest-chapter");
     this.questTitle = get("quest-title");
     this.questLog = get("quest-log");
@@ -147,16 +156,27 @@ export class UiController {
     this.waveButton.addEventListener("click", () => this.onWave());
     get("result-button").addEventListener("click", () => location.reload());
     get("reset-button").addEventListener("click", () => this.onReset());
-    get("shop-toggle").addEventListener("click", () => {
+    const shopToggle = get<HTMLButtonElement>("shop-toggle");
+    shopToggle.addEventListener("click", () => {
       this.questPanel.classList.remove("is-open");
       this.commandPanel.classList.toggle("is-open");
+      this.questToggle.setAttribute("aria-expanded", "false");
+      shopToggle.setAttribute("aria-expanded", String(this.commandPanel.classList.contains("is-open")));
     });
-    get("shop-close").addEventListener("click", () => this.commandPanel.classList.remove("is-open"));
-    get("quest-toggle").addEventListener("click", () => {
+    get("shop-close").addEventListener("click", () => {
+      this.commandPanel.classList.remove("is-open");
+      shopToggle.setAttribute("aria-expanded", "false");
+    });
+    this.questToggle.addEventListener("click", () => {
       this.commandPanel.classList.remove("is-open");
       this.questPanel.classList.toggle("is-open");
+      shopToggle.setAttribute("aria-expanded", "false");
+      this.questToggle.setAttribute("aria-expanded", String(this.questPanel.classList.contains("is-open")));
     });
-    get("quest-close").addEventListener("click", () => this.questPanel.classList.remove("is-open"));
+    get("quest-close").addEventListener("click", () => {
+      this.questPanel.classList.remove("is-open");
+      this.questToggle.setAttribute("aria-expanded", "false");
+    });
     this.commandPanel.addEventListener("click", (event) => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(".shop-item");
       if (!button || button.disabled) return;
@@ -220,6 +240,7 @@ export class UiController {
       this.questProgress.textContent = `${progress} / ${quest.target}`;
       this.questProgressFill.style.width = `${progress / quest.target * 100}%`;
       this.questReward.textContent = quest.rewardLabel;
+      this.questToggle.textContent = `手冊 ${String(quest.chapter).padStart(2, "0")} · ${progress}/${quest.target}`;
     } else {
       this.questChapter.textContent = "生存手冊 · 完成 ✓";
       this.questTitle.textContent = "北境守望者";
@@ -227,6 +248,7 @@ export class UiController {
       this.questProgress.textContent = "15 / 15";
       this.questProgressFill.style.width = "100%";
       this.questReward.textContent = "全章完成";
+      this.questToggle.textContent = "手冊 · 全章完成 ✓";
     }
     const loop = state.quest.loop;
     const definition = currentLoopDefinition(state);
@@ -241,29 +263,39 @@ export class UiController {
   }
 
   private updateShop(state: RuntimeState): void {
-    const set = (key: string, text: string, disabled: boolean, active = false): void => {
+    const set = (key: string, text: string, disabled: boolean, active = false, lockText?: string): void => {
       const label = this.commandPanel.querySelector<HTMLElement>(`[data-price="${key}"]`);
       const button = label?.closest<HTMLButtonElement>(".shop-item");
       if (!label || !button) return;
-      label.textContent = text;
-      button.disabled = disabled;
+      label.textContent = lockText ?? text;
+      button.disabled = disabled || Boolean(lockText);
       button.classList.toggle("is-owned", active);
+      button.classList.toggle("is-locked", Boolean(lockText));
     };
     for (const item of WEAPONS) {
       const owned = item.id === "machete" || item.id === "axe" && state.weapon !== "machete" || item.id === "smg" && state.weapon === "smg";
       const equipped = state.weapon === item.id;
-      set(`weapon-${item.id}`, equipped ? "使用中" : owned ? "已擁有" : `✦ ${item.price}`, equipped || owned || state.money < item.price || state.waveActive, equipped);
+      const unlockChapter = item.id === "axe" ? SHOP_UNLOCK_CHAPTER.axe : item.id === "smg" ? SHOP_UNLOCK_CHAPTER.smg : 0;
+      const chapterLock = !owned && unlockChapter > 0 && !hasCompletedChapter(state, unlockChapter)
+        ? `🔒 完成手冊第 ${unlockChapter} 章解鎖`
+        : undefined;
+      const chainLock = !owned && item.id === "smg" && state.weapon === "machete" && !chapterLock ? "🔒 需先購買迴旋斧" : undefined;
+      set(`weapon-${item.id}`, equipped ? "使用中" : owned ? "已擁有" : `✦ ${item.price}`, equipped || owned || state.money < item.price || state.waveActive, equipped, chapterLock ?? chainLock);
     }
     for (const item of EMPLOYEES) {
       const owned = state.employees[item.id as EmployeeId];
-      set(`employee-${item.id}`, owned ? "已雇用" : `✦ ${item.price}`, owned || state.money < item.price || state.waveActive, owned);
+      const lock = !owned && !hasCompletedChapter(state, SHOP_UNLOCK_CHAPTER.employeeShop) ? `🔒 完成手冊第 ${SHOP_UNLOCK_CHAPTER.employeeShop} 章解鎖` : undefined;
+      set(`employee-${item.id}`, owned ? "已雇用" : `✦ ${item.price}`, owned || state.money < item.price || state.waveActive, owned, lock);
     }
-    set("pasture-pasture2", state.pasture2Unlocked ? "已開放" : "✦ 260", state.pasture2Unlocked || state.money < 260 || state.waveActive, state.pasture2Unlocked);
+    const pastureLock = !state.pasture2Unlocked && !hasCompletedChapter(state, SHOP_UNLOCK_CHAPTER.pasture2) ? `🔒 完成手冊第 ${SHOP_UNLOCK_CHAPTER.pasture2} 章解鎖` : undefined;
+    set("pasture-pasture2", state.pasture2Unlocked ? "已開放" : "✦ 260", state.pasture2Unlocked || state.money < 260 || state.waveActive, state.pasture2Unlocked, pastureLock);
     for (const item of TOWERS) {
       const level = state.towers[item.id];
       const price = level === 0 ? item.price : towerUpgradeCost(item.id, level);
       const text = level >= 3 ? "滿級 Lv.3" : level === 0 ? `建造 ✦ ${price}` : `升級 Lv.${level + 1} · ✦ ${price}`;
-      set(`tower-${item.id}`, text, level >= 3 || state.money < price || state.waveActive, level > 0);
+      const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.defenseShop : SHOP_UNLOCK_CHAPTER.towerUpgrade;
+      const lock = level < 3 && !hasCompletedChapter(state, unlockChapter) ? `🔒 完成手冊第 ${unlockChapter} 章解鎖` : undefined;
+      set(`tower-${item.id}`, text, level >= 3 || state.money < price || state.waveActive, level > 0, lock);
     }
   }
 
