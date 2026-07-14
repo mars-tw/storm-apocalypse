@@ -4,6 +4,16 @@ import type { EmployeeId, ProtagonistId, RuntimeState, TowerId } from "./state";
 
 type ShopCategory = "weapon" | "employee" | "pasture";
 
+function detectTouchMode(): boolean {
+  const userAgentData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;
+  const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+  if (userAgentData?.mobile || mobileUa) return true;
+
+  const coarsePointer = matchMedia("(pointer: coarse)").matches || matchMedia("(any-pointer: coarse)").matches;
+  return coarsePointer || navigator.maxTouchPoints > 0 && window.innerWidth <= 1100;
+}
+
 export class UiController {
   readonly joystick: HTMLElement;
   readonly touchMode: boolean;
@@ -57,15 +67,14 @@ export class UiController {
   onTowerAction: (id: TowerId) => void = () => undefined;
 
   constructor(root: HTMLElement, state: RuntimeState) {
-    const coarsePointer = matchMedia("(pointer: coarse)").matches;
-    const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      || /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
-    this.touchMode = coarsePointer || mobileUa || navigator.maxTouchPoints > 0 && window.innerWidth <= 1100;
+    this.touchMode = detectTouchMode();
     root.classList.toggle("is-touch", this.touchMode);
     const startHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "WASD 移動 · 空白鍵攻擊";
+    const promptKey = this.touchMode ? "搖桿" : "WASD";
+    const promptHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "穿越雪地 · 空白鍵揮砍";
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
-    root.dataset.uiVersion = "R6";
+    root.dataset.uiVersion = "R7";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -128,7 +137,7 @@ export class UiController {
         <section><h3>防禦塔</h3><div class="shop-grid">${TOWERS.map((item) => `<button class="shop-item" data-tower="${item.id}">${icon(`tower-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small>${item.description}</small></span><em data-price="tower-${item.id}"></em></button>`).join("")}</div></section>
       </aside>
 
-      <div class="context-prompt" id="context-prompt"><kbd>WASD</kbd><span>穿越雪地，前往牧場</span></div>
+      <div class="context-prompt" id="context-prompt"><kbd>${promptKey}</kbd><span>${promptHint}</span></div>
       <div class="bottom-controls">
         <div class="joystick" aria-label="移動搖桿"><span class="joystick__ring"></span><span class="joystick__knob"></span></div>
         <button class="wave-button" id="wave-button" disabled><small>準備防守</small><b>至少建造一座塔</b></button>

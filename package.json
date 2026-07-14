@@ -1,13 +1,14 @@
 {
   "name": "storm-apocalypse",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "test:smoke": "node scripts/test-smoke.mjs",
+    "test:smoke:headed": "node scripts/test-smoke.mjs --headed",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {

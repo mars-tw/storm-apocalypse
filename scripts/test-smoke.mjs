@@ -15,6 +15,7 @@ const heroOnly = scenarioFilter === "heroes";
 const loadTimeout = 180_000;
 const screenshotDir = process.env.SMOKE_SCREENSHOT_DIR;
 const captureOnly = process.env.SMOKE_CAPTURE_ONLY === "1";
+const headedOnly = process.argv.includes("--headed") || process.env.SMOKE_HEADED === "1";
 const results = [];
 let server;
 
@@ -226,6 +227,75 @@ async function checkQualityDetection(browser, config) {
     const shadowMode = await canvas.getAttribute("data-shadow-mode");
     const passed = quality === config.expectedQuality && shadowMode === config.expectedShadow;
     record(config.label, "automatic quality", passed, `quality=${quality}, shadow=${shadowMode}, cores=${String(config.cores)}, memory=${String(config.memory)}`);
+  } finally {
+    await context.close();
+  }
+}
+
+async function checkInputHints(browser, config) {
+  const context = await browser.newContext({
+    viewport: config.viewport,
+    hasTouch: config.touch,
+    isMobile: config.touch,
+    deviceScaleFactor: 1,
+    userAgent: config.touch
+      ? "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36"
+      : undefined,
+  });
+  await context.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: fixture() });
+  const page = await context.newPage();
+  const label = config.touch ? "hints/mobile 390×844" : "hints/desktop 1440×900";
+  try {
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: loadTimeout });
+    await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
+    const startHint = await page.locator("#start-button small").innerText();
+    const contextHint = await page.locator("#context-prompt").innerText();
+    if (config.touch) {
+      record(label, "CTA uses touch hint without WASD", !startHint.includes("WASD") && startHint.includes("虛擬搖桿"), startHint);
+      record(label, "game prompt uses touch hint without WASD", !contextHint.includes("WASD") && contextHint.includes("虛擬搖桿"), contextHint);
+    } else {
+      record(label, "CTA keeps desktop WASD hint", startHint.includes("WASD"), startHint);
+      record(label, "game prompt keeps desktop WASD hint", contextHint.includes("WASD"), contextHint);
+    }
+  } finally {
+    await context.close();
+  }
+}
+
+async function checkHeadedWebGl(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+  await context.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: fixture() });
+  const page = await context.newPage();
+  const consoleMessages = [];
+  const observedAt = Date.now();
+  page.on("console", (message) => {
+    if (message.type() === "warning" || message.type() === "error") consoleMessages.push(`+${Date.now() - observedAt}ms ${message.type()}: ${message.text()}`);
+  });
+  page.on("pageerror", (error) => consoleMessages.push(`+${Date.now() - observedAt}ms pageerror: ${error.message}`));
+  try {
+    await page.goto(qualityUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
+    await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
+    await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
+    await page.locator("#start-button").click();
+    await page.locator("#intro").waitFor({ state: "detached", timeout: 15_000 });
+    await page.waitForTimeout(30_000);
+
+    const canvas = page.locator("#game-canvas");
+    const state = {
+      quality: await canvas.getAttribute("data-quality"),
+      shadow: await canvas.getAttribute("data-shadow-mode"),
+      postEffects: await canvas.getAttribute("data-post-effects"),
+      performanceTier: await canvas.getAttribute("data-performance-tier"),
+      renderScale: await canvas.getAttribute("data-render-scale"),
+    };
+    const glMessages = consoleMessages.filter((message) => /GL_INVALID|WebGL|glDraw|sampler type|texture format|too many errors/i.test(message));
+    const nonGlMessages = consoleMessages.filter((message) => !glMessages.includes(message));
+    record(
+      "headed Chrome 1440×900",
+      "30 seconds produce zero WebGL warnings",
+      glMessages.length === 0,
+      `browser=${browser.version()}, state=${JSON.stringify(state)}, GL warnings=${glMessages.length}, console warn/error=${consoleMessages.length}${glMessages.length ? `, GL sample=${glMessages.slice(0, 3).join(" | ")}` : ""}${nonGlMessages.length ? `, non-GL sample=${nonGlMessages.slice(0, 3).join(" | ")}` : ""}`,
+    );
   } finally {
     await context.close();
   }
@@ -543,42 +613,50 @@ async function runLayout(browser, viewport) {
 try {
   await checkR6Assets();
   await ensureServer();
-  const browser = await chromium.launch({ headless: true, args: ["--use-angle=swiftshader"] });
+  const browser = await chromium.launch(headedOnly
+    ? { headless: false, channel: "chrome" }
+    : { headless: true, args: ["--use-angle=swiftshader"] });
   try {
-    if ((!scenarioFilter || heroOnly) && !captureOnly) {
-      if (!heroOnly) {
-      const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125 Safari/537.36";
-      const mobileUa = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36";
-      for (const config of [
-        { label: "quality/4-core desktop", viewport: { width: 1440, height: 900 }, touch: false, mobile: false, userAgent: desktopUa, cores: 4, memory: 4, expectedQuality: "中", expectedShadow: "realtime" },
-        { label: "quality/missing desktop metrics", viewport: { width: 1440, height: 900 }, touch: false, mobile: false, userAgent: desktopUa, cores: undefined, memory: undefined, expectedQuality: "中", expectedShadow: "realtime" },
-        { label: "quality/compact constrained touch", viewport: { width: 900, height: 700 }, touch: true, mobile: false, userAgent: desktopUa, cores: 4, memory: 4, expectedQuality: "低", expectedShadow: "blob" },
-        { label: "quality/mobile", viewport: { width: 390, height: 844 }, touch: true, mobile: true, userAgent: mobileUa, cores: 8, memory: 8, expectedQuality: "低", expectedShadow: "blob" },
-      ]) {
+    if (headedOnly) {
+      await checkHeadedWebGl(browser);
+    } else {
+      if ((!scenarioFilter || heroOnly) && !captureOnly) {
+        if (!heroOnly) {
+          const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125 Safari/537.36";
+          const mobileUa = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36";
+          for (const config of [
+            { label: "quality/4-core desktop", viewport: { width: 1440, height: 900 }, touch: false, mobile: false, userAgent: desktopUa, cores: 4, memory: 4, expectedQuality: "中", expectedShadow: "realtime" },
+            { label: "quality/missing desktop metrics", viewport: { width: 1440, height: 900 }, touch: false, mobile: false, userAgent: desktopUa, cores: undefined, memory: undefined, expectedQuality: "中", expectedShadow: "realtime" },
+            { label: "quality/compact constrained touch", viewport: { width: 900, height: 700 }, touch: true, mobile: false, userAgent: desktopUa, cores: 4, memory: 4, expectedQuality: "低", expectedShadow: "blob" },
+            { label: "quality/mobile", viewport: { width: 390, height: 844 }, touch: true, mobile: true, userAgent: mobileUa, cores: 8, memory: 8, expectedQuality: "低", expectedShadow: "blob" },
+          ]) {
+            try {
+              await checkQualityDetection(browser, config);
+            } catch (error) {
+              record(config.label, "automatic quality", false, error instanceof Error ? error.message : String(error));
+            }
+          }
+          await checkInputHints(browser, { viewport: { width: 1440, height: 900 }, touch: false });
+          await checkInputHints(browser, { viewport: { width: 390, height: 844 }, touch: true });
+        }
         try {
-          await checkQualityDetection(browser, config);
+          await checkProtagonistSelectionAndAnimations(browser);
         } catch (error) {
-          record(config.label, "automatic quality", false, error instanceof Error ? error.message : String(error));
+          record("hero/coverage", "protagonist animation coverage completes", false, error instanceof Error ? error.message : String(error));
         }
       }
-      }
-      try {
-        await checkProtagonistSelectionAndAnimations(browser);
-      } catch (error) {
-        record("hero/coverage", "protagonist animation coverage completes", false, error instanceof Error ? error.message : String(error));
-      }
-    }
-    for (const scenario of [
-      ["1440×900", () => runCombat(browser, { viewport: { width: 1440, height: 900 }, touch: false })],
-      ["390×844", () => runCombat(browser, { viewport: { width: 390, height: 844 }, touch: true })],
-      ["844×390", () => runLayout(browser, { width: 844, height: 390 })],
-    ]) {
-      if (heroOnly) continue;
-      if (scenarioFilter && scenario[0] !== scenarioFilter) continue;
-      try {
-        await scenario[1]();
-      } catch (error) {
-        record(scenario[0], "scenario completes", false, error instanceof Error ? error.message : String(error));
+      for (const scenario of [
+        ["1440×900", () => runCombat(browser, { viewport: { width: 1440, height: 900 }, touch: false })],
+        ["390×844", () => runCombat(browser, { viewport: { width: 390, height: 844 }, touch: true })],
+        ["844×390", () => runLayout(browser, { width: 844, height: 390 })],
+      ]) {
+        if (heroOnly) continue;
+        if (scenarioFilter && scenario[0] !== scenarioFilter) continue;
+        try {
+          await scenario[1]();
+        } catch (error) {
+          record(scenario[0], "scenario completes", false, error instanceof Error ? error.message : String(error));
+        }
       }
     }
   } finally {

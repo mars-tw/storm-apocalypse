@@ -5,6 +5,7 @@ import {
   AssetContainer,
   Color3,
   Color4,
+  Constants,
   DefaultRenderingPipeline,
   DirectionalLight,
   DynamicTexture,
@@ -205,6 +206,7 @@ export class StormGame {
   private uiUpdateTimer = 0;
   private lowFpsSamples = 0;
   private performanceTier = 0;
+  private blobShadowsActive = false;
   private renderPixelRatio = 1;
   private readonly smokeMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke");
   private readonly showcaseMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("showcase");
@@ -301,7 +303,7 @@ export class StormGame {
       canvas.dataset.renderScale = this.renderPixelRatio.toFixed(2);
       canvas.dataset.devicePixelRatio = devicePixelRatio.toFixed(2);
       canvas.dataset.performanceTier = this.performanceTier.toString();
-      canvas.dataset.shadowMode = this.shadows ? "realtime" : "blob";
+      canvas.dataset.shadowMode = this.blobShadowsActive || !this.shadows ? "blob" : "realtime";
       canvas.dataset.postEffects = this.glow || this.cinematicPipeline ? "on" : "off";
       canvas.dataset.fogDensity = this.scene.fogDensity.toFixed(4);
       canvas.dataset.saveVersion = this.state.version.toString();
@@ -466,7 +468,14 @@ export class StormGame {
 
   private createSnowTexture(): DynamicTexture {
     const textureSize = this.state.quality === "低" ? 256 : this.state.quality === "中" ? 384 : 512;
-    const texture = new DynamicTexture("wind-swept-snow-texture", textureSize, this.scene, false);
+    const texture = new DynamicTexture(
+      "wind-swept-snow-texture",
+      textureSize,
+      this.scene,
+      false,
+      Texture.TRILINEAR_SAMPLINGMODE,
+      Constants.TEXTUREFORMAT_RGBA,
+    );
     const context = texture.getContext() as unknown as CanvasRenderingContext2D;
     const image = context.createImageData(textureSize, textureSize);
     let seed = 1917;
@@ -1887,6 +1896,11 @@ export class StormGame {
       for (const mesh of container.meshes) {
         const material = mesh.material;
         if (!material) continue;
+        // Different GLBs can reuse a texture display name while pointing at a
+        // different source/internal texture (for example both texture packs
+        // call their atlas "colormap"). Only deduplicate texture-free authored
+        // materials; Babylon already shares each compatible loaded texture.
+        if (material.getActiveTextures().length > 0) continue;
         const pbr = material as PBRMaterial;
         const key = [
           material.getClassName(),
@@ -1894,7 +1908,6 @@ export class StormGame {
           pbr.albedoColor?.toHexString() ?? "",
           pbr.metallic ?? "",
           pbr.roughness ?? "",
-          pbr.albedoTexture?.name ?? "",
         ].join("|");
         const shared = canonical.get(key);
         if (shared && shared !== material) {
@@ -1955,7 +1968,7 @@ export class StormGame {
   }
 
   private addActorShadows(actor: Actor): void {
-    if (!this.shadows) {
+    if (!this.shadows || this.blobShadowsActive) {
       this.createBlobShadow(actor.root);
       return;
     }
@@ -1991,7 +2004,7 @@ export class StormGame {
   }
 
   private castShadows(mesh: AbstractMesh): void {
-    if (!this.shadows) {
+    if (!this.shadows || this.blobShadowsActive) {
       mesh.receiveShadows = false;
       return;
     }
@@ -2238,12 +2251,25 @@ export class StormGame {
   }
 
   private dropExpensiveRenderingFeatures(): void {
+    // Keep the PCF sampler contract and its compatible depth texture alive, but
+    // stop paying for the per-frame shadow pass. Changing/removing that texture
+    // while Babylon replaces frozen effects can leave a stale shadow sampler on
+    // strict WebGL drivers. Darkness 1 hides the retained render-once map while
+    // the existing blob fallback preserves the R6 degraded visual result.
+    this.blobShadowsActive = true;
+    if (this.shadows) {
+      this.shadows.setDarkness(1);
+      const shadowMap = this.shadows.getShadowMap();
+      if (shadowMap) {
+        shadowMap.refreshRate = 0;
+        shadowMap.resetRefreshCounter();
+      }
+    }
+
     this.cinematicPipeline?.dispose();
     this.cinematicPipeline = undefined;
     this.glow?.dispose();
     this.glow = undefined;
-    this.shadows?.dispose();
-    this.shadows = undefined;
     this.shopLight.intensity = Math.min(this.shopLight.intensity, 8);
 
     const actors: Actor[] = [
