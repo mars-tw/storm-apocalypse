@@ -317,9 +317,23 @@ async function checkInputHints(browser, config) {
       ? "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36"
       : undefined,
   });
+  if (config.touchscreenDesktop) {
+    // 真觸控筆電特徵：主指標 fine（滑鼠）、any-pointer coarse、maxTouchPoints>0
+    // Playwright hasTouch 會把主指標也變 coarse，與實機不符，故用覆寫模擬
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, "maxTouchPoints", { get: () => 10 });
+      const nativeMatchMedia = window.matchMedia.bind(window);
+      window.matchMedia = (query) => {
+        if (/any-pointer:\s*coarse/.test(query)) return { matches: true, media: query, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, onchange: null, dispatchEvent: () => false };
+        return nativeMatchMedia(query);
+      };
+    });
+  }
   await context.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: fixture() });
   const page = await context.newPage();
-  const label = config.touch ? "hints/mobile 390×844" : "hints/desktop 1440×900";
+  const label = config.touchscreenDesktop
+    ? "hints/touchscreen-desktop 1440×900"
+    : config.touch ? "hints/mobile 390×844" : "hints/desktop 1440×900";
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: loadTimeout });
     await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
@@ -715,6 +729,8 @@ try {
           }
           await checkInputHints(browser, { viewport: { width: 1440, height: 900 }, touch: false });
           await checkInputHints(browser, { viewport: { width: 390, height: 844 }, touch: true });
+          // 觸控筆電：有觸控能力但主指標是滑鼠、寬視口 → 必須維持桌機 WASD 介面
+          await checkInputHints(browser, { viewport: { width: 1440, height: 900 }, touch: false, touchscreenDesktop: true });
         }
         try {
           await checkProtagonistSelectionAndAnimations(browser);

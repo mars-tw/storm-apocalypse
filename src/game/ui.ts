@@ -10,8 +10,10 @@ function detectTouchMode(): boolean {
     || /Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
   if (userAgentData?.mobile || mobileUa) return true;
 
-  const coarsePointer = matchMedia("(pointer: coarse)").matches || matchMedia("(any-pointer: coarse)").matches;
-  return coarsePointer || navigator.maxTouchPoints > 0 && window.innerWidth <= 1100;
+  // 主指標為準：觸控筆電（滑鼠為主但有觸控螢幕）必須維持桌機操作介面
+  const primaryCoarse = matchMedia("(pointer: coarse)").matches;
+  const touchCapable = matchMedia("(any-pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+  return primaryCoarse || touchCapable && window.innerWidth <= 1100;
 }
 
 export class UiController {
