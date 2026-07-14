@@ -175,7 +175,14 @@ def triangle_count():
     return sum(max(0, len(poly.vertices) - 2) for mesh in bpy.data.meshes for poly in mesh.polygons)
 
 
-def export_glb(filename, model_root):
+def export_glb(filename, model_root, character_forward=False):
+    """Export a GLB, optionally converting authored Blender +Y faces to game +Z.
+
+    Babylon rotates actor containers toward +Z. Blender-authored characters face
+    +Y, which the glTF Y-up conversion exposes as -Z. Keeping the half-turn at
+    the exported character root fixes that convention once in the asset pipeline
+    without adding per-character yaw compensation in game code.
+    """
     parent_loose(model_root)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUTPUT_DIR / filename
@@ -185,23 +192,31 @@ def export_glb(filename, model_root):
     for child in model_root.children_recursive:
         child.select_set(True)
     bpy.context.view_layer.objects.active = model_root
-    bpy.ops.export_scene.gltf(
-        filepath=str(out),
-        export_format="GLB",
-        use_selection=True,
-        export_yup=True,
-        export_apply=False,
-        export_cameras=False,
-        export_lights=False,
-        export_materials="EXPORT",
-        export_animations=True,
-        export_animation_mode="NLA_TRACKS",
-        export_nla_strips=True,
-        export_force_sampling=True,
-        export_frame_step=1,
-        export_skins=True,
-        export_def_bones=True,
-    )
+    original_rotation = model_root.rotation_euler.copy()
+    if character_forward:
+        model_root.rotation_euler.z += math.pi
+    try:
+        bpy.context.view_layer.update()
+        bpy.ops.export_scene.gltf(
+            filepath=str(out),
+            export_format="GLB",
+            use_selection=True,
+            export_yup=True,
+            export_apply=False,
+            export_cameras=False,
+            export_lights=False,
+            export_materials="EXPORT",
+            export_animations=True,
+            export_animation_mode="NLA_TRACKS",
+            export_nla_strips=True,
+            export_force_sampling=True,
+            export_frame_step=1,
+            export_skins=True,
+            export_def_bones=True,
+        )
+    finally:
+        model_root.rotation_euler = original_rotation
+        bpy.context.view_layer.update()
     size = out.stat().st_size
     print(f"EXPORTED {filename} | {triangle_count()} tris | {size} bytes")
 

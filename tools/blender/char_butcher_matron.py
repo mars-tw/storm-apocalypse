@@ -6,5 +6,5 @@ from blender_utils import export_glb, render_portrait
 from hero_rig_factory import build_butcher_matron
 
 model = build_butcher_matron()
-export_glb("characters/protagonist-butcher-matron.glb", model)
+export_glb("characters/protagonist-butcher-matron.glb", model, character_forward=True)
 render_portrait("protagonist-butcher-matron.png", camera_location=(2.55, 4.65, 2.2))

@@ -271,16 +271,33 @@ async function checkProtagonistSelectionAndAnimations(browser) {
         expectedClips.every((clip) => clips.some((name) => name.endsWith(clip))),
         `clips=${clips.join(",")}`,
       );
-      await page.keyboard.down("w");
+      await page.keyboard.down("d");
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "run", undefined, { timeout: 5_000 });
+      await page.waitForTimeout(650);
       const runAnimation = await canvas.getAttribute("data-player-animation");
-      await page.keyboard.up("w");
+      const runForwardX = Number(await canvas.getAttribute("data-player-mesh-forward-x"));
+      const runForwardZ = Number(await canvas.getAttribute("data-player-mesh-forward-z"));
+      await page.keyboard.up("d");
       record(`hero/${protagonist}`, "movement switches to run", runAnimation === "run", `animation=${runAnimation}`);
+      record(
+        `hero/${protagonist}`,
+        "moving right faces mesh toward +X",
+        runForwardX > 0.9 && Math.abs(runForwardZ) < 0.2,
+        `meshForward=(${runForwardX.toFixed(3)},${runForwardZ.toFixed(3)})`,
+      );
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "idle", undefined, { timeout: 15_000 });
       await page.keyboard.down("Space");
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "attack_melee", undefined, { timeout: 15_000 });
+      const attackForwardX = Number(await canvas.getAttribute("data-player-mesh-forward-x"));
+      const attackForwardZ = Number(await canvas.getAttribute("data-player-mesh-forward-z"));
       await page.keyboard.up("Space");
       record(`hero/${protagonist}`, "attack interrupts with melee clip", true, "animation=attack_melee observed");
+      record(
+        `hero/${protagonist}`,
+        "melee attack preserves +X mesh facing",
+        attackForwardX > 0.9 && Math.abs(attackForwardZ) < 0.2,
+        `meshForward=(${attackForwardX.toFixed(3)},${attackForwardZ.toFixed(3)})`,
+      );
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "idle", undefined, { timeout: 15_000 });
       record(`hero/${protagonist}`, "one-shot returns to idle", true, "animation=idle");
       record(`hero/${protagonist}`, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");

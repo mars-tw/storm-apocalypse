@@ -59,7 +59,7 @@ Canvas smoke 指標新增：`data-player-animation`、`data-player-clips`、`dat
 
 ## Smoke／build
 
-- `npm run test:smoke`：PENDING_FINAL_SMOKE
+- `npm run test:smoke`：**62 / 62 checks passed，0 failed**。
 - 新增三位主角逐一選角、四 clip 契約、`idle → run → attack_melee → idle`；桌面與觸控另驗 `attack_ranged`、塔發射 `attack`、遠距塔 `paused`。
 - `npm run build`：通過；TypeScript 零錯，Vite production build 成功。僅保留既有 Babylon 大 chunk 警告，沒有新增 build error。
 - Blender GLB 回匯：六個成品 clip／節點全部正確，三主角骨架均為同名 18 骨。
@@ -77,4 +77,3 @@ Canvas smoke 指標新增：`data-player-animation`、`data-player-clips`、`dat
 ![三塔 attack 中間幀](screenshots/blender-r2/towers-attack-midframe-r2.png)
 
 - 開波後等到 `ballista:attack,frost:attack,cannon:attack` 同幀才截圖；畫面可見弩塔上層機件、寒霜晶簇擴張脈衝與火砲塔火盆／砲管。in-app Browser console error 為 0。
-

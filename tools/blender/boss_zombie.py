@@ -42,4 +42,4 @@ for index, x in enumerate((-0.55, 0, 0.55)):
     add_cylinder(f"ArmorBolt{index}", (x, 0.8, 2.72), 0.07, 0.08, rust, 7, (math.pi / 2, 0, 0))
 add_box("BackPlate", (0, -0.62, 2.25), (1.42, 0.16, 1.18), iron, (math.radians(3), 0, math.radians(-4)))
 
-export_glb("boss-zombie.glb", model)
+export_glb("boss-zombie.glb", model, character_forward=True)

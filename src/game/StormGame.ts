@@ -38,6 +38,8 @@ import type { UiController } from "./ui";
 
 interface Actor {
   root: TransformNode;
+  meshForwardNode: TransformNode;
+  meshForwardAxis: Vector3;
   animations: AnimationGroup[];
   currentAnimation: string;
 }
@@ -286,8 +288,11 @@ export class StormGame {
       canvas.dataset.protagonist = this.state.protagonistId;
       canvas.dataset.customer = this.customer?.identity ?? "anonymous";
       if (this.player) {
+        const meshForward = this.player.meshForwardNode.getDirection(this.player.meshForwardAxis).normalize();
         canvas.dataset.playerX = this.player.root.position.x.toFixed(2);
         canvas.dataset.playerZ = this.player.root.position.z.toFixed(2);
+        canvas.dataset.playerMeshForwardX = meshForward.x.toFixed(3);
+        canvas.dataset.playerMeshForwardZ = meshForward.z.toFixed(3);
         canvas.dataset.weapon = this.state.weapon;
         canvas.dataset.attackCount = this.attackCount.toString();
         canvas.dataset.cowsKilled = this.state.stats.cowsKilled.toString();
@@ -1325,7 +1330,7 @@ export class StormGame {
     tail.material = fur;
     this.castShadows(body);
     this.castShadows(head);
-    return { root, animations: [], currentAnimation: "" };
+    return { root, meshForwardNode: root, meshForwardAxis: Vector3.Forward(), animations: [], currentAnimation: "" };
   }
 
   private updateStaff(dt: number): void {
@@ -1719,7 +1724,11 @@ export class StormGame {
     for (const node of entries.rootNodes) node.parent = root;
     root.position.copyFrom(position);
     root.scaling.setAll(scale);
-    return { root, animations: entries.animationGroups, currentAnimation: "" };
+    const meshForwardNode = root.getChildTransformNodes(false).find((node) =>
+      node.name.includes("Protagonist") || node.name.includes("Npc"),
+    ) ?? root;
+    const meshForwardAxis = file.startsWith("custom/characters/") ? Vector3.Backward() : Vector3.Forward();
+    return { root, meshForwardNode, meshForwardAxis, animations: entries.animationGroups, currentAnimation: "" };
   }
 
   private replacePlayerModel(): void {
