@@ -73,6 +73,7 @@ interface ZombieActor extends Actor {
   type: ZombieType;
   slowTimer: number;
   deathEndsAt: number;
+  animationLodPaused: boolean;
 }
 
 interface PendingPlayerAttack {
@@ -123,8 +124,15 @@ interface CustomerActor extends Actor {
   identity: NamedCustomerId | null;
 }
 
+const R8_ZOMBIE_MODELS = [
+  "custom/zombies/zombie-ash.glb",
+  "custom/zombies/zombie-frost.glb",
+  "custom/zombies/zombie-rust.glb",
+] as const;
+
 const ASSET_FILES = [
-  "cow.glb", "survivor.glb", "customer.glb", "zombie.glb",
+  "cow.glb", "survivor.glb", "customer.glb",
+  ...R8_ZOMBIE_MODELS,
   "pine-a.glb", "pine-b.glb", "rock.glb",
   "fence.glb", "fence-gate.glb", "holiday/cabin-wall.glb", "holiday/cabin-wreath.glb",
   "holiday/cabin-window.glb", "holiday/cabin-door.glb", "holiday/cabin-roof.glb", "holiday/cabin-roof-point.glb",
@@ -183,6 +191,7 @@ export class StormGame {
   private readonly carriedVisuals: TransformNode[] = [];
   private readonly stockVisuals: TransformNode[] = [];
   private started = false;
+  private zombieAnimationLodTimer = 0;
   private attackCooldown = 0;
   private pendingPlayerAttack?: PendingPlayerAttack;
   private damageEventCount = 0;
@@ -883,7 +892,10 @@ export class StormGame {
       };
     }
     this.uiUpdateTimer += dt;
-    if (this.state.quality !== "低" || this.uiUpdateTimer >= 0.1) {
+    // HUD values are informational; updating the complete DOM tree at render
+    // frequency causes periodic layout frames on dense desktop scenes.  Keep
+    // gameplay/animation at full rate and publish UI state at a stable 10 Hz.
+    if (this.uiUpdateTimer >= 0.1) {
       this.uiUpdateTimer = 0;
       this.ui.update(this.state);
     }
@@ -1540,7 +1552,28 @@ export class StormGame {
         }
       }
     }
+    this.updateZombieAnimationLod(dt);
     if (this.enemiesToSpawn === 0 && !this.zombies.some((zombie) => zombie.alive)) this.completeWave();
+  }
+
+  private updateZombieAnimationLod(dt: number): void {
+    this.zombieAnimationLodTimer -= dt;
+    if (this.zombieAnimationLodTimer > 0) return;
+    this.zombieAnimationLodTimer = 0.3;
+    const cap = this.performanceTier >= 1 ? 5 : this.state.quality === "低" ? 7 : 10;
+    const walking = this.zombies
+      .filter((zombie) => zombie.alive && zombie.currentAnimation.toLowerCase().includes("walk"))
+      .sort((left, right) => Vector3.DistanceSquared(left.root.position, this.player.root.position)
+        - Vector3.DistanceSquared(right.root.position, this.player.root.position));
+    for (const [index, zombie] of walking.entries()) {
+      const closeEnough = Vector3.DistanceSquared(zombie.root.position, this.player.root.position) < 11 * 11;
+      const shouldAnimate = closeEnough || index < cap;
+      const selected = zombie.animations.find((animation) => animation.name.toLowerCase().includes("walk"));
+      if (!selected || shouldAnimate === !zombie.animationLodPaused) continue;
+      if (shouldAnimate) selected.restart();
+      else selected.pause();
+      zombie.animationLodPaused = !shouldAnimate;
+    }
   }
 
   private spawnZombie(order: number): void {
@@ -1555,7 +1588,10 @@ export class StormGame {
           ? "runner"
           : "walker";
     const scale = type === "boss" ? 1.05 : type === "brute" ? 1.4 : type === "runner" ? 0.82 : 0.98;
-    const actor = this.instantiateActor(type === "boss" ? "custom/boss-zombie.glb" : "zombie.glb", `zombie-${type}-${wave}-${order}-${this.elapsed}`, new Vector3(x, 0, z), scale);
+    const zombieModel = type === "boss"
+      ? "custom/boss-zombie.glb"
+      : R8_ZOMBIE_MODELS[(wave + order) % R8_ZOMBIE_MODELS.length];
+    const actor = this.instantiateActor(zombieModel, `zombie-${type}-${wave}-${order}-${this.elapsed}`, new Vector3(x, 0, z), scale);
     const baseHp = 3 + Math.floor(wave * 0.72);
     const hp = Math.round(baseHp * (type === "boss" ? 8 : type === "brute" ? 2.35 : type === "runner" ? 0.72 : 1));
     const speed = (0.92 + wave * 0.025) * (type === "runner" ? 1.75 : type === "brute" ? 0.72 : type === "boss" ? 0.62 : 1);
@@ -1573,6 +1609,7 @@ export class StormGame {
       type,
       slowTimer: 0,
       deathEndsAt: 0,
+      animationLodPaused: false,
     };
     zombie.root.position.y = this.heightAt(x, z);
     this.playAnimation(zombie, "Walk", true);
@@ -1838,7 +1875,11 @@ export class StormGame {
     const meshForwardNode = root.getChildTransformNodes(false).find((node) =>
       node.name.includes("Protagonist") || node.name.includes("Npc"),
     ) ?? root;
-    const meshForwardAxis = file.startsWith("custom/characters/") || file === "custom/boss-zombie.glb" ? Vector3.Backward() : Vector3.Forward();
+    const meshForwardAxis = file.startsWith("custom/characters/")
+      || file.startsWith("custom/zombies/")
+      || file === "custom/boss-zombie.glb"
+      ? Vector3.Backward()
+      : Vector3.Forward();
     return { root, meshForwardNode, meshForwardAxis, animations: entries.animationGroups, currentAnimation: "" };
   }
 
@@ -1928,6 +1969,7 @@ export class StormGame {
     if (!selected) return undefined;
     selected.reset();
     selected.play(loop);
+    if ("animationLodPaused" in actor) actor.animationLodPaused = false;
     actor.currentAnimation = name;
     if (!loop) {
       selected.onAnimationGroupEndObservable.addOnce(() => {
@@ -2241,7 +2283,9 @@ export class StormGame {
     this.lowFpsSamples = 0;
     this.performanceTier += 1;
     if (this.performanceTier === 1) this.dropExpensiveRenderingFeatures();
-    this.renderPixelRatio = this.performanceTier === 1 ? 0.8 : 0.65;
+    // The first fallback must already satisfy the p95 frame-time gate; average
+    // FPS can hide regular 33 ms frames behind enough 16 ms frames.
+    this.renderPixelRatio = this.performanceTier === 1 ? 0.65 : 0.5;
     this.engine.setHardwareScalingLevel(1 / this.renderPixelRatio);
     this.engine.resize();
     if (this.snowParticles) this.snowParticles.emitRate = this.performanceTier === 1 ? 24 : 12;
@@ -2265,7 +2309,6 @@ export class StormGame {
         shadowMap.resetRefreshCounter();
       }
     }
-
     this.cinematicPipeline?.dispose();
     this.cinematicPipeline = undefined;
     this.glow?.dispose();

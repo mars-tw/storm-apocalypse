@@ -1,4 +1,4 @@
-"""Storm R6 Blender-rendered UI kit.
+"""Storm R8 Blender-rendered UI kit.
 
 All gameplay icons are framed from GLBs, the selection art uses the exported
 18-bone protagonists, and every render shares STORM_UI_PRESET. Run with:
@@ -24,7 +24,7 @@ UI_ROOT = REPO_ROOT / "public" / "images" / "ui"
 CHARACTER_ROOT = REPO_ROOT / "public" / "images" / "characters"
 
 STORM_UI_PRESET = {
-    "name": "R6 Sandstorm Foundry",
+    "name": "R8 Character Foundry",
     "renderer": "EEVEE",
     "view_transform": "AgX",
     "look": "Medium High Contrast",
@@ -33,7 +33,7 @@ STORM_UI_PRESET = {
     "lighting": {
         "key": {"color": "#FFC58A", "energy": 920, "size": 4.2},
         "fill": {"color": "#70B3C4", "energy": 430, "size": 5.0},
-        "rim": {"color": "#F06735", "energy": 720, "size": 3.0},
+        "rim": {"color": "#F06735", "energy": 880, "size": 2.6},
     },
     "palette": {
         "night": "#07131A",
@@ -42,6 +42,31 @@ STORM_UI_PRESET = {
         "sand": "#C18652",
         "ice": "#79C3D2",
         "signal": "#E36D3E",
+    },
+    "characterPalettes": {
+        "butcher_matron": {
+            "main": ["#962D3D", "#31434A", "#D2A78F"],
+            "accent": "#E4A340",
+            "story": "oxblood apron / charcoal wool / worn canvas / brass tally",
+        },
+        "vet_sniper": {
+            "main": ["#40513E", "#252D30", "#704A31"],
+            "accent": "#72C3C5",
+            "story": "moss greatcoat / coal layer / saddle leather / cold optic",
+        },
+        "mech_youth": {
+            "main": ["#536473", "#2A313C", "#9B6737"],
+            "accent": "#F47A27",
+            "story": "slate jacket / soot workwear / ochre kit / signal-orange tools",
+        },
+    },
+    "surfaceResponse": {
+        "skin": {"roughness": 0.67, "metallic": 0.0},
+        "cloth": {"roughness": 0.90, "metallic": 0.0},
+        "leather": {"roughness": 0.70, "metallic": 0.0},
+        "metal": {"roughness": 0.32, "metallic": 0.78},
+        "volumeBreakup": "COLOR_0 vertical AO gradient",
+        "wear": "contrasting cloth hem geometry + metallic scratch highlights",
     },
     "tiers": {
         "low": {"atlas_cell": 128, "portrait": [256, 384], "background": [960, 540]},
@@ -156,7 +181,7 @@ def add_lighting(target, scale=1.0):
     falloff = max(1.0, scale * scale)
     add_area_light("StormKey", (tx - 4.4 * scale, ty - 4.6 * scale, tz + 6.2 * scale), target, 920 * falloff, "#FFC58A", 4.2 * scale)
     add_area_light("StormFill", (tx + 4.5 * scale, ty - 1.0 * scale, tz + 3.1 * scale), target, 430 * falloff, "#70B3C4", 5.0 * scale)
-    add_area_light("StormRim", (tx + 0.5 * scale, ty + 4.2 * scale, tz + 4.6 * scale), target, 720 * falloff, "#F06735", 3.0 * scale)
+    add_area_light("StormRim", (tx + 0.5 * scale, ty + 4.2 * scale, tz + 4.6 * scale), target, 880 * falloff, "#F06735", 2.6 * scale)
 
 
 def import_glb(relative_path):
@@ -196,25 +221,82 @@ def pose_hero(objects, pose):
         bone.rotation_euler = (0, 0, 0)
     poses = {
         "butcher": {
-            "pelvis": (0, 0, 0.16), "spine": (-0.08, 0.05, 0.24), "chest": (-0.06, 0.08, 0.3),
-            "head": (-0.03, -0.08, -0.16), "upper_arm.R": (-1.28, 0.3, 0.5), "forearm.R": (-0.55, 0.16, 0.18),
-            "upper_arm.L": (0.22, -0.08, -0.3), "forearm.L": (-0.18, 0, 0), "thigh.R": (-0.12, 0, 0),
+            "rotations": {
+                "pelvis": (0, 0, 0.18), "spine": (-0.08, 0.05, 0.22), "chest": (-0.07, 0.10, 0.30),
+                "head": (-0.04, -0.10, -0.18), "upper_arm.R": (-1.48, 0.34, 0.58), "forearm.R": (-0.72, 0.20, 0.24),
+                "hand.R": (0.02, 0.82, 0.18), "upper_arm.L": (0.38, -0.12, -0.55), "forearm.L": (-0.62, 0.08, -0.24),
+                "hand.L": (0, 0, -0.32), "thigh.R": (-0.14, 0, 0),
+            },
+            "locations": {"pelvis": (0, 0, 0.03)},
         },
         "sniper": {
-            "spine": (0.05, 0, -0.11), "chest": (-0.06, 0, 0.13), "head": (-0.08, 0.06, -0.1),
-            "upper_arm.R": (1.24, -0.24, -0.22), "forearm.R": (0.48, 0.1, -0.08),
-            "upper_arm.L": (1.08, 0.28, 0.42), "forearm.L": (0.78, -0.08, 0.22), "thigh.L": (0.08, 0, 0),
+            "rotations": {
+                "pelvis": (0.05, 0, -0.11), "spine": (0.18, 0.04, -0.16), "chest": (-0.08, 0.02, 0.18), "head": (-0.11, 0.08, -0.12),
+                "upper_arm.R": (1.28, -0.30, -0.24), "forearm.R": (0.58, 0.12, -0.10),
+                "upper_arm.L": (1.12, 0.30, 0.46), "forearm.L": (0.84, -0.10, 0.24),
+                "thigh.L": (1.18, 0.04, 0.08), "shin.L": (-1.35, 0, 0), "foot.L": (0.32, 0, 0),
+                "thigh.R": (-0.42, 0, -0.04), "shin.R": (0.72, 0, 0),
+            },
+            "locations": {"pelvis": (0, 0, -0.35), "root": (0, 0, 0.02)},
         },
         "mechanic": {
-            "pelvis": (0, 0, -0.12), "spine": (0.04, 0, -0.16), "chest": (-0.02, 0.04, 0.18),
-            "head": (-0.05, -0.04, -0.12), "upper_arm.R": (-0.55, 0.12, 0.72), "forearm.R": (-0.75, 0.08, 0.34),
-            "upper_arm.L": (0.35, -0.08, -0.44), "forearm.L": (-0.28, 0, -0.16), "thigh.L": (0.12, 0, 0),
+            "rotations": {
+                "pelvis": (0.10, 0, -0.12), "spine": (0.22, 0, -0.18), "chest": (-0.05, 0.05, 0.20),
+                "head": (-0.16, -0.05, -0.14), "upper_arm.R": (0.72, 0.12, 0.45), "forearm.R": (-0.92, 0.08, 0.28),
+                "upper_arm.L": (0.62, -0.10, -0.40), "forearm.L": (-0.82, 0, -0.20),
+                "thigh.L": (1.08, 0.05, 0.16), "shin.L": (-1.36, 0, 0), "foot.L": (0.38, 0, 0),
+                "thigh.R": (0.94, -0.04, -0.14), "shin.R": (-1.28, 0, 0), "foot.R": (0.34, 0, 0),
+            },
+            "locations": {"pelvis": (0, 0, -0.39)},
         },
     }
-    for name, rotation in poses[pose].items():
+    for name, rotation in poses[pose]["rotations"].items():
         if name in armature.pose.bones:
             armature.pose.bones[name].rotation_euler = rotation
+    for name, location in poses[pose].get("locations", {}).items():
+        if name in armature.pose.bones:
+            armature.pose.bones[name].location = location
     bpy.context.view_layer.update()
+
+
+def add_pose_beam(name, start, end, radius, material, vertices=12):
+    start_v = Vector(start)
+    end_v = Vector(end)
+    delta = end_v - start_v
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=delta.length, location=(start_v + end_v) * 0.5)
+    obj = bpy.context.object
+    obj.name = name
+    obj.rotation_mode = "QUATERNION"
+    obj.rotation_quaternion = delta.to_track_quat("Z", "Y")
+    obj.data.materials.append(material)
+    for polygon in obj.data.polygons:
+        polygon.use_smooth = False
+    return obj
+
+
+def add_pose_story_prop(pose):
+    """Add render-only interaction props while the GLB keeps its own silhouette kit."""
+    if pose == "sniper":
+        iron = make_material("Portrait Rifle Iron", "#526064", 0.31, 0.82)
+        wood = make_material("Portrait Rifle Walnut", "#70402A", 0.68)
+        lens = make_material("Portrait Rifle Optic", "#72C3C5", 0.25, 0, "#4AA1AA", 0.28)
+        add_pose_beam("PortraitAimedRifleBarrel", (-0.72, -0.48, 1.03), (0.98, -0.48, 1.34), 0.045, iron, 14)
+        stock = add_cube("PortraitAimedRifleStock", (-0.58, -0.48, 0.99), (0.42, 0.17, 0.21), wood, 0.025)
+        stock.rotation_euler.y = math.radians(-10)
+        scope = add_pose_beam("PortraitAimedRifleScope", (-0.05, -0.52, 1.27), (0.42, -0.52, 1.35), 0.067, lens, 12)
+        scope.rotation_euler.rotate_axis("Z", 0.0)
+    elif pose == "mechanic":
+        iron = make_material("Portrait Repair Iron", "#7F9092", 0.35, 0.76)
+        orange = make_material("Portrait Repair Accent", "#F47A27", 0.38, 0.58)
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.20, minor_radius=0.055, major_segments=14, minor_segments=4, location=(0.32, -0.32, 0.16), rotation=(math.pi / 2, 0, 0))
+        gear = bpy.context.object
+        gear.name = "PortraitRepairGear"
+        gear.data.materials.append(iron)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=12, radius=0.075, depth=0.13, location=(0.32, -0.32, 0.16), rotation=(math.pi / 2, 0, 0))
+        hub = bpy.context.object
+        hub.name = "PortraitRepairHub"
+        hub.data.materials.append(orange)
+        add_pose_beam("PortraitLooseBolt", (0.58, -0.33, 0.08), (0.69, -0.33, 0.16), 0.025, iron, 8)
 
 
 def render_to(path):
@@ -224,7 +306,7 @@ def render_to(path):
     bpy.ops.render.render(write_still=True)
     if not path.exists() or path.stat().st_size < 1024:
         raise RuntimeError(f"Render is missing or too small: {path}")
-    print(f"R6 UI RENDER {path.relative_to(REPO_ROOT)} | {path.stat().st_size} bytes")
+    print(f"R8 UI RENDER {path.relative_to(REPO_ROOT)} | {path.stat().st_size} bytes")
 
 
 def render_icon(name, model_path, kind, pose):
@@ -233,6 +315,8 @@ def render_icon(name, model_path, kind, pose):
     objects = import_glb(model_path)
     if kind == "hero":
         pose_hero(objects, pose)
+        add_pose_story_prop(pose)
+        objects = list(bpy.context.scene.objects)
     minimum, maximum = object_bounds(objects)
     center = (minimum + maximum) * 0.5
     size = maximum - minimum
@@ -247,6 +331,8 @@ def render_portrait(name, model_path, pose):
     configure_render(512, 768, True)
     objects = import_glb(model_path)
     pose_hero(objects, pose)
+    add_pose_story_prop(pose)
+    objects = list(bpy.context.scene.objects)
     minimum, maximum = object_bounds(objects)
     center = (minimum + maximum) * 0.5
     height = maximum.z - minimum.z
@@ -326,7 +412,9 @@ def render_menu_background():
     place_asset("custom/tower-ballista.glb", (-9.0, 5.5, 0), 1.0, math.radians(18))
     place_asset("custom/tower-frost.glb", (7.7, 7.2, 0), 1.0, math.radians(-18))
     place_asset("custom/tower-cannon.glb", (11.5, 2.4, 0), 0.9, math.radians(-38))
-    place_asset("custom/characters/protagonist-butcher-matron.glb", (3.1, 0.5, 0), 1.5, math.radians(-8), "butcher")
+    place_asset("custom/characters/protagonist-butcher-matron.glb", (2.7, 0.2, 0), 1.45, math.radians(-10), "butcher")
+    place_asset("custom/characters/protagonist-vet-sniper.glb", (5.5, 1.5, 0), 1.32, math.radians(-24), "sniper")
+    place_asset("custom/characters/protagonist-mech-youth.glb", (0.1, 0.0, 0), 1.42, math.radians(12), "mechanic")
 
     peak_material = make_material("Distant Rust Peaks", "#231C1A", 1.0)
     for index in range(10):
@@ -439,7 +527,7 @@ def build_atlas():
         column = index % columns
         atlas_pixels[row * cell:(row + 1) * cell, column * cell:(column + 1) * cell] = pixels
         bpy.data.images.remove(image)
-    atlas = bpy.data.images.new("StormR6UiAtlas", width=columns * cell, height=rows * cell, alpha=True)
+    atlas = bpy.data.images.new("StormR8UiAtlas", width=columns * cell, height=rows * cell, alpha=True)
     atlas.pixels.foreach_set(atlas_pixels.ravel())
     high = UI_ROOT / "atlas" / "ui-atlas-high.png"
     high.parent.mkdir(parents=True, exist_ok=True)
@@ -472,8 +560,8 @@ def write_manifest():
         })
     manifest = {"preset": STORM_UI_PRESET, "atlasOrder": [entry[0] for entry in ICON_SPECS], "assets": files}
     UI_ROOT.mkdir(parents=True, exist_ok=True)
-    (UI_ROOT / "render-preset-r6.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"R6 UI KIT COMPLETE | {len(files)} PNG assets")
+    (UI_ROOT / "render-preset-r8.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"R8 UI KIT COMPLETE | {len(files)} PNG assets")
 
 
 def main():

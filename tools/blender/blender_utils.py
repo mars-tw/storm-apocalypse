@@ -50,12 +50,84 @@ def material(name, color, roughness=0.82, metallic=0.0, emission=None, emission_
     return mat
 
 
+def stylized_material(name, top_color, bottom_color=None, roughness=0.82, metallic=0.0, emission=None, emission_strength=0.0):
+    """Create a glTF-friendly vertex-gradient material for the R8 character pack.
+
+    The gradient is stored as COLOR_0 on every mesh instead of relying on a
+    Blender-only procedural node.  This keeps the faceted AO/value breakup in
+    Babylon while still allowing material instances to be shared.
+    """
+    bottom_color = bottom_color or tuple(channel * 0.62 for channel in top_color)
+    mat = material(name, (1.0, 1.0, 1.0), roughness, metallic, emission, emission_strength)
+    mat["storm_gradient_top"] = top_color
+    mat["storm_gradient_bottom"] = bottom_color
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    bsdf = nodes.get("Principled BSDF")
+    vertex = nodes.new("ShaderNodeVertexColor")
+    vertex.name = "StormVertexGradient"
+    vertex.layer_name = "StormGradient"
+    links.new(vertex.outputs["Color"], bsdf.inputs["Base Color"])
+    return mat
+
+
+def _apply_storm_gradient(obj, mat):
+    if obj.type != "MESH" or "storm_gradient_top" not in mat:
+        return
+    mesh = obj.data
+    if not mesh.vertices or not mesh.loops:
+        return
+    top = tuple(mat["storm_gradient_top"])
+    bottom = tuple(mat["storm_gradient_bottom"])
+    values = [vertex.co.z for vertex in mesh.vertices]
+    low = min(values)
+    span = max(0.0001, max(values) - low)
+    colors = mesh.color_attributes.get("StormGradient")
+    if colors is None:
+        colors = mesh.color_attributes.new(name="StormGradient", type="BYTE_COLOR", domain="CORNER")
+    mesh.color_attributes.active_color = colors
+    mesh.color_attributes.render_color_index = mesh.color_attributes.find(colors.name)
+    for loop in mesh.loops:
+        factor = (mesh.vertices[loop.vertex_index].co.z - low) / span
+        # Compress the darkest value so creases read as baked AO, while the top
+        # facets retain the palette's authored hue.
+        factor = 0.12 + 0.88 * factor
+        color = tuple(bottom[index] * (1.0 - factor) + top[index] * factor for index in range(3)) + (1.0,)
+        datum = colors.data[loop.index]
+        if hasattr(datum, "color_srgb"):
+            datum.color_srgb = color
+        else:
+            datum.color = color
+
+
+def bevel(obj, width=0.018, segments=1):
+    """Apply a small real bevel so silhouettes catch light in game and renders."""
+    if obj.type != "MESH" or width <= 0:
+        return obj
+    modifier = obj.modifiers.new("StormR8FacetedEdge", "BEVEL")
+    modifier.width = width
+    modifier.segments = segments
+    modifier.limit_method = "ANGLE"
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+    try:
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+    finally:
+        obj.select_set(False)
+    # Applying a modifier rebuilds loops; refresh COLOR_0 afterwards.
+    if obj.data.materials:
+        _apply_storm_gradient(obj, obj.data.materials[0])
+    return obj
+
+
 def assign(obj, mat):
     if mat is not None:
         obj.data.materials.append(mat)
     if obj.type == "MESH":
         for polygon in obj.data.polygons:
             polygon.use_smooth = False
+        if mat is not None:
+            _apply_storm_gradient(obj, mat)
     return obj
 
 

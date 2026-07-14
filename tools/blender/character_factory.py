@@ -1,200 +1,180 @@
-"""Distinct low-poly humanoids for the Storm Apocalypse character pack."""
+"""Storm R8 named-customer art pass with story props and authored walk clips."""
 
 import math
+
+from animated_asset_utils import create_customer_actions
 from blender_utils import *
+from hero_rig_factory import _beam, _box, _build_body, _cloth_wear, _cone, _cylinder, _face, _ico, _mat, _torus
 
 
-def _rgb(value):
-    value = value.lstrip("#")
-    srgb = tuple(int(value[index:index + 2], 16) / 255 for index in (0, 2, 4))
-    return tuple(channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4 for channel in srgb)
-
-
-def _mat(name, value, roughness=0.88, metallic=0.0, emission=None):
-    return material(name, _rgb(value), roughness, metallic, _rgb(emission) if emission else None, 0.35 if emission else 0.0)
-
-
-def _limbs(prefix, height, shoulder_width, coat, trousers, boots, skin, arm_pose=0.0, child=False):
-    boot_depth = 0.25 if child else 0.31
-    boot_z = boot_depth * 0.5
-    hip_z = height * 0.55
-    leg_bottom = boot_depth
-    leg_top = height * 0.91
-    leg_depth = max(0.42, hip_z - leg_bottom)
-    leg_center = leg_bottom + leg_depth * 0.5
-    leg_x = shoulder_width * 0.24
-    for side in (-1, 1):
-        add_cylinder(f"{prefix}Boot{side}", (side * leg_x, 0.035, boot_z), 0.105 if child else 0.12, boot_depth, boots, 7)
-        add_cylinder(f"{prefix}Leg{side}", (side * leg_x, 0, leg_center), 0.085 if child else 0.105, leg_depth, trousers, 7)
-        shoulder = (side * shoulder_width * 0.48, 0, height * 0.72)
-        hand = (side * (shoulder_width * 0.58 + arm_pose), 0.02, height * 0.42)
-        add_beam(f"{prefix}Arm{side}", shoulder, hand, 0.075 if child else 0.095, coat, 7)
-        add_ico(f"{prefix}Hand{side}", hand, 0.088 if child else 0.105, skin, 1, (0.85, 0.75, 1.05))
-
-
-def _face(prefix, height, skin, hair, head_scale=(1.0, 0.92, 1.04), child=False):
-    radius = 0.18 if child else 0.19
-    center_z = height - radius * 1.02
-    add_ico(f"{prefix}Head", (0, 0, center_z), radius, skin, 1, head_scale)
-    add_ico(f"{prefix}Hair", (0, -0.008, center_z + radius * 0.56), radius * 0.88, hair, 1, (1.04, 0.91, 0.53))
-    return center_z, radius
-
-
-def build_butcher_matron():
-    reset_scene()
-    model = root("ProtagonistButcherMatron")
-    skin = _mat("Matron Skin", "#C4A484")
-    coat = _mat("Matron Slate Coat", "#3E4A52")
-    apron = _mat("Matron Blood Apron", "#8B2E2E")
-    fur = _mat("Matron Fur", "#C9B8A0")
-    boots = _mat("Matron Boots", "#2A2420")
-    hair = _mat("Matron Hair", "#352A24")
-    iron = _mat("Matron Scale Iron", "#4B5050", 0.5, 0.55)
-    _limbs("Matron", 1.68, 0.75, coat, coat, boots, skin)
-    add_box("MatronTorso", (0, 0, 1.08), (0.76, 0.38, 0.68), coat)
-    add_box("MatronApron", (0, 0.218, 1.02), (0.66, 0.055, 0.82), apron)
-    add_box("MatronApronStain", (-0.18, 0.252, 1.15), (0.22, 0.025, 0.16), _mat("Matron Apron Stain", "#5D171B"), (0, 0, -0.18))
-    add_torus("MatronFurCollar", (0, 0, 1.35), 0.25, 0.07, fur, 10, 4)
-    head_z, radius = _face("Matron", 1.68, skin, hair, (1.08, 0.94, 1.03))
-    add_box("MatronHeadScarf", (0, -0.02, head_z + radius * 0.74), (0.35, 0.31, 0.09), apron, (0.04, 0, 0.05))
-    add_box("MatronBrow", (0, radius * 0.88, head_z + 0.025), (0.24, 0.025, 0.026), hair)
-    add_beam("MatronScaleCord", (0.31, 0.08, 1.0), (0.36, 0.08, 0.71), 0.018, iron, 5)
-    add_cone("MatronScaleWeight", (0.36, 0.08, 0.65), 0.065, 0.045, 0.13, iron, 6)
-    return model
-
-
-def build_vet_sniper():
-    reset_scene()
-    model = root("ProtagonistVetSniper")
-    skin = _mat("Sniper Skin", "#B79272")
-    coat = _mat("Sniper Military Smock", "#3F4F3A")
-    inner = _mat("Sniper Inner", "#2C3034")
-    wrap = _mat("Sniper Leg Wrap", "#5C4A32")
-    boot = _mat("Sniper Boot", "#202326")
-    lens = _mat("Sniper Cold Lens", "#6A8A8A", 0.38, 0.12, "#6A8A8A")
-    hair = _mat("Sniper Hair", "#30302A")
-    _limbs("Sniper", 1.78, 0.62, coat, inner, boot, skin, 0.035)
-    add_box("SniperTorso", (0, 0, 1.17), (0.62, 0.34, 0.78), coat)
-    add_box("SniperInnerV", (0, 0.19, 1.34), (0.22, 0.035, 0.28), inner, (0.05, 0, 0))
-    for side in (-1, 1):
-        for index in range(2):
-            add_torus(f"SniperCalfWrap{side}{index}", (side * 0.15, 0, 0.37 + index * 0.12), 0.108, 0.025, wrap, 8, 3)
-    head_z, radius = _face("Sniper", 1.78, skin, hair, (0.94, 0.92, 1.1))
-    add_cone("SniperHood", (0, -0.055, head_z + 0.055), 0.255, 0.18, 0.35, coat, 8)
-    add_box("SniperEyePatch", (-0.072, radius * 0.9, head_z + 0.025), (0.105, 0.028, 0.085), lens, (0, 0, -0.12))
-    add_beam("SniperPatchBand", (-0.17, 0.16, head_z + 0.08), (0.13, 0.16, head_z - 0.005), 0.014, wrap, 5)
-    for side in (-1, 1):
-        add_box(f"SniperEmptyPouch{side}", (side * 0.205, 0.205, 0.91), (0.16, 0.08, 0.22), wrap, (0.05, 0, side * 0.06))
-    return model
-
-
-def build_mech_youth():
-    reset_scene()
-    model = root("ProtagonistMechYouth")
-    skin = _mat("Mech Skin", "#C49A75")
-    coat = _mat("Mech Jacket", "#4A5560")
-    trousers = _mat("Mech Trousers", "#2F3540")
-    orange = _mat("Mech Tool Orange", "#C45C26", 0.65, 0.12)
-    belt = _mat("Mech Belt", "#6B5B3E")
-    patch = _mat("Mech Patches", "#7A3E3E")
-    boot = _mat("Mech Boots", "#25282D")
-    hair = _mat("Mech Hair", "#2E2924")
-    _limbs("Mech", 1.55, 0.68, coat, trousers, boot, skin, child=True)
-    add_box("MechTorso", (0, 0, 0.99), (0.68, 0.4, 0.64), coat)
-    add_box("MechToolBelt", (0, 0.02, 0.76), (0.72, 0.43, 0.115), belt)
-    for x in (-0.23, 0, 0.23):
-        add_box(f"MechToolPouch{x}", (x, 0.255, 0.72), (0.15, 0.08, 0.2), belt)
-    head_z, radius = _face("Mech", 1.55, skin, hair, (1.13, 1.0, 1.05), child=True)
-    for side in (-1, 1):
-        add_cylinder(f"MechGoggle{side}", (side * 0.092, 0.15, head_z + 0.16), 0.073, 0.065, orange, 8, (math.pi / 2, 0, 0))
-    add_beam("MechGoggleBridge", (-0.032, 0.182, head_z + 0.16), (0.032, 0.182, head_z + 0.16), 0.018, orange, 5)
-    add_box("MechElbowPatch", (-0.41, 0.045, 0.94), (0.14, 0.075, 0.19), patch, (0, 0, -0.25))
-    add_beam("MechWrenchHandle", (0.33, 0.18, 0.76), (0.42, 0.18, 0.48), 0.025, orange, 6)
-    add_torus("MechWrenchRing", (0.43, 0.18, 0.43), 0.07, 0.022, orange, 8, 3, (math.pi / 2, 0, 0))
-    add_box("MechGlove", (0.405, 0.01, 0.72), (0.18, 0.15, 0.19), orange, (0, 0, 0.1))
-    return model
+def _common(face_skin, coat, trousers, boots, hair):
+    return {
+        "skin": _mat("R8 NPC Skin " + face_skin[0], face_skin[1], 0.7, shadow=face_skin[2]),
+        "coat": coat,
+        "trousers": trousers,
+        "boots": boots,
+        "hair": hair,
+        "eye_white": _mat("R8 Eye White", "#E6D8C4", 0.62, shadow="#A68C79"),
+        "pupil": _mat("R8 Pupil", "#120D0C", 0.54, shadow="#050303"),
+        "mouth": _mat("R8 Mouth", "#642E31", 0.78, shadow="#2C1014"),
+    }
 
 
 def build_lao_zhou():
     reset_scene()
-    model = root("NpcLaoZhou")
-    skin = _mat("Lao Zhou Skin", "#A98262")
-    coat = _mat("Lao Zhou Brown Grey", "#5A5348")
-    trousers = _mat("Lao Zhou Trousers", "#353633")
-    sack = _mat("Lao Zhou Scrap Sack", "#8A6A3E")
-    boot = _mat("Lao Zhou Boots", "#292622")
-    hair = _mat("Lao Zhou Grey Hair", "#77756B")
-    iron = _mat("Lao Zhou Scrap", "#50565A", 0.55, 0.45)
-    _limbs("LaoZhou", 1.62, 0.64, coat, trousers, boot, skin)
-    add_box("LaoZhouTorso", (0.03, 0, 1.05), (0.65, 0.38, 0.68), coat, (0, 0.12, -0.08))
-    head_z, _ = _face("LaoZhou", 1.62, skin, hair, (1.02, 0.94, 1.0))
-    add_box("LaoZhouSack", (-0.28, -0.27, 1.05), (0.48, 0.28, 0.58), sack, (0.08, 0, -0.18))
-    add_beam("LaoZhouSackStrap", (-0.24, -0.08, 1.39), (0.17, 0.19, 0.82), 0.03, sack, 6)
-    add_beam("LaoZhouCane", (0.42, 0.12, 0.82), (0.5, 0.13, 0.04), 0.028, iron, 6)
-    add_box("LaoZhouShoulderPatch", (-0.25, 0.2, 1.27), (0.23, 0.05, 0.18), sack, (0, 0, -0.12))
+    mats = _common(
+        ("Weathered", "#A7795B", "#58372A"),
+        _mat("R8 Lao Zhou Ash Coat", "#665F50", 0.93, shadow="#302D26"),
+        _mat("R8 NPC Charcoal Trousers", "#303432", 0.9, shadow="#121514"),
+        _mat("R8 Dark Leather", "#352720", 0.72, shadow="#160F0C"),
+        _mat("R8 Lao Zhou Grey Hair", "#8A8577", 0.89, shadow="#46433D"),
+    )
+    straw = _mat("R8 Lao Zhou Straw", "#B68B46", 0.95, shadow="#684B22")
+    sack = _mat("R8 Lao Zhou Scrap Sack", "#8B6941", 0.94, shadow="#49341D")
+    iron = _mat("R8 Shared Scarred Iron", "#8A999B", 0.32, 0.78, shadow="#343E40")
+    brass = _mat("R8 Lao Zhou Brass Accent", "#D79A3A", 0.35, 0.68, shadow="#72501E")
+    smoke = _mat("R8 Pipe Ember", "#E26E32", 0.45, 0, "#C84F22", 0.5, "#6D2513")
+    iris = _mat("R8 Lao Zhou Brown Iris", "#7D5534", 0.45, shadow="#342114")
+    model, rig, j, head_r = _build_body(
+        "NpcLaoZhouR8", 1.60, 0.65, 0.56, mats,
+        {"leg_radius": 0.105, "arm_radius": 0.095, "head_scale": (1.03, 0.95, 1.0)},
+    )
+    _box("LaoZhouPatchCoat", (-0.22, 0.215, 1.08), (0.21, 0.026, 0.20), sack, rig, "chest", (0, 0, -0.1), 0.008)
+    _cloth_wear("LaoZhouCoatHem", (0, 0.22, 0.77), (0.52, 0.02, 0.05), straw, rig, "spine")
+    _ico("LaoZhouHairCap", (0, -0.01, j["head_z"] + head_r * 0.52), head_r * 0.92, mats["hair"], rig, "head", (1.02, 0.94, 0.48), 2)
+    _face("LaoZhou", rig, j, head_r, mats, iris, "steady")
+    _beam("LaoZhouMoustacheL", (-0.02, head_r * 1.03, j["head_z"] - 0.08), (-0.15, head_r * 0.98, j["head_z"] - 0.12), 0.018, mats["hair"], rig, "head", 7)
+    _beam("LaoZhouMoustacheR", (0.02, head_r * 1.03, j["head_z"] - 0.08), (0.14, head_r * 0.98, j["head_z"] - 0.11), 0.018, mats["hair"], rig, "head", 7)
+    # Wide conical bamboo hat dominates the silhouette.
+    _cylinder("LaoZhouHatBrim", (0, -0.01, j["head_z"] + 0.23), 0.46, 0.045, straw, rig, "head", 14)
+    _cone("LaoZhouConicalHat", (0, -0.01, j["head_z"] + 0.38), 0.42, 0.025, 0.32, straw, rig, "head", 14)
+    _beam("LaoZhouHatCordL", (-0.25, 0.02, j["head_z"] + 0.2), (-0.08, 0.17, j["head_z"] - 0.22), 0.014, sack, rig, "head", 6)
+    _beam("LaoZhouHatCordR", (0.25, 0.02, j["head_z"] + 0.2), (0.08, 0.17, j["head_z"] - 0.22), 0.014, sack, rig, "head", 6)
+    # Pipe is face-bound so the prop follows his idle glances.
+    _beam("LaoZhouPipeStem", (0.10, head_r * 1.0, j["head_z"] - 0.11), (0.36, 0.28, j["head_z"] - 0.20), 0.025, sack, rig, "head", 8)
+    _cylinder("LaoZhouPipeBowl", (0.39, 0.28, j["head_z"] - 0.16), 0.065, 0.12, iron, rig, "head", 10)
+    _ico("LaoZhouPipeEmber", (0.39, 0.28, j["head_z"] - 0.095), 0.045, smoke, rig, "head", (1, 1, 0.35), 1)
+    _box("LaoZhouScrapSack", (-0.30, -0.27, 1.03), (0.50, 0.30, 0.62), sack, rig, "chest", (0.08, 0, -0.18), 0.025)
+    _beam("LaoZhouSackStrap", (-0.26, -0.08, 1.41), (0.18, 0.19, 0.80), 0.035, straw, rig, "chest", 8)
+    for index, x in enumerate((-0.42, -0.28, -0.12)):
+        _beam(f"LaoZhouScrapRod{index}", (x, -0.30, 1.18), (x + 0.08, -0.28, 1.70 - index * 0.1), 0.028, iron if index != 1 else brass, rig, "chest", 8)
+    create_customer_actions(rig)
     return model
 
 
 def build_nurse_lin():
     reset_scene()
-    model = root("NpcNurseLin")
-    skin = _mat("Nurse Lin Skin", "#C09B7E")
-    coat = _mat("Nurse Lin Blue Grey", "#3A4A5A")
-    inner = _mat("Nurse Lin Inner", "#D0C7B6")
-    trousers = _mat("Nurse Lin Trousers", "#303944")
-    boot = _mat("Nurse Lin Boots", "#262A2F")
-    hair = _mat("Nurse Lin Hair", "#332B29")
-    red = _mat("Nurse Lin Armband Red", "#8B2E2E")
-    _limbs("NurseLin", 1.66, 0.63, coat, trousers, boot, skin)
-    add_box("NurseLinTorso", (0, 0, 1.08), (0.62, 0.36, 0.7), coat)
-    add_cone("NurseLinShoulderCape", (0, -0.01, 1.35), 0.45, 0.22, 0.42, coat, 8)
-    head_z, _ = _face("NurseLin", 1.66, skin, hair, (0.98, 0.94, 1.04))
-    add_box("NurseLinCollar", (0, 0.195, 1.36), (0.3, 0.045, 0.16), inner)
-    add_box("NurseLinArmband", (0.36, 0.025, 1.17), (0.13, 0.17, 0.18), inner, (0, 0, -0.2))
-    add_box("NurseLinCrossVertical", (0.36, 0.122, 1.17), (0.035, 0.018, 0.105), red, (0, 0, -0.2))
-    add_box("NurseLinCrossHorizontal", (0.36, 0.122, 1.17), (0.105, 0.018, 0.035), red, (0, 0, -0.2))
-    add_box("NurseLinMedicalPouch", (-0.25, 0.22, 0.82), (0.22, 0.09, 0.24), inner)
+    mats = _common(
+        ("Nurse", "#C28F74", "#71483A"),
+        _mat("R8 Nurse Storm Blue", "#476273", 0.91, shadow="#213541"),
+        _mat("R8 Nurse Navy Trousers", "#303D4A", 0.9, shadow="#121B22"),
+        _mat("R8 Dark Leather", "#352720", 0.72, shadow="#160F0C"),
+        _mat("R8 Nurse Hair", "#382824", 0.85, shadow="#160D0B"),
+    )
+    canvas = _mat("R8 Nurse Medical Canvas", "#D6D0BE", 0.94, shadow="#8E8879")
+    red = _mat("R8 Nurse Cross Accent", "#D64A45", 0.82, shadow="#72211F")
+    wear = _mat("R8 Nurse Coat Wear", "#8BA4AE", 0.94, shadow="#4D6570")
+    steel = _mat("R8 Shared Scarred Iron", "#8A999B", 0.32, 0.78, shadow="#343E40")
+    iris = _mat("R8 Nurse Green Iris", "#5E8C79", 0.4, shadow="#28463A")
+    model, rig, j, head_r = _build_body(
+        "NpcNurseLinR8", 1.67, 0.64, 0.54, mats,
+        {"leg_radius": 0.1, "arm_radius": 0.087, "head_scale": (0.98, 0.94, 1.05)},
+    )
+    _cone("NurseLinShoulderCape", (0, -0.01, 1.34), 0.44, 0.23, 0.42, mats["coat"], rig, "chest", 12)
+    _cloth_wear("NurseLinCapeWear", (0, 0.22, 1.18), (0.52, 0.02, 0.055), wear, rig, "chest")
+    _ico("NurseLinHairCap", (0, -0.02, j["head_z"] + head_r * 0.5), head_r * 0.93, mats["hair"], rig, "head", (0.99, 0.92, 0.51), 2)
+    _ico("NurseLinHairBun", (-0.19, -0.08, j["head_z"] + 0.10), 0.11, mats["hair"], rig, "head", (0.9, 0.8, 1.1), 2)
+    _face("NurseLin", rig, j, head_r, mats, iris, "steady")
+    _box("NurseLinCap", (0, 0.01, j["head_z"] + 0.22), (0.31, 0.27, 0.10), canvas, rig, "head", (0.02, 0, 0), 0.018)
+    _box("NurseLinCapCrossV", (0, 0.16, j["head_z"] + 0.22), (0.035, 0.02, 0.09), red, rig, "head", edge=0.005)
+    _box("NurseLinCapCrossH", (0, 0.16, j["head_z"] + 0.22), (0.10, 0.02, 0.035), red, rig, "head", edge=0.005)
+    # Large structured medical bag, not a generic hip cube.
+    _box("NurseLinMedicalBag", (-0.39, 0.03, 0.89), (0.43, 0.24, 0.46), canvas, rig, "pelvis", (0, 0, -0.05), 0.035)
+    _torus("NurseLinBagHandle", (-0.39, 0.03, 1.14), 0.17, 0.027, steel, rig, "pelvis", (math.pi / 2, 0, 0), 12, 4)
+    _box("NurseLinBagCrossV", (-0.39, 0.165, 0.90), (0.065, 0.025, 0.25), red, rig, "pelvis", edge=0.007)
+    _box("NurseLinBagCrossH", (-0.39, 0.165, 0.90), (0.25, 0.025, 0.065), red, rig, "pelvis", edge=0.007)
+    _beam("NurseLinBagStrap", (-0.49, 0.0, 1.17), (0.22, 0.19, 1.37), 0.026, canvas, rig, "chest", 8)
+    _box("NurseLinArmband", (j["elbow_x"] * 0.92, 0.02, j["elbow_z"] + 0.14), (0.14, 0.19, 0.18), canvas, rig, "upper_arm.R", (0, 0, -0.18), 0.01)
+    _box("NurseLinArmbandCross", (j["elbow_x"] * 0.92, 0.13, j["elbow_z"] + 0.14), (0.10, 0.018, 0.035), red, rig, "upper_arm.R", (0, 0, -0.18), 0.005)
+    create_customer_actions(rig)
     return model
 
 
 def build_kid_bao():
     reset_scene()
-    model = root("NpcKidBao")
-    skin = _mat("Kid Bao Skin", "#D0A17C")
-    coat = _mat("Kid Bao Green Coat", "#4A6741")
-    hat = _mat("Kid Bao Yellow Hat", "#C4A035")
-    trousers = _mat("Kid Bao Trousers", "#374238")
-    boot = _mat("Kid Bao Boots", "#44362C")
-    hair = _mat("Kid Bao Hair", "#382D27")
-    scarf = _mat("Kid Bao Scarf", "#8B3F36")
-    _limbs("KidBao", 1.20, 0.52, coat, trousers, boot, skin, child=True)
-    add_box("KidBaoTorso", (0, 0, 0.72), (0.53, 0.38, 0.52), coat)
-    head_z, radius = _face("KidBao", 1.20, skin, hair, (1.16, 1.02, 1.02), child=True)
-    add_ico("KidBaoHat", (0, -0.01, head_z + radius * 0.66), radius * 1.05, hat, 1, (1.18, 1.08, 0.48))
+    mats = _common(
+        ("Kid", "#D29A73", "#7D4E37"),
+        _mat("R8 Kid Pine Coat", "#526F4A", 0.93, shadow="#253923"),
+        _mat("R8 Kid Brown Trousers", "#3A4437", 0.91, shadow="#181E17"),
+        _mat("R8 Kid Boots", "#4A3629", 0.74, shadow="#20140E"),
+        _mat("R8 Kid Hair", "#3A2B25", 0.86, shadow="#160E0B"),
+    )
+    yellow = _mat("R8 Kid Mustard Accent", "#D4A63E", 0.91, shadow="#76551B")
+    scarf = _mat("R8 Kid Red Scarf", "#A8463E", 0.9, shadow="#54201D")
+    pack = _mat("R8 Kid Patchwork Pack", "#7F5A3A", 0.93, shadow="#3D2818")
+    blue_patch = _mat("R8 Kid Blue Patch", "#557A82", 0.94, shadow="#29434A")
+    button = _mat("R8 Kid Brass Button", "#D49B39", 0.35, 0.55, shadow="#6F4A17")
+    iris = _mat("R8 Kid Dark Iris", "#604735", 0.42, shadow="#291B14")
+    model, rig, j, head_r = _build_body(
+        "NpcKidBaoR8", 1.22, 0.54, 0.48, mats,
+        {"leg_radius": 0.085, "arm_radius": 0.073, "hand_radius": 0.09, "head_radius": 0.19, "head_scale": (1.17, 1.03, 1.03)},
+    )
+    _torus("KidBaoScarf", (0, 0.01, 0.98), 0.205, 0.052, scarf, rig, "chest", major_segments=12)
+    _box("KidBaoScarfTail", (0.27, -0.08, 0.80), (0.12, 0.055, 0.43), scarf, rig, "chest", (0.08, -0.1, -0.2), 0.012)
+    _ico("KidBaoHairCap", (0, -0.01, j["head_z"] + head_r * 0.5), head_r * 0.94, mats["hair"], rig, "head", (1.15, 1.02, 0.5), 2)
+    _face("KidBao", rig, j, head_r, mats, iris, "curious")
+    _ico("KidBaoKnitHat", (0, -0.015, j["head_z"] + head_r * 0.67), head_r * 1.05, yellow, rig, "head", (1.18, 1.08, 0.48), 2)
+    _ico("KidBaoPomPom", (0.04, -0.01, j["head_z"] + 0.34), 0.075, scarf, rig, "head", (1, 1, 1.15), 2)
+    for suffix, sign in (("L", -1), ("R", 1)):
+        _cylinder(f"KidBaoEarMuff{suffix}", (sign * 0.20, 0.01, j["head_z"] + 0.015), 0.077, 0.06, yellow, rig, "head", 10, (0, math.pi / 2, 0))
+    # Oversized survival backpack tells the child-refugee story.
+    _box("KidBaoOversizeBackpack", (0, -0.29, 0.72), (0.58, 0.34, 0.66), pack, rig, "chest", (0.02, 0, 0), 0.035)
+    _box("KidBaoPackFlap", (0, -0.48, 0.89), (0.48, 0.055, 0.25), blue_patch, rig, "chest", (0.08, 0, 0), 0.015)
+    _cylinder("KidBaoBedroll", (0, -0.31, 1.13), 0.13, 0.55, yellow, rig, "chest", 11, (0, math.pi / 2, 0))
     for side in (-1, 1):
-        add_cylinder(f"KidBaoEarMuff{side}", (side * 0.19, 0.01, head_z + 0.015), 0.075, 0.055, hat, 7, (0, math.pi / 2, 0))
-    add_torus("KidBaoScarf", (0, 0, 0.92), 0.205, 0.055, scarf, 9, 3)
-    add_box("KidBaoButtonPouch", (0.19, 0.22, 0.62), (0.16, 0.075, 0.18), hat, (0, 0, -0.08))
+        _beam(f"KidBaoPackStrap{side}", (side * 0.18, 0.15, 0.93), (side * 0.23, 0.13, 0.51), 0.025, pack, rig, "chest", 8)
+    for index, x in enumerate((-0.20, 0, 0.20)):
+        _cylinder(f"KidBaoLuckyButton{index}", (x, 0.225, 0.70 + (index % 2) * 0.12), 0.03, 0.025, button, rig, "spine", 8, (math.pi / 2, 0, 0))
+    _box("KidBaoCoatPatch", (-0.19, 0.22, 0.77), (0.17, 0.025, 0.17), blue_patch, rig, "spine", (0, 0, -0.12), 0.007)
+    create_customer_actions(rig)
     return model
 
 
 def build_scout_he():
     reset_scene()
-    model = root("NpcScoutHe")
-    skin = _mat("Scout He Skin", "#A77E60")
-    coat = _mat("Scout He Black Green", "#2E3830")
-    cloak = _mat("Scout He Cloak", "#3A4038")
-    trousers = _mat("Scout He Trousers", "#252B27")
-    boot = _mat("Scout He Boots", "#1D211E")
-    mask = _mat("Scout He Mask", "#202723")
-    metal = _mat("Scout He Blade", "#737A78", 0.42, 0.5)
-    _limbs("ScoutHe", 1.72, 0.66, coat, trousers, boot, skin)
-    add_box("ScoutHeTorso", (0, 0, 1.12), (0.64, 0.35, 0.72), coat)
-    add_cone("ScoutHeCloak", (0, -0.14, 1.08), 0.5, 0.29, 1.04, cloak, 8)
-    head_z, radius = _face("ScoutHe", 1.72, skin, mask, (0.98, 0.93, 1.06))
-    add_box("ScoutHeFaceMask", (0, radius * 0.87, head_z - 0.055), (0.29, 0.035, 0.16), mask)
-    add_cone("ScoutHeHood", (0, -0.04, head_z + 0.06), 0.25, 0.17, 0.34, cloak, 8)
-    add_beam("ScoutHeSword", (0.34, -0.06, 0.98), (0.4, -0.06, 0.39), 0.035, metal, 6)
-    add_box("ScoutHeSwordHilt", (0.33, -0.05, 1.03), (0.19, 0.08, 0.07), metal, (0, 0, -0.1))
-    add_box("ScoutHeCloakClasp", (0, 0.2, 1.38), (0.13, 0.05, 0.09), metal)
+    mats = _common(
+        ("Scout", "#A67659", "#563529"),
+        _mat("R8 Scout Black Green", "#334238", 0.92, shadow="#142019"),
+        _mat("R8 Scout Trousers", "#252D28", 0.9, shadow="#0D1210"),
+        _mat("R8 Scout Boots", "#20241F", 0.76, shadow="#0B0D0B"),
+        _mat("R8 Scout Hair", "#2D2925", 0.87, shadow="#100E0C"),
+    )
+    cloak = _mat("R8 Scout Moss Cloak", "#465044", 0.95, shadow="#222A22")
+    leather = _mat("R8 Scout Strap Leather", "#735039", 0.71, shadow="#382317")
+    metal = _mat("R8 Shared Scarred Iron", "#8A999B", 0.32, 0.78, shadow="#343E40")
+    lens = _mat("R8 Scout Lens Accent", "#65B7BE", 0.25, 0, "#3E909A", 0.24, "#214A50")
+    wear = _mat("R8 Scout Cloak Wear", "#7C8976", 0.95, shadow="#404A3D")
+    iris = _mat("R8 Scout Gold Iris", "#AA7D38", 0.42, shadow="#513516")
+    model, rig, j, head_r = _build_body(
+        "NpcScoutHeR8", 1.73, 0.66, 0.54, mats,
+        {"leg_radius": 0.1, "arm_radius": 0.087, "head_scale": (0.97, 0.93, 1.07)},
+    )
+    _cone("ScoutHeCloak", (0, -0.15, 1.09), 0.52, 0.28, 1.10, cloak, rig, "chest", 12)
+    _cloth_wear("ScoutHeCloakFrayedL", (-0.23, -0.28, 0.57), (0.18, 0.035, 0.08), wear, rig, "chest", (0, 0.15, -0.12))
+    _cloth_wear("ScoutHeCloakFrayedR", (0.21, -0.28, 0.51), (0.17, 0.035, 0.08), wear, rig, "chest", (0, -0.12, 0.16))
+    _ico("ScoutHeHairCap", (0, -0.02, j["head_z"] + head_r * 0.5), head_r * 0.91, mats["hair"], rig, "head", (0.98, 0.92, 0.51), 2)
+    _face("ScoutHe", rig, j, head_r, mats, iris, "steady")
+    _cone("ScoutHeHood", (0, -0.04, j["head_z"] + 0.07), 0.26, 0.17, 0.36, cloak, rig, "head", 10)
+    _box("ScoutHeLowerMask", (0, head_r * 0.91, j["head_z"] - 0.10), (0.31, 0.035, 0.15), cloak, rig, "head", edge=0.01)
+    _box("ScoutHeCloakClasp", (0, 0.21, 1.40), (0.14, 0.055, 0.10), metal, rig, "chest", edge=0.01)
+    # Binoculars sit proud of the torso and remain readable in the in-game view.
+    for suffix, sign in (("L", -1), ("R", 1)):
+        _cylinder(f"ScoutHeBinocular{suffix}", (sign * 0.09, 0.31, 1.26), 0.085, 0.28, metal, rig, "chest", 12, (math.pi / 2, 0, 0))
+        _cylinder(f"ScoutHeBinocularLens{suffix}", (sign * 0.09, 0.47, 1.26), 0.067, 0.035, lens, rig, "chest", 12, (math.pi / 2, 0, 0))
+    _box("ScoutHeBinocularBridge", (0, 0.32, 1.26), (0.14, 0.12, 0.055), leather, rig, "chest", edge=0.01)
+    _beam("ScoutHeBinocularStrapL", (-0.09, 0.23, 1.27), (-0.23, 0.16, 1.46), 0.016, leather, rig, "chest", 6)
+    _beam("ScoutHeBinocularStrapR", (0.09, 0.23, 1.27), (0.23, 0.16, 1.46), 0.016, leather, rig, "chest", 6)
+    _beam("ScoutHeSword", (0.37, -0.08, 1.02), (0.45, -0.08, 0.34), 0.037, metal, rig, "pelvis", 9)
+    _box("ScoutHeSwordHilt", (0.36, -0.07, 1.07), (0.21, 0.09, 0.075), leather, rig, "pelvis", (0, 0, -0.1), 0.012)
+    create_customer_actions(rig)
     return model

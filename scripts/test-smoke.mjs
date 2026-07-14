@@ -98,7 +98,23 @@ function edgeGap(a, b) {
   return Math.hypot(dx, dy);
 }
 
-async function checkR6Assets() {
+async function readGlbMetadata(relative) {
+  const glb = await readFile(resolve(root, relative));
+  const jsonLength = glb.readUInt32LE(12);
+  const json = JSON.parse(glb.subarray(20, 20 + jsonLength).toString("utf8").trimEnd());
+  const triangles = (json.meshes ?? []).reduce((total, mesh) => total + mesh.primitives.reduce((meshTotal, primitive) => {
+    const accessor = primitive.indices === undefined ? primitive.attributes?.POSITION : primitive.indices;
+    return meshTotal + (accessor === undefined ? 0 : Math.floor((json.accessors?.[accessor]?.count ?? 0) / 3));
+  }, 0), 0);
+  return {
+    triangles,
+    clips: (json.animations ?? []).map((animation) => animation.name),
+    bones: json.skins?.[0]?.joints?.length ?? 0,
+    nodes: (json.nodes ?? []).map((node) => node.name ?? ""),
+  };
+}
+
+async function checkR8Assets() {
   const files = [
     "public/images/ui/atlas/ui-atlas-low.png",
     "public/images/ui/atlas/ui-atlas-medium.png",
@@ -128,17 +144,75 @@ async function checkR6Assets() {
       details.push(`${relative}=missing:${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  record("assets/R6", "Blender UI assets exist and are non-placeholder PNGs", valid, details.join(", "));
+  try {
+    const preset = JSON.parse(await readFile(resolve(root, "public/images/ui/render-preset-r8.json"), "utf8"));
+    const palettes = preset.preset?.characterPalettes ?? {};
+    const paletteValid = ["butcher_matron", "vet_sniper", "mech_youth"].every((id) => palettes[id]?.main?.length === 3 && palettes[id]?.accent);
+    valid &&= paletteValid && preset.preset?.surfaceResponse?.metal?.metallic > 0 && preset.preset?.surfaceResponse?.cloth?.metallic === 0;
+    details.push(`preset=R8/palettes:${Object.keys(palettes).length}`);
+  } catch (error) {
+    valid = false;
+    details.push(`render-preset-r8.json=missing:${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  const heroSpecs = [
+    ["butcher", "public/models/custom/characters/protagonist-butcher-matron.glb"],
+    ["sniper", "public/models/custom/characters/protagonist-vet-sniper.glb"],
+    ["mechanic", "public/models/custom/characters/protagonist-mech-youth.glb"],
+  ];
+  for (const [name, path] of heroSpecs) {
+    try {
+      const meta = await readGlbMetadata(path);
+      const expected = ["attack_melee", "attack_ranged", "idle", "run"];
+      const itemValid = meta.triangles >= 3_000 && meta.triangles <= 6_000 && meta.bones === 18 && expected.every((clip) => meta.clips.includes(clip));
+      valid &&= itemValid;
+      details.push(`${name}=${meta.triangles}tris/${meta.bones}bones/${meta.clips.length}clips`);
+    } catch (error) {
+      valid = false;
+      details.push(`${name}=invalid:${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  for (const variant of ["ash", "frost", "rust"]) {
+    try {
+      const meta = await readGlbMetadata(`public/models/custom/zombies/zombie-${variant}.glb`);
+      const expected = ["Walk", "Idle_Attack", "HitReact", "Death"];
+      const itemValid = meta.triangles >= 1_200 && meta.triangles <= 2_500 && expected.every((clip) => meta.clips.includes(clip));
+      valid &&= itemValid;
+      details.push(`zombie-${variant}=${meta.triangles}tris/${meta.clips.length}clips`);
+    } catch (error) {
+      valid = false;
+      details.push(`zombie-${variant}=invalid:${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  const npcProps = {
+    "npc-lao-zhou.glb": ["LaoZhouConicalHat", "LaoZhouPipeStem"],
+    "npc-nurse-lin.glb": ["NurseLinMedicalBag"],
+    "npc-kid-bao.glb": ["KidBaoOversizeBackpack"],
+    "npc-scout-he.glb": ["ScoutHeBinocularL"],
+  };
+  for (const [file, props] of Object.entries(npcProps)) {
+    try {
+      const meta = await readGlbMetadata(`public/models/custom/characters/${file}`);
+      const itemValid = meta.bones === 18 && ["Idle", "Walk"].every((clip) => meta.clips.includes(clip)) && props.every((prop) => meta.nodes.some((node) => node.includes(prop)));
+      valid &&= itemValid;
+      details.push(`${file}=${meta.bones}bones/${meta.clips.join("+")}/${props.join("+")}`);
+    } catch (error) {
+      valid = false;
+      details.push(`${file}=invalid:${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  record("assets/R8", "R8 character art, palettes and animation assets satisfy the shipping contract", valid, details.join(", "));
 
   try {
-    const glb = await readFile(resolve(root, "public/models/custom/boss-zombie.glb"));
-    const jsonLength = glb.readUInt32LE(12);
-    const json = JSON.parse(glb.subarray(20, 20 + jsonLength).toString("utf8").trimEnd());
-    const clips = (json.animations ?? []).map((animation) => animation.name);
+    const meta = await readGlbMetadata("public/models/custom/boss-zombie.glb");
+    const clips = meta.clips;
     const expected = ["Walk", "Idle_Attack", "HitReact", "Death"];
-    record("animation/R6", "Boss has walk, attack, hurt and death clips", expected.every((clip) => clips.includes(clip)), `clips=${clips.join(",")}`);
+    record("animation/R8", "Boss stays within budget and has walk, attack, hurt and death clips", meta.triangles <= 8_000 && meta.triangles >= 2_500 && expected.every((clip) => clips.includes(clip)), `tris=${meta.triangles}, clips=${clips.join(",")}`);
   } catch (error) {
-    record("animation/R6", "Boss has walk, attack, hurt and death clips", false, error instanceof Error ? error.message : String(error));
+    record("animation/R8", "Boss stays within budget and has walk, attack, hurt and death clips", false, error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -611,7 +685,7 @@ async function runLayout(browser, viewport) {
 }
 
 try {
-  await checkR6Assets();
+  await checkR8Assets();
   await ensureServer();
   const browser = await chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }

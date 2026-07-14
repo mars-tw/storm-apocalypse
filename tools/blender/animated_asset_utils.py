@@ -363,6 +363,58 @@ def create_humanoid_actions(armature):
     _reset_pose(armature)
 
 
+def create_customer_actions(armature):
+    """R8 named-customer idle/walk clips on the same 18-bone hierarchy.
+
+    Named NPCs are translated by the gameplay actor root, while this authored
+    clip supplies visible footfalls and arm counter-swing.  That keeps the
+    physics root separate from the visual animation.
+    """
+    action = _new_action(armature, "Idle")
+    _key_pose(armature, 1, rotations={"spine": (0.02, 0, 0), "head": (-0.01, 0, -0.02)})
+    _key_pose(armature, 18, rotations={"spine": (-0.025, 0.01, 0.025), "chest": (0.018, 0, -0.02), "head": (0.018, -0.01, 0.03)}, locations={"pelvis": (0, 0, 0.014)})
+    _key_pose(armature, 36, rotations={"spine": (0.02, 0, 0), "head": (-0.01, 0, -0.02)})
+    _finish_action(armature, action, "Idle", 1, 36)
+
+    action = _new_action(armature, "Walk")
+    for frame, side in ((1, 1), (9, 0), (17, -1), (25, 0), (33, 1)):
+        if side:
+            _key_pose(
+                armature,
+                frame,
+                rotations={
+                    "spine": (0.08, 0, -0.04 * side),
+                    "chest": (-0.025, 0, 0.055 * side),
+                    "head": (-0.035, 0, -0.02 * side),
+                    "thigh.L": (0.46 * side, 0, 0.025),
+                    "shin.L": (-0.24 * max(side, 0), 0, 0),
+                    "thigh.R": (-0.46 * side, 0, -0.025),
+                    "shin.R": (0.24 * min(side, 0), 0, 0),
+                    "upper_arm.L": (-0.38 * side, 0, -0.06),
+                    "forearm.L": (-0.12, 0, 0),
+                    "upper_arm.R": (0.38 * side, 0, 0.06),
+                    "forearm.R": (-0.12, 0, 0),
+                },
+                locations={"root": (0, 0, 0.025)},
+            )
+        else:
+            _key_pose(
+                armature,
+                frame,
+                rotations={
+                    "spine": (0.06, 0, 0),
+                    "thigh.L": (-0.05, 0, 0), "shin.L": (0.28, 0, 0),
+                    "thigh.R": (-0.05, 0, 0), "shin.R": (0.28, 0, 0),
+                },
+                locations={"root": (0, 0, -0.01)},
+            )
+    _finish_action(armature, action, "Walk", 1, 33)
+    bpy.context.scene.frame_start = 1
+    bpy.context.scene.frame_end = 36
+    bpy.context.scene.frame_set(1)
+    _reset_pose(armature)
+
+
 def create_object_clip(target, clip_name, keyframes):
     """Add an NLA track; same-named tracks merge into one glTF AnimationGroup."""
     action = _new_action(target, f"{target.name}_{clip_name}")
@@ -385,4 +437,3 @@ def make_loop_linear(action):
     for curve in action.fcurves:
         for point in curve.keyframe_points:
             point.interpolation = "LINEAR"
-
