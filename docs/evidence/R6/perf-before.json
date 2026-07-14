@@ -1,0 +1,121 @@
+{
+  "measuredAt": "2026-07-14T09:38:22.750Z",
+  "profiles": [
+    {
+      "profile": "desktop-1440x900",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "conditions": {
+        "renderer": "Chromium ANGLE d3d11",
+        "warmupMs": 8000,
+        "sampleMs": 6000,
+        "wave": 25,
+        "runs": 3
+      },
+      "runs": [
+        {
+          "run": 1,
+          "p95FrameMs": 50.1,
+          "medianFrameMs": 33.3,
+          "fps": 25,
+          "drawCalls": 1562,
+          "activeMeshes": 638,
+          "activeZombies": 14,
+          "quality": "高",
+          "renderScale": 1,
+          "errors": []
+        },
+        {
+          "run": 2,
+          "p95FrameMs": 50,
+          "medianFrameMs": 33.3,
+          "fps": 27,
+          "drawCalls": 1564,
+          "activeMeshes": 639,
+          "activeZombies": 14,
+          "quality": "高",
+          "renderScale": 0.8,
+          "errors": []
+        },
+        {
+          "run": 3,
+          "p95FrameMs": 50,
+          "medianFrameMs": 33.3,
+          "fps": 28,
+          "drawCalls": 1558,
+          "activeMeshes": 636,
+          "activeZombies": 14,
+          "quality": "高",
+          "renderScale": 1,
+          "errors": []
+        }
+      ],
+      "median": {
+        "p95FrameMs": 50,
+        "fps": 27,
+        "drawCalls": 1562,
+        "activeMeshes": 638
+      }
+    },
+    {
+      "profile": "mobile-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "conditions": {
+        "renderer": "Chromium ANGLE d3d11",
+        "warmupMs": 8000,
+        "sampleMs": 6000,
+        "wave": 25,
+        "runs": 3
+      },
+      "runs": [
+        {
+          "run": 1,
+          "p95FrameMs": 16.7,
+          "medianFrameMs": 16.7,
+          "fps": 60,
+          "drawCalls": 216,
+          "activeMeshes": 237,
+          "activeZombies": 14,
+          "quality": "低",
+          "renderScale": 1,
+          "errors": []
+        },
+        {
+          "run": 2,
+          "p95FrameMs": 16.7,
+          "medianFrameMs": 16.7,
+          "fps": 60,
+          "drawCalls": 214,
+          "activeMeshes": 234,
+          "activeZombies": 14,
+          "quality": "低",
+          "renderScale": 1,
+          "errors": []
+        },
+        {
+          "run": 3,
+          "p95FrameMs": 16.7,
+          "medianFrameMs": 16.7,
+          "fps": 60,
+          "drawCalls": 212,
+          "activeMeshes": 233,
+          "activeZombies": 14,
+          "quality": "低",
+          "renderScale": 1,
+          "errors": []
+        }
+      ],
+      "median": {
+        "p95FrameMs": 16.7,
+        "fps": 60,
+        "drawCalls": 214,
+        "activeMeshes": 234
+      }
+    }
+  ]
+}

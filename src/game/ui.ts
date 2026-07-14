@@ -36,6 +36,7 @@ export class UiController {
   private readonly commandPanel: HTMLElement;
   private readonly waveButton: HTMLButtonElement;
   private readonly attackButton: HTMLButtonElement;
+  private readonly attackIcon: HTMLElement;
   private readonly toastHost: HTMLElement;
   private readonly result: HTMLElement;
   private readonly resultTitle: HTMLElement;
@@ -64,10 +65,17 @@ export class UiController {
     const startHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "WASD 移動 · 空白鍵攻擊";
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
+    root.dataset.uiVersion = "R6";
+    const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
+    const skillIcons: Record<ProtagonistId, string> = {
+      butcher_matron: "skill-butcher",
+      vet_sniper: "skill-sniper",
+      mech_youth: "skill-mechanic",
+    };
     const selectionCards = PROTAGONISTS.map((protagonist) => `
       <button class="character-card${protagonist.id === this.selectedProtagonist ? " is-selected" : ""}" type="button" data-protagonist="${protagonist.id}" aria-pressed="${protagonist.id === this.selectedProtagonist}">
-        <span class="character-card__portrait"><img src="${import.meta.env.BASE_URL}${protagonist.portrait}" alt="${protagonist.name}低模半身像"></span>
-        <span class="character-card__copy"><small>${protagonist.runSummary}</small><b>${protagonist.name}</b><q>「${protagonist.persona}」</q><em>${protagonist.passive}</em><i>${protagonist.passiveDescription}</i></span>
+        <span class="character-card__portrait"><picture><source media="(max-width:540px)" srcset="${import.meta.env.BASE_URL}${protagonist.portrait.replace(".png", "-low.png")}"><source media="(max-width:1100px)" srcset="${import.meta.env.BASE_URL}${protagonist.portrait.replace(".png", "-medium.png")}"><img src="${import.meta.env.BASE_URL}${protagonist.portrait}" width="512" height="768" alt="${protagonist.name} Blender 英雄立繪"></picture></span>
+        <span class="character-card__copy"><small>${protagonist.runSummary}</small><b>${protagonist.name}</b><q>「${protagonist.persona}」</q><span class="character-card__skill">${icon(skillIcons[protagonist.id])}<span><em>${protagonist.passive}</em><i>${protagonist.passiveDescription}</i></span></span></span>
       </button>`).join("");
     const introContent = this.requiresProtagonistSelection ? `
       <div class="character-select" id="character-select">
@@ -113,22 +121,23 @@ export class UiController {
       <button class="panel-toggle panel-toggle--shop" id="shop-toggle" aria-label="開關整備商店" aria-controls="command-panel" aria-expanded="false">整備</button>
       <aside class="command-panel" id="command-panel">
         <div class="command-panel__head"><div><small>北境補給站</small><b>武裝與自動化</b></div><button id="shop-close" aria-label="關閉整備商店">×</button></div>
-        <section><h3>武器鏈</h3><div class="shop-grid">${WEAPONS.map((item) => `<button class="shop-item" data-category="weapon" data-id="${item.id}"><span><b>${item.name}</b><small>${item.description}</small></span><em data-price="weapon-${item.id}"></em></button>`).join("")}</div></section>
-        <section><h3>自動化員工</h3><div class="shop-grid">${EMPLOYEES.map((item) => `<button class="shop-item" data-category="employee" data-id="${item.id}"><span><b>${item.name}</b><small data-description="employee-${item.id}">${item.description}</small></span><em data-price="employee-${item.id}"></em></button>`).join("")}</div></section>
+        <section><h3>武器鏈</h3><div class="shop-grid">${WEAPONS.map((item) => `<button class="shop-item" data-category="weapon" data-id="${item.id}">${icon(`weapon-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small>${item.description}</small></span><em data-price="weapon-${item.id}"></em></button>`).join("")}</div></section>
+        <section><h3>自動化員工</h3><div class="shop-grid">${EMPLOYEES.map((item) => `<button class="shop-item" data-category="employee" data-id="${item.id}">${icon(`skill-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small data-description="employee-${item.id}">${item.description}</small></span><em data-price="employee-${item.id}"></em></button>`).join("")}</div></section>
         <section class="regulars"><h3>北境常客</h3><div class="regular-list">${NAMED_CUSTOMERS.map((customer) => `<article data-regular="${customer.id}"><div><b>${customer.name}</b><small>${customer.preference}</small></div><span><i></i><em>0 / 10</em></span></article>`).join("")}</div></section>
-        <section><h3>牧場擴張</h3><button class="shop-item" data-category="pasture" data-id="pasture2"><span><b>炸開牧場 2</b><small>強化牛 · 生命 9 · 掉落 6 肉</small></span><em data-price="pasture-pasture2"></em></button></section>
-        <section><h3>防禦塔</h3><div class="shop-grid">${TOWERS.map((item) => `<button class="shop-item" data-tower="${item.id}"><span><b>${item.name}</b><small>${item.description}</small></span><em data-price="tower-${item.id}"></em></button>`).join("")}</div></section>
+        <section><h3>牧場擴張</h3><button class="shop-item" data-category="pasture" data-id="pasture2">${icon("skill-butcher", "shop-item__icon")}<span class="shop-item__copy"><b>炸開牧場 2</b><small>強化牛 · 生命 9 · 掉落 6 肉</small></span><em data-price="pasture-pasture2"></em></button></section>
+        <section><h3>防禦塔</h3><div class="shop-grid">${TOWERS.map((item) => `<button class="shop-item" data-tower="${item.id}">${icon(`tower-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small>${item.description}</small></span><em data-price="tower-${item.id}"></em></button>`).join("")}</div></section>
       </aside>
 
       <div class="context-prompt" id="context-prompt"><kbd>WASD</kbd><span>穿越雪地，前往牧場</span></div>
       <div class="bottom-controls">
         <div class="joystick" aria-label="移動搖桿"><span class="joystick__ring"></span><span class="joystick__knob"></span></div>
         <button class="wave-button" id="wave-button" disabled><small>準備防守</small><b>至少建造一座塔</b></button>
-        <button class="attack-button" id="attack-button" aria-label="攻擊"><span>⚔</span><small>揮砍</small></button>
+        <button class="attack-button" id="attack-button" aria-label="攻擊"><i id="attack-icon" class="asset-icon asset-icon--weapon-machete attack-button__icon" aria-hidden="true"></i><small>揮砍</small></button>
       </div>
       <div class="toast-host" id="toast-host"></div>
 
       <section class="intro${this.requiresProtagonistSelection ? " intro--selection" : ""}" id="intro">
+        <div class="intro__render" aria-hidden="true"><div class="intro__render-scene"></div><div class="intro__render-dust"></div></div>
         ${introContent}
         <div class="intro__side"><span>THE LAST BUTCHER</span><i></i><small>TAIPEI / LOCAL SAVE</small></div>
       </section>
@@ -169,6 +178,7 @@ export class UiController {
     this.commandPanel = get("command-panel");
     this.waveButton = get("wave-button");
     this.attackButton = get("attack-button");
+    this.attackIcon = get("attack-icon");
     this.toastHost = get("toast-host");
     this.result = get("result");
     this.resultTitle = get("result-title");
@@ -297,7 +307,7 @@ export class UiController {
         : state.wave >= 30
           ? `<small>北境守住了</small><b>三十波戰役完成</b>`
           : `<small>敵情：${this.waveForecast(state.wave + 1)}</small><b>啟動第 ${state.wave + 1} 波夜襲</b>`;
-    this.attackButton.querySelector("span")!.textContent = state.weapon === "smg" ? "⌁" : state.weapon === "axe" ? "◉" : "⚔";
+    this.attackIcon.className = `asset-icon asset-icon--weapon-${state.weapon} attack-button__icon`;
     this.attackButton.querySelector("small")!.textContent = state.weapon === "smg" ? "掃射" : state.weapon === "axe" ? "橫掃" : "揮砍";
     this.updateQuest(state);
     this.updateShop(state);

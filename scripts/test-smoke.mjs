@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -88,6 +88,78 @@ function record(viewport, check, pass, detail) {
 function overlaps(a, b) {
   if (!a || !b) return false;
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+function edgeGap(a, b) {
+  if (!a || !b) return Number.POSITIVE_INFINITY;
+  const dx = Math.max(a.x - (b.x + b.width), b.x - (a.x + a.width), 0);
+  const dy = Math.max(a.y - (b.y + b.height), b.y - (a.y + a.height), 0);
+  return Math.hypot(dx, dy);
+}
+
+async function checkR6Assets() {
+  const files = [
+    "public/images/ui/atlas/ui-atlas-low.png",
+    "public/images/ui/atlas/ui-atlas-medium.png",
+    "public/images/ui/atlas/ui-atlas-high.png",
+    "public/images/ui/background/menu-background.png",
+    "public/images/ui/chrome/panel-9s.png",
+    "public/images/ui/chrome/button-9s.png",
+    "public/images/characters/protagonist-butcher-matron.png",
+    "public/images/characters/protagonist-vet-sniper.png",
+    "public/images/characters/protagonist-mech-youth.png",
+  ];
+  const details = [];
+  let valid = true;
+  for (const relative of files) {
+    try {
+      const path = resolve(root, relative);
+      const info = await stat(path);
+      const data = await readFile(path);
+      const png = data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+      const width = png ? data.readUInt32BE(16) : 0;
+      const height = png ? data.readUInt32BE(20) : 0;
+      const itemValid = info.size > 2_048 && width >= 128 && height >= 128;
+      valid &&= itemValid;
+      details.push(`${relative.split("/").at(-1)}=${width}x${height}/${info.size}B`);
+    } catch (error) {
+      valid = false;
+      details.push(`${relative}=missing:${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  record("assets/R6", "Blender UI assets exist and are non-placeholder PNGs", valid, details.join(", "));
+
+  try {
+    const glb = await readFile(resolve(root, "public/models/custom/boss-zombie.glb"));
+    const jsonLength = glb.readUInt32LE(12);
+    const json = JSON.parse(glb.subarray(20, 20 + jsonLength).toString("utf8").trimEnd());
+    const clips = (json.animations ?? []).map((animation) => animation.name);
+    const expected = ["Walk", "Idle_Attack", "HitReact", "Death"];
+    record("animation/R6", "Boss has walk, attack, hurt and death clips", expected.every((clip) => clips.includes(clip)), `clips=${clips.join(",")}`);
+  } catch (error) {
+    record("animation/R6", "Boss has walk, attack, hurt and death clips", false, error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function checkControlSpacing(page, label) {
+  const selectors = ["#quest-toggle", "#shop-toggle", ".joystick", "#wave-button", "#attack-button"];
+  const controls = [];
+  for (const selector of selectors) {
+    const locator = page.locator(selector);
+    if (await locator.isVisible()) controls.push({ selector, box: await locator.boundingBox() });
+  }
+  const pairs = [];
+  let valid = true;
+  for (let left = 0; left < controls.length; left += 1) {
+    for (let right = left + 1; right < controls.length; right += 1) {
+      const a = controls[left];
+      const b = controls[right];
+      const gap = edgeGap(a.box, b.box);
+      pairs.push(`${a.selector}/${b.selector}=${gap.toFixed(1)}px`);
+      valid &&= !overlaps(a.box, b.box) && gap >= 8;
+    }
+  }
+  record(label, "visible buttons do not overlap and keep 8px spacing", valid, pairs.join(", "));
 }
 
 async function newPage(browser, config, savedState = fixture()) {
@@ -247,6 +319,18 @@ async function checkProtagonistSelectionAndAnimations(browser) {
     const cards = page.locator(".character-card[data-protagonist]");
     const cardCount = await cards.count();
     record("hero/selection", "three protagonist choices", cardCount === 3, `cards=${cardCount}`);
+    const portraits = await cards.locator("img").evaluateAll((images) => images.map((image) => ({
+      complete: image.complete,
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+      source: image.currentSrc,
+    })));
+    record(
+      "hero/selection",
+      "three Blender selection-card portraits load",
+      portraits.length === 3 && portraits.every((portrait) => portrait.complete && portrait.width >= 256 && portrait.height >= 384),
+      JSON.stringify(portraits),
+    );
     for (const protagonist of protagonists) {
       const selectedCard = page.locator(`.character-card[data-protagonist="${protagonist}"]`);
       await selectedCard.click();
@@ -385,6 +469,7 @@ async function runCombat(browser, config) {
       record(label, "visual capture", Boolean(capturedPath), `quality=${quality}, renderScale=${renderScale}, shadow=${shadowMode}, fog=${fogDensity}`);
       return;
     }
+    await checkControlSpacing(page, label);
     if (config.touch) await checkTouchLayout(page, label);
     await buySmg(page, config.touch);
     const before = await readSave(page);
@@ -447,6 +532,7 @@ async function runLayout(browser, viewport) {
       record(label, "visual capture", Boolean(screenshotPath), screenshotPath ?? "no screenshot");
       return;
     }
+    await checkControlSpacing(page, label);
     await checkTouchLayout(page, label);
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {
@@ -455,6 +541,7 @@ async function runLayout(browser, viewport) {
 }
 
 try {
+  await checkR6Assets();
   await ensureServer();
   const browser = await chromium.launch({ headless: true, args: ["--use-angle=swiftshader"] });
   try {
