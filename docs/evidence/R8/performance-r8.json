@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-07-14T13:48:41.989Z",
+  "measuredAt": "2026-07-14T17:08:50.194Z",
   "profiles": [
     {
       "profile": "desktop-1440x900",
@@ -9,7 +9,7 @@
       },
       "conditions": {
         "renderer": "Chromium ANGLE d3d11",
-        "warmupMs": 8000,
+        "warmupMs": 12000,
         "sampleMs": 6000,
         "wave": 25,
         "runs": 3
@@ -17,12 +17,12 @@
       "runs": [
         {
           "run": 1,
-          "p95FrameMs": 33.3,
+          "p95FrameMs": 16.7,
           "medianFrameMs": 16.7,
-          "fps": 58,
-          "drawCalls": 339,
-          "activeMeshes": 578,
-          "activeZombies": 13,
+          "fps": 60,
+          "drawCalls": 338,
+          "activeMeshes": 604,
+          "activeZombies": 16,
           "quality": "高",
           "renderScale": 0.65,
           "errors": []
@@ -31,10 +31,10 @@
           "run": 2,
           "p95FrameMs": 16.8,
           "medianFrameMs": 16.7,
-          "fps": 56,
-          "drawCalls": 348,
-          "activeMeshes": 608,
-          "activeZombies": 14,
+          "fps": 60,
+          "drawCalls": 338,
+          "activeMeshes": 604,
+          "activeZombies": 18,
           "quality": "高",
           "renderScale": 0.65,
           "errors": []
@@ -43,10 +43,10 @@
           "run": 3,
           "p95FrameMs": 16.8,
           "medianFrameMs": 16.7,
-          "fps": 56,
-          "drawCalls": 339,
-          "activeMeshes": 602,
-          "activeZombies": 13,
+          "fps": 60,
+          "drawCalls": 338,
+          "activeMeshes": 604,
+          "activeZombies": 16,
           "quality": "高",
           "renderScale": 0.65,
           "errors": []
@@ -54,9 +54,9 @@
       ],
       "median": {
         "p95FrameMs": 16.8,
-        "fps": 56,
-        "drawCalls": 339,
-        "activeMeshes": 602
+        "fps": 60,
+        "drawCalls": 338,
+        "activeMeshes": 604
       }
     },
     {
@@ -67,7 +67,7 @@
       },
       "conditions": {
         "renderer": "Chromium ANGLE d3d11",
-        "warmupMs": 8000,
+        "warmupMs": 12000,
         "sampleMs": 6000,
         "wave": 25,
         "runs": 3
@@ -78,33 +78,33 @@
           "p95FrameMs": 16.8,
           "medianFrameMs": 16.7,
           "fps": 60,
-          "drawCalls": 146,
-          "activeMeshes": 197,
-          "activeZombies": 14,
+          "drawCalls": 143,
+          "activeMeshes": 196,
+          "activeZombies": 18,
           "quality": "低",
           "renderScale": 1,
           "errors": []
         },
         {
           "run": 2,
-          "p95FrameMs": 16.8,
+          "p95FrameMs": 16.7,
           "medianFrameMs": 16.7,
           "fps": 60,
-          "drawCalls": 146,
-          "activeMeshes": 197,
-          "activeZombies": 14,
+          "drawCalls": 145,
+          "activeMeshes": 199,
+          "activeZombies": 18,
           "quality": "低",
           "renderScale": 1,
           "errors": []
         },
         {
           "run": 3,
-          "p95FrameMs": 16.7,
+          "p95FrameMs": 16.8,
           "medianFrameMs": 16.7,
           "fps": 60,
           "drawCalls": 143,
-          "activeMeshes": 195,
-          "activeZombies": 14,
+          "activeMeshes": 196,
+          "activeZombies": 18,
           "quality": "低",
           "renderScale": 1,
           "errors": []
@@ -113,8 +113,8 @@
       "median": {
         "p95FrameMs": 16.8,
         "fps": 60,
-        "drawCalls": 146,
-        "activeMeshes": 197
+        "drawCalls": 143,
+        "activeMeshes": 196
       }
     }
   ]

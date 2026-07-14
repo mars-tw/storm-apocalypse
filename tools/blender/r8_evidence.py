@@ -11,7 +11,7 @@ from mathutils import Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from ui_kit import add_area_light, add_camera, add_lighting, clear_scene, configure_render, import_glb, look_at, make_material, object_bounds, pose_hero, render_to
+from ui_kit import add_area_light, add_camera, add_lighting, clear_scene, configure_render, import_glb, look_at, make_material, object_bounds, pose_hero, render_to, srgb
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -63,8 +63,8 @@ def frame_scene(width, height, margin=1.16, camera_pitch=0.06):
 
 def evidence_render(path, width, height, transparent=False):
     configure_render(width, height, transparent)
-    bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.012, 0.018, 0.022, 1)
-    bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.52
+    bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (*srgb("#1D2A32"), 1)
+    bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.82
     render_to(path)
 
 
@@ -95,8 +95,8 @@ def render_turntable(phase, root_path, slug, relative_path):
     for index, yaw in enumerate((0, math.pi / 2, math.pi, math.pi * 1.5)):
         clear_scene()
         configure_render(400, 520, False)
-        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.012, 0.018, 0.022, 1)
-        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.68
+        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (*srgb("#1D2A32"), 1)
+        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.82
         objects = import_from(root_path, relative_path)
         holder_for(objects, f"{phase}-{slug}-{index}", (0, 0, 0), 0.90, yaw)
         target, light_scale = frame_scene(400, 520, 1.24)
@@ -113,7 +113,7 @@ def render_silhouette_sheet(root_path):
         clear_scene()
         configure_render(500, 620, False)
         world = bpy.context.scene.world.node_tree.nodes["Background"]
-        world.inputs["Color"].default_value = (0.82, 0.75, 0.62, 1)
+        world.inputs["Color"].default_value = (*srgb("#D8C9AE"), 1)
         world.inputs["Strength"].default_value = 0.9
         black = make_material("R8 Pure Black Silhouette", "#000000", 1.0)
         objects = import_from(root_path, relative)
@@ -150,8 +150,8 @@ def render_cast_sheet(root_path):
     for index, (relative, scale) in enumerate(specs):
         clear_scene()
         configure_render(450, 425, False)
-        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.010, 0.018, 0.023, 1)
-        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.58
+        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Color"].default_value = (*srgb("#1B2931"), 1)
+        bpy.context.scene.world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.80
         objects = import_from(root_path, relative)
         holder_for(objects, f"Cast-{Path(relative).stem}", (0, 0, 0), scale, 0)
         target, light_scale = frame_scene(450, 425, 1.22)

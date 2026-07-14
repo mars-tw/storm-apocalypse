@@ -4,6 +4,7 @@ import { mkdir, readFile, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
+import { checkPortraitLuminance } from "./check-portrait-luminance.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const url = process.env.SMOKE_URL ?? "http://127.0.0.1:4173/storm-apocalypse/?smoke=1";
@@ -685,6 +686,8 @@ async function runLayout(browser, viewport) {
 }
 
 try {
+  const luminance = await checkPortraitLuminance(root);
+  record("assets/R8.1", "portraits and menu background pass the luminance gate", luminance.pass, luminance.detail);
   await checkR8Assets();
   await ensureServer();
   const browser = await chromium.launch(headedOnly

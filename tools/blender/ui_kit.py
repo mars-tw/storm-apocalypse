@@ -24,16 +24,18 @@ UI_ROOT = REPO_ROOT / "public" / "images" / "ui"
 CHARACTER_ROOT = REPO_ROOT / "public" / "images" / "characters"
 
 STORM_UI_PRESET = {
-    "name": "R8 Character Foundry",
+    "name": "R8.1 Exposure Recovery",
     "renderer": "EEVEE",
     "view_transform": "AgX",
-    "look": "Medium High Contrast",
+    "look": "AgX Base",
+    "exposure_ev": 1.25,
     "transparent_icons": True,
     "camera": {"lens_mm": 62, "turntable_yaw_deg": -28, "pitch_deg": 17},
     "lighting": {
-        "key": {"color": "#FFC58A", "energy": 920, "size": 4.2},
-        "fill": {"color": "#70B3C4", "energy": 430, "size": 5.0},
-        "rim": {"color": "#F06735", "energy": 880, "size": 2.6},
+        "key": {"color": "#FFC58A", "energy": 1400, "size": 5.8},
+        "fill": {"color": "#70B3C4", "energy": 850, "size": 6.5},
+        "bounce": {"color": "#A9CED4", "energy": 620, "size": 7.5},
+        "rim": {"color": "#F06735", "energy": 1050, "size": 3.4},
     },
     "palette": {
         "night": "#07131A",
@@ -67,6 +69,7 @@ STORM_UI_PRESET = {
         "metal": {"roughness": 0.32, "metallic": 0.78},
         "volumeBreakup": "COLOR_0 vertical AO gradient",
         "wear": "contrasting cloth hem geometry + metallic scratch highlights",
+        "albedoValueRange": [0.25, 0.8],
     },
     "tiers": {
         "low": {"atlas_cell": 128, "portrait": [256, 384], "background": [960, 540]},
@@ -130,20 +133,23 @@ def configure_render(width, height, transparent):
     scene.render.image_settings.color_depth = "8"
     scene.render.image_settings.compression = 72
     scene.render.fps = 24
-    try:
-        scene.view_settings.view_transform = "AgX"
-        scene.view_settings.look = "AgX - Medium High Contrast"
-    except TypeError:
+    scene.view_settings.view_transform = "AgX"
+    # Blender 5 labels the neutral AgX look "None"; older builds expose it as
+    # "AgX - Base Contrast".  Both are the uncrushed base response requested
+    # for the R8.1 studio renders.
+    for neutral_look in ("AgX - Base Contrast", "None"):
         try:
-            scene.view_settings.look = "Medium High Contrast"
+            scene.view_settings.look = neutral_look
+            break
         except TypeError:
-            pass
+            continue
+    scene.view_settings.exposure = 1.25
     world = bpy.data.worlds.new("Storm R6 World") if not scene.world else scene.world
     scene.world = world
     world.use_nodes = True
     background = world.node_tree.nodes.get("Background")
     background.inputs["Color"].default_value = (*srgb("#07131A"), 1)
-    background.inputs["Strength"].default_value = 0.24 if transparent else 0.42
+    background.inputs["Strength"].default_value = 0.38 if transparent else 0.58
     return scene
 
 
@@ -179,9 +185,10 @@ def add_area_light(name, location, target, energy, color, size):
 def add_lighting(target, scale=1.0):
     tx, ty, tz = target
     falloff = max(1.0, scale * scale)
-    add_area_light("StormKey", (tx - 4.4 * scale, ty - 4.6 * scale, tz + 6.2 * scale), target, 920 * falloff, "#FFC58A", 4.2 * scale)
-    add_area_light("StormFill", (tx + 4.5 * scale, ty - 1.0 * scale, tz + 3.1 * scale), target, 430 * falloff, "#70B3C4", 5.0 * scale)
-    add_area_light("StormRim", (tx + 0.5 * scale, ty + 4.2 * scale, tz + 4.6 * scale), target, 880 * falloff, "#F06735", 2.6 * scale)
+    add_area_light("StormKey", (tx - 4.4 * scale, ty - 4.6 * scale, tz + 6.2 * scale), target, 1400 * falloff, "#FFC58A", 5.8 * scale)
+    add_area_light("StormFill", (tx + 4.5 * scale, ty - 1.0 * scale, tz + 3.1 * scale), target, 850 * falloff, "#70B3C4", 6.5 * scale)
+    add_area_light("StormBounce", (tx - 0.4 * scale, ty - 1.4 * scale, tz - 1.8 * scale), target, 620 * falloff, "#A9CED4", 7.5 * scale)
+    add_area_light("StormRim", (tx + 0.5 * scale, ty + 4.2 * scale, tz + 4.6 * scale), target, 1050 * falloff, "#F06735", 3.4 * scale)
 
 
 def import_glb(relative_path):
@@ -565,7 +572,14 @@ def write_manifest():
 
 
 def main():
-    if "--" in sys.argv and "--background-only" in sys.argv[sys.argv.index("--") + 1:]:
+    args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    if "--portraits-background-only" in args:
+        for spec in HERO_SPECS:
+            render_portrait(*spec)
+        render_menu_background()
+        write_manifest()
+        return
+    if "--background-only" in args:
         render_menu_background()
         render_dust_layer()
         write_manifest()

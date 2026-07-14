@@ -1,13 +1,32 @@
 """Shared low-poly construction helpers for Storm Apocalypse custom assets."""
 
-from mathutils import Vector
 import bpy
+import colorsys
 import math
 from pathlib import Path
+from mathutils import Vector
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = REPO_ROOT / "public" / "models" / "custom"
+CHARACTER_VALUE_MIN = 0.25
+CHARACTER_VALUE_MAX = 0.80
+
+
+def _linear_to_srgb(channel):
+    return 12.92 * channel if channel <= 0.0031308 else 1.055 * channel ** (1.0 / 2.4) - 0.055
+
+
+def _srgb_to_linear(channel):
+    return channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
+
+
+def _lift_character_value(color):
+    """Keep authored hue/saturation while enforcing R8.1's readable value range."""
+    srgb = tuple(max(0.0, min(1.0, _linear_to_srgb(channel))) for channel in color[:3])
+    hue, saturation, value = colorsys.rgb_to_hsv(*srgb)
+    lifted = colorsys.hsv_to_rgb(hue, saturation, max(CHARACTER_VALUE_MIN, min(CHARACTER_VALUE_MAX, value)))
+    return tuple(_srgb_to_linear(channel) for channel in lifted)
 
 
 def reset_scene():
@@ -77,8 +96,8 @@ def _apply_storm_gradient(obj, mat):
     mesh = obj.data
     if not mesh.vertices or not mesh.loops:
         return
-    top = tuple(mat["storm_gradient_top"])
-    bottom = tuple(mat["storm_gradient_bottom"])
+    top = _lift_character_value(tuple(mat["storm_gradient_top"]))
+    bottom = _lift_character_value(tuple(mat["storm_gradient_bottom"]))
     values = [vertex.co.z for vertex in mesh.vertices]
     low = min(values)
     span = max(0.0001, max(values) - low)
@@ -93,11 +112,11 @@ def _apply_storm_gradient(obj, mat):
         # facets retain the palette's authored hue.
         factor = 0.12 + 0.88 * factor
         color = tuple(bottom[index] * (1.0 - factor) + top[index] * factor for index in range(3)) + (1.0,)
-        datum = colors.data[loop.index]
-        if hasattr(datum, "color_srgb"):
-            datum.color_srgb = color
-        else:
-            datum.color = color
+        # Blender's color attribute is scene-linear, as is glTF COLOR_0.  R8
+        # accidentally fed these values through color_srgb and converted them a
+        # second time, crushing the palette into black.  Assign linear data
+        # directly so both Blender and Babylon see the same authored swatch.
+        colors.data[loop.index].color = color
 
 
 def bevel(obj, width=0.018, segments=1):
@@ -306,6 +325,9 @@ def render_portrait(filename, target=(0.0, 0.0, 1.02), camera_location=(2.7, 4.8
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"
     scene.render.filepath = str(output)
+    scene.view_settings.view_transform = "AgX"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = 1.25
 
     bpy.ops.object.camera_add(location=camera_location)
     camera = bpy.context.object
@@ -317,24 +339,31 @@ def render_portrait(filename, target=(0.0, 0.0, 1.02), camera_location=(2.7, 4.8
     bpy.ops.object.light_add(type="AREA", location=(-2.8, 3.8, 5.2))
     key = bpy.context.object
     key.name = "PortraitKey"
-    key.data.energy = 760
+    key.data.energy = 1400
     key.data.shape = "DISK"
-    key.data.size = 4.0
+    key.data.size = 5.8
     key.rotation_euler = (Vector(target) - key.location).to_track_quat("-Z", "Y").to_euler()
     bpy.ops.object.light_add(type="AREA", location=(3.2, 1.5, 3.2))
     fill = bpy.context.object
     fill.name = "PortraitFill"
-    fill.data.energy = 430
+    fill.data.energy = 850
     fill.data.color = (0.45, 0.72, 0.86)
-    fill.data.size = 3.0
+    fill.data.size = 6.0
     fill.rotation_euler = (Vector(target) - fill.location).to_track_quat("-Z", "Y").to_euler()
     bpy.ops.object.light_add(type="AREA", location=(0.0, -2.5, 3.6))
     rim = bpy.context.object
     rim.name = "PortraitRim"
-    rim.data.energy = 520
+    rim.data.energy = 1050
     rim.data.color = (0.92, 0.45, 0.2)
-    rim.data.size = 2.5
+    rim.data.size = 3.4
     rim.rotation_euler = (Vector(target) - rim.location).to_track_quat("-Z", "Y").to_euler()
+    bpy.ops.object.light_add(type="AREA", location=(0.0, 2.8, 0.45))
+    bounce = bpy.context.object
+    bounce.name = "PortraitBounceFill"
+    bounce.data.energy = 620
+    bounce.data.color = (0.55, 0.66, 0.72)
+    bounce.data.size = 7.0
+    bounce.rotation_euler = (Vector(target) - bounce.location).to_track_quat("-Z", "Y").to_euler()
 
     bpy.ops.render.render(write_still=True)
     print(f"RENDERED {filename} | {output.stat().st_size} bytes")

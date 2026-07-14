@@ -1,9 +1,10 @@
 {
   "preset": {
-    "name": "R8 Character Foundry",
+    "name": "R8.1 Exposure Recovery",
     "renderer": "EEVEE",
     "view_transform": "AgX",
-    "look": "Medium High Contrast",
+    "look": "AgX Base",
+    "exposure_ev": 1.25,
     "transparent_icons": true,
     "camera": {
       "lens_mm": 62,
@@ -13,18 +14,23 @@
     "lighting": {
       "key": {
         "color": "#FFC58A",
-        "energy": 920,
-        "size": 4.2
+        "energy": 1400,
+        "size": 5.8
       },
       "fill": {
         "color": "#70B3C4",
-        "energy": 430,
-        "size": 5.0
+        "energy": 850,
+        "size": 6.5
+      },
+      "bounce": {
+        "color": "#A9CED4",
+        "energy": 620,
+        "size": 7.5
       },
       "rim": {
         "color": "#F06735",
-        "energy": 880,
-        "size": 2.6
+        "energy": 1050,
+        "size": 3.4
       }
     },
     "palette": {
@@ -82,7 +88,11 @@
         "metallic": 0.78
       },
       "volumeBreakup": "COLOR_0 vertical AO gradient",
-      "wear": "contrasting cloth hem geometry + metallic scratch highlights"
+      "wear": "contrasting cloth hem geometry + metallic scratch highlights",
+      "albedoValueRange": [
+        0.25,
+        0.8
+      ]
     },
     "tiers": {
       "low": {
@@ -160,22 +170,22 @@
       "path": "images/ui/background/menu-background-low.png",
       "width": 960,
       "height": 540,
-      "bytes": 623327,
-      "sha256": "fb8a3406dd1d3d9545f0faa9d5d511282e71208b76ef36e09ba68e14ecc22cd2"
+      "bytes": 607392,
+      "sha256": "abbef81acdde78bc29b1948434010f407def15797da15d3a094149ed5d7578f2"
     },
     {
       "path": "images/ui/background/menu-background-medium.png",
       "width": 1280,
       "height": 720,
-      "bytes": 1113438,
-      "sha256": "a3da1cf7fce07ca00f4671e63ca4d2a269fb275ed42528b0f10b4bf7b27b8135"
+      "bytes": 1139740,
+      "sha256": "490900d3977297f82fda7e8366396803061e15c9aad53513ee6a3e46e0afab05"
     },
     {
       "path": "images/ui/background/menu-background.png",
       "width": 1920,
       "height": 1080,
-      "bytes": 1930499,
-      "sha256": "ac45a676dd7840560a26e820f670607f6f364c0c99121338a4837debcbf84bf2"
+      "bytes": 2037529,
+      "sha256": "d999a82725b02c3ff5ca51f72da2f9db5a6a3f673d793d1ad706962df59bf65a"
     },
     {
       "path": "images/ui/background/menu-dust-low.png",
@@ -307,64 +317,64 @@
       "path": "images/characters/protagonist-butcher-matron-low.png",
       "width": 256,
       "height": 384,
-      "bytes": 105378,
-      "sha256": "ce578227450edc05a3ccec62bf0d5e21db07a72f0d5f80f5058f94858572a84c"
+      "bytes": 124486,
+      "sha256": "ee620a83aae49f2e75b6e3c5b7cd7fe809829f1be22688c8ca664221989a6280"
     },
     {
       "path": "images/characters/protagonist-butcher-matron-medium.png",
       "width": 384,
       "height": 576,
-      "bytes": 219585,
-      "sha256": "5a24153e68b43873541e4c80c081424b2747ff3a07450a82cfa24bf1bd7a3aa9"
+      "bytes": 263456,
+      "sha256": "56c59c466b980210946a73b45e0d39b76b77c3ed046b2cf141e1022a20c3e745"
     },
     {
       "path": "images/characters/protagonist-butcher-matron.png",
       "width": 512,
       "height": 768,
-      "bytes": 287940,
-      "sha256": "5df758969607033e72bbb787967fff0725f00246ac15558a2dbccd8bebb8cc01"
+      "bytes": 377867,
+      "sha256": "9864be410d6c085d708b9ea8b34ff2f5468f875dc9634e5859efab6bde0c1f3c"
     },
     {
       "path": "images/characters/protagonist-mech-youth-low.png",
       "width": 256,
       "height": 384,
-      "bytes": 94160,
-      "sha256": "ee2ca2cb5acb00ffb9cf77dd50b9522ed2c698bd14d45d434322cc4916feff01"
+      "bytes": 104844,
+      "sha256": "567ce2a60e1f54b6d1cbd76f44d3e358061f1cae634fdba23ad204f978510890"
     },
     {
       "path": "images/characters/protagonist-mech-youth-medium.png",
       "width": 384,
       "height": 576,
-      "bytes": 194723,
-      "sha256": "433ef9e0f6bd15f8de979bab21a56e9b8119d9a5faa49c03a77a8db71fd4f1d2"
+      "bytes": 220393,
+      "sha256": "81727d8ab789c2d6f00fcefc2df69896d6146f9a6ad7311ada00fea6fde46d87"
     },
     {
       "path": "images/characters/protagonist-mech-youth.png",
       "width": 512,
       "height": 768,
-      "bytes": 252335,
-      "sha256": "a4104d3b510c3b2be764cc1287547c27d21ee8045bcca587c329da341bd5fe8a"
+      "bytes": 302586,
+      "sha256": "6a5dcbf6a0e84deab64bddbb404e5db01c2180bb1718b0179f97f284f560b534"
     },
     {
       "path": "images/characters/protagonist-vet-sniper-low.png",
       "width": 256,
       "height": 384,
-      "bytes": 85948,
-      "sha256": "47b9ad5a03d523dd0fa6b677ecc590638d198d240f274ba6a76d0be49c5fcbcf"
+      "bytes": 98746,
+      "sha256": "6b96f87c167ad56f2c5340416d22a1150c8ae91e43f1bf51f0a9a71b77e15578"
     },
     {
       "path": "images/characters/protagonist-vet-sniper-medium.png",
       "width": 384,
       "height": 576,
-      "bytes": 181036,
-      "sha256": "9978e5ae878a87f0b6f400578fa5d0a9c36faf380c88c2c8bca2cb4144c3b1db"
+      "bytes": 209518,
+      "sha256": "e19389e96d9868dd658887054124fd23e6c8b9a60644beb7da6db0735c3c7a0c"
     },
     {
       "path": "images/characters/protagonist-vet-sniper.png",
       "width": 512,
       "height": 768,
-      "bytes": 235138,
-      "sha256": "8bd19b9265c6edfc4dc037b0cc3a2340b1297e5168419a738b7d609c31195b92"
+      "bytes": 294489,
+      "sha256": "a0dd61d3e84d256ed7364ee674900d8b4024acab1996350a6c76a5ff99d4b97e"
     }
   ]
 }

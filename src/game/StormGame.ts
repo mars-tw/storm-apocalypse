@@ -251,7 +251,7 @@ export class StormGame {
     this.scene.fogColor = lowQuality
       ? new Color3(0.065, 0.13, 0.19)
       : new Color3(0.58, 0.68, 0.72);
-    this.scene.environmentIntensity = lowQuality ? 0.44 : 0.72;
+    this.scene.environmentIntensity = lowQuality ? 0.62 : 0.9;
 
     this.camera = new ArcRotateCamera("follow-camera", -Math.PI * 0.28, 1.02, 19, new Vector3(0, 1.2, 0), this.scene);
     this.camera.lowerRadiusLimit = 14;
@@ -262,9 +262,9 @@ export class StormGame {
     this.camera.inputs.clear();
 
     this.skyLight = new HemisphericLight("polar-skylight", new Vector3(0.2, 1, 0.1), this.scene);
-    this.skyLight.intensity = lowQuality ? 0.7 : 1.05;
-    this.skyLight.diffuse = lowQuality ? new Color3(0.42, 0.61, 0.74) : new Color3(0.72, 0.84, 0.9);
-    this.skyLight.groundColor = lowQuality ? new Color3(0.035, 0.07, 0.11) : new Color3(0.12, 0.18, 0.22);
+    this.skyLight.intensity = lowQuality ? 0.95 : 1.25;
+    this.skyLight.diffuse = lowQuality ? new Color3(0.52, 0.68, 0.78) : new Color3(0.78, 0.88, 0.93);
+    this.skyLight.groundColor = lowQuality ? new Color3(0.11, 0.16, 0.2) : new Color3(0.2, 0.27, 0.31);
     this.sun = new DirectionalLight("low-winter-sun", new Vector3(-0.52, -1, 0.38), this.scene);
     this.sun.position = new Vector3(24, 35, -20);
     this.sun.intensity = lowQuality ? 1.65 : 2.4;
@@ -286,14 +286,14 @@ export class StormGame {
       this.cinematicPipeline.bloomWeight = 0.2;
       this.cinematicPipeline.bloomKernel = 48;
       this.cinematicPipeline.imageProcessingEnabled = true;
-      this.cinematicPipeline.imageProcessing.contrast = 1.16;
-      this.cinematicPipeline.imageProcessing.exposure = 1.05;
+      this.cinematicPipeline.imageProcessing.contrast = 1.08;
+      this.cinematicPipeline.imageProcessing.exposure = 1.15;
       this.cinematicPipeline.samples = this.state.quality === "高" ? 2 : 1;
     } else {
       // Keep low-quality color grading in the material pass: no FXAA, bloom,
       // glow render target, MSAA, or image-processing post-process is allocated.
-      this.scene.imageProcessingConfiguration.contrast = 1.32;
-      this.scene.imageProcessingConfiguration.exposure = 0.88;
+      this.scene.imageProcessingConfiguration.contrast = 1.12;
+      this.scene.imageProcessingConfiguration.exposure = 1.05;
     }
 
     this.shopLight = new PointLight("shop-lantern-light", new Vector3(-8, 3.4, -6.1), this.scene);
