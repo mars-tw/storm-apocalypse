@@ -113,6 +113,9 @@ async function readGlbMetadata(relative) {
     clips: (json.animations ?? []).map((animation) => animation.name),
     bones: json.skins?.[0]?.joints?.length ?? 0,
     nodes: (json.nodes ?? []).map((node) => node.name ?? ""),
+    forwardRoots: (json.nodes ?? [])
+      .filter((node) => /^Npc.+R10$/u.test(node.name ?? ""))
+      .map((node) => ({ name: node.name, rotation: node.rotation ?? [0, 0, 0, 1] })),
   };
 }
 
@@ -215,6 +218,63 @@ async function checkR8Assets() {
     record("animation/R8", "Boss stays within budget and has walk, attack, hurt and death clips", meta.triangles <= 8_000 && meta.triangles >= 2_500 && expected.every((clip) => clips.includes(clip)), `tris=${meta.triangles}, clips=${clips.join(",")}`);
   } catch (error) {
     record("animation/R8", "Boss stays within budget and has walk, attack, hurt and death clips", false, error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function checkR10Assets() {
+  const specs = [
+    ["hunter", "public/models/custom/characters/staff-hunter.glb", 18, ["idle", "walk", "run", "attack"]],
+    ["cashier", "public/models/custom/characters/staff-cashier.glb", 18, ["idle", "walk", "run"]],
+    ["customer-traveler", "public/models/custom/characters/customer-traveler.glb", 18, ["idle", "walk", "run"]],
+    ["customer-forager", "public/models/custom/characters/customer-forager.glb", 18, ["idle", "walk", "run"]],
+    ["customer-refugee", "public/models/custom/characters/customer-refugee.glb", 18, ["idle", "walk", "run"]],
+    ["shepherd-dog", "public/models/custom/characters/staff-shepherd-dog.glb", 19, ["idle", "walk", "run"]],
+  ];
+  const details = [];
+  let valid = true;
+  for (const [name, path, bones, clips] of specs) {
+    try {
+      const meta = await readGlbMetadata(path);
+      const forward = meta.forwardRoots[0]?.rotation ?? [];
+      const forwardValid = forward.length === 4
+        && Math.abs(forward[0]) < 0.01
+        && Math.abs(Math.abs(forward[1]) - 1) < 0.01
+        && Math.abs(forward[2]) < 0.01
+        && Math.abs(forward[3]) < 0.01;
+      const itemValid = meta.triangles >= 3_000
+        && meta.triangles <= 4_000
+        && meta.bones === bones
+        && clips.every((clip) => meta.clips.includes(clip))
+        && forwardValid;
+      valid &&= itemValid;
+      details.push(`${name}=${meta.triangles}tris/${meta.bones}bones/${meta.clips.join("+")}/root180=${forwardValid}`);
+    } catch (error) {
+      valid = false;
+      details.push(`${name}=invalid:${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  record("assets/R10", "staff, customer variants and articulated dog meet the R10 geometry, clip and forward contract", valid, details.join(", "));
+
+  try {
+    const meta = await readGlbMetadata("public/models/custom/strong-cow-accessories.glb");
+    const authoredParts = ["StrongCowHornBaseL", "StrongCowHornBaseR", "StrongCowEmberCollar"];
+    const itemValid = meta.triangles > 0
+      && meta.triangles <= 800
+      && meta.clips.length === 0
+      && authoredParts.every((part) => meta.nodes.some((node) => node.includes(part)));
+    record("assets/R10", "strong-cow horns and emissive collar ship as an authored Blender GLB", itemValid, `tris=${meta.triangles}, parts=${authoredParts.join("+")}`);
+  } catch (error) {
+    record("assets/R10", "strong-cow horns and emissive collar ship as an authored Blender GLB", false, error instanceof Error ? error.message : String(error));
+  }
+
+  try {
+    const source = await readFile(resolve(root, "src/game/StormGame.ts"), "utf8");
+    const legacyTokens = ["survivor.glb", "customer.glb", "createProceduralDog", "strong-cow-horn-material", "strong-cow-ember-collar"];
+    const expectedModels = ["staff-hunter.glb", "staff-cashier.glb", "staff-shepherd-dog.glb", "strong-cow-accessories.glb"];
+    const itemValid = legacyTokens.every((token) => !source.includes(token)) && expectedModels.every((token) => source.includes(token));
+    record("wiring/R10", "runtime uses only authored R10 staff, dog and strong-cow accessory assets", itemValid, `legacy=${legacyTokens.filter((token) => source.includes(token)).join("+") || "none"}`);
+  } catch (error) {
+    record("wiring/R10", "runtime uses only authored R10 staff, dog and strong-cow accessory assets", false, error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -763,6 +823,7 @@ try {
   const luminance = await checkPortraitLuminance(root);
   record("assets/R8.1", "portraits and menu background pass the luminance gate", luminance.pass, luminance.detail);
   await checkR8Assets();
+  await checkR10Assets();
   await ensureServer();
   const browser = await chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }

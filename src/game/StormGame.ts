@@ -116,6 +116,8 @@ interface StaffActor extends Actor {
   id: EmployeeId;
   timer: number;
   patrolIndex: number;
+  attackTarget?: CowActor;
+  attackImpactTimer: number;
 }
 
 type WorldPickAction =
@@ -129,6 +131,7 @@ interface StormMetadata {
 }
 
 type CustomerPhase = "hidden" | "arriving" | "buying" | "leaving";
+type AnonymousCustomerVariant = "anonymous-traveler" | "anonymous-forager" | "anonymous-refugee";
 
 interface CustomerActor extends Actor {
   phase: CustomerPhase;
@@ -142,8 +145,20 @@ const R8_ZOMBIE_MODELS = [
   "custom/zombies/zombie-rust.glb",
 ] as const;
 
+const R10_STAFF_MODELS: Record<EmployeeId, string> = {
+  hunter: "custom/characters/staff-hunter.glb",
+  cashier: "custom/characters/staff-cashier.glb",
+  dog: "custom/characters/staff-shepherd-dog.glb",
+};
+
+const R10_ANONYMOUS_CUSTOMERS: ReadonlyArray<{ id: AnonymousCustomerVariant; model: string }> = [
+  { id: "anonymous-traveler", model: "custom/characters/customer-traveler.glb" },
+  { id: "anonymous-forager", model: "custom/characters/customer-forager.glb" },
+  { id: "anonymous-refugee", model: "custom/characters/customer-refugee.glb" },
+];
+
 const ASSET_FILES = [
-  "cow.glb", "survivor.glb", "customer.glb",
+  "cow.glb",
   ...R8_ZOMBIE_MODELS,
   "pine-a.glb", "pine-b.glb", "rock.glb",
   "fence.glb", "fence-gate.glb", "holiday/cabin-wall.glb", "holiday/cabin-wreath.glb",
@@ -153,6 +168,9 @@ const ASSET_FILES = [
   "custom/tower-ballista.glb", "custom/tower-frost.glb", "custom/tower-cannon.glb",
   "custom/weapons/machete.glb", "custom/weapons/axe.glb", "custom/weapons/smg.glb",
   "custom/meat-slice.glb", "custom/coin.glb", "custom/boss-zombie.glb",
+  ...Object.values(R10_STAFF_MODELS),
+  ...R10_ANONYMOUS_CUSTOMERS.map((entry) => entry.model),
+  "custom/strong-cow-accessories.glb",
   ...PROTAGONISTS.map((entry) => entry.model),
   ...NAMED_CUSTOMERS.map((entry) => entry.model),
 ] as const;
@@ -189,7 +207,7 @@ export class StormGame {
   private cow!: CowActor;
   private strongCow?: CowActor;
   private customer!: CustomerActor;
-  private readonly customerVariants = new Map<NamedCustomerId | "anonymous", CustomerActor>();
+  private readonly customerVariants = new Map<NamedCustomerId | AnonymousCustomerVariant, CustomerActor>();
   private readonly towerActors = new Map<TowerId, TowerActor>();
   private readonly staff = new Map<EmployeeId, StaffActor>();
   private weaponModel?: TransformNode;
@@ -353,6 +371,20 @@ export class StormGame {
         canvas.dataset.towerAnimationLod = [...this.towerActors.values()]
           .map((tower) => `${tower.id}:${tower.animationLodPaused ? "paused" : "active"}`)
           .join(",");
+        if (this.smokeMode || this.showcaseMode) {
+          canvas.dataset.staffAnimations = [...this.staff.values()]
+            .map((staff) => `${staff.id}:${staff.currentAnimation || "none"}`)
+            .join(",");
+          canvas.dataset.staffClips = [...this.staff.values()]
+            .map((staff) => `${staff.id}:${staff.animations.map((animation) => animation.name).sort().join("|")}`)
+            .join(",");
+          canvas.dataset.staffMeshForward = [...this.staff.values()]
+            .map((staff) => {
+              const forward = staff.meshForwardNode.getDirection(staff.meshForwardAxis).normalize();
+              return `${staff.id}:${forward.x.toFixed(3)}|${forward.z.toFixed(3)}`;
+            })
+            .join(",");
+        }
       }
     });
     this.input = new InputController(ui.joystick);
@@ -380,7 +412,7 @@ export class StormGame {
       this.state.stallLevel = 4;
       this.state.displayedMeat = 6;
       this.state.towers = { ballista: 1, frost: 1, cannon: 1 };
-      this.state.employees = { ...this.state.employees, cashier: 2, dog: 2 };
+      this.state.employees = { hunter: 2, cashier: 2, dog: 2 };
     }
     let loaded = 0;
     let nextAsset = 0;
@@ -849,13 +881,15 @@ export class StormGame {
     this.playAnimation(this.cow, "Eating", true);
     this.addActorShadows(this.cow);
 
-    const anonymous: CustomerActor = {
-      ...this.instantiateActor("customer.glb", "wandering-customer", new Vector3(-18, 0, -10), 0.88),
-      phase: "hidden",
-      timer: 0,
-      identity: null,
-    };
-    this.customerVariants.set("anonymous", anonymous);
+    for (const definition of R10_ANONYMOUS_CUSTOMERS) {
+      const actor: CustomerActor = {
+        ...this.instantiateActor(definition.model, `wandering-customer-${definition.id}`, new Vector3(-18, 0, -10), 1),
+        phase: "hidden",
+        timer: 0,
+        identity: null,
+      };
+      this.customerVariants.set(definition.id, actor);
+    }
     for (const definition of NAMED_CUSTOMERS) {
       const actor: CustomerActor = {
         ...this.instantiateActor(definition.model, `customer-${definition.id}`, new Vector3(-18, 0, -10), 1),
@@ -869,7 +903,7 @@ export class StormGame {
       actor.root.setEnabled(false);
       this.addActorShadows(actor);
     }
-    this.customer = anonymous;
+    this.customer = this.customerVariants.get("anonymous-traveler")!;
   }
 
   private createTowers(): void {
@@ -1203,13 +1237,14 @@ export class StormGame {
   private spawnCustomer(): void {
     this.customer.root.setEnabled(false);
     const familiarCount = NAMED_CUSTOMERS.filter((entry) => this.state.customerAffinity[entry.id] >= 6).length;
-    const weights: Array<[NamedCustomerId | "anonymous", number]> = [
-      ["anonymous", Math.max(0.35, 0.55 - familiarCount * 0.04)],
+    const anonymousWeight = Math.max(0.35, 0.55 - familiarCount * 0.04);
+    const weights: Array<[NamedCustomerId | AnonymousCustomerVariant, number]> = [
+      ...R10_ANONYMOUS_CUSTOMERS.map((entry) => [entry.id, anonymousWeight / R10_ANONYMOUS_CUSTOMERS.length] as [AnonymousCustomerVariant, number]),
       ...NAMED_CUSTOMERS.map((entry) => [entry.id, entry.weight + (this.state.customerAffinity[entry.id] >= 6 ? 0.04 : 0)] as [NamedCustomerId, number]),
     ];
     const total = weights.reduce((sum, entry) => sum + entry[1], 0);
     let draw = Math.random() * total;
-    let selected: NamedCustomerId | "anonymous" = "anonymous";
+    let selected: NamedCustomerId | AnonymousCustomerVariant = "anonymous-traveler";
     for (const [id, weight] of weights) {
       draw -= weight;
       if (draw <= 0) {
@@ -1443,88 +1478,24 @@ export class StormGame {
     this.strongCow.root.position.y = this.heightAt(PASTURE_2_CENTER.x, PASTURE_2_CENTER.z);
     this.playAnimation(this.strongCow, "Eating", true);
     this.addActorShadows(this.strongCow);
-    const hornMaterial = new PBRMaterial("strong-cow-horn-material", this.scene);
-    hornMaterial.albedoColor = new Color3(0.88, 0.72, 0.45);
-    hornMaterial.roughness = 0.8;
-    for (const side of [-1, 1]) {
-      const horn = MeshBuilder.CreateCylinder(`strong-cow-horn-${side}`, { height: 1.7, diameterTop: 0, diameterBottom: 0.34, tessellation: 8 }, this.scene);
-      horn.parent = this.strongCow.root;
-      horn.position.set(side * 1.05, 3.3, 1.45);
-      horn.rotation.z = side * 0.85;
-      horn.material = hornMaterial;
-      this.castShadows(horn);
-    }
-    const collar = MeshBuilder.CreateTorus("strong-cow-ember-collar", { diameter: 2.4, thickness: 0.16, tessellation: 24 }, this.scene);
-    collar.parent = this.strongCow.root;
-    collar.position.y = 2.2;
-    collar.rotation.x = Math.PI / 2;
-    const collarMaterial = new PBRMaterial("strong-cow-collar-material", this.scene);
-    collarMaterial.albedoColor = new Color3(0.62, 0.16, 0.08);
-    collarMaterial.emissiveColor = new Color3(0.36, 0.04, 0.01);
-    collar.material = collarMaterial;
+    const accessories = this.instantiateStatic("custom/strong-cow-accessories.glb", "pasture-2-strong-cow-accessories", false);
+    accessories.parent = this.strongCow.root;
   }
 
   private createStaff(id: EmployeeId): void {
     if (this.staff.has(id)) return;
-    let staff: StaffActor;
-    if (id === "dog") {
-      staff = { ...this.createProceduralDog(), id, timer: 0, patrolIndex: 0 };
-    } else {
-      const position = id === "hunter" ? new Vector3(5.5, 0, 1) : STALL_POSITION.add(new Vector3(1.7, 0, 1));
-      const actor = this.instantiateActor(id === "hunter" ? "survivor.glb" : "customer.glb", `staff-${id}`, position, id === "hunter" ? 0.82 : 0.85);
-      actor.root.position.y = this.heightAt(position.x, position.z);
-      this.playAnimation(actor, "Idle", true);
-      staff = { ...actor, id, timer: 0, patrolIndex: 0 };
-    }
+    const position = id === "hunter"
+      ? new Vector3(5.5, 0, 1)
+      : id === "cashier"
+        ? STALL_POSITION.add(new Vector3(1.7, 0, 1))
+        : new Vector3(-5.8, 0, -5.5);
+    const actor = this.instantiateActor(R10_STAFF_MODELS[id], `staff-${id}`, position, 1);
+    actor.root.position.y = this.heightAt(position.x, position.z);
+    this.playAnimation(actor, "idle", true);
+    const staff: StaffActor = { ...actor, id, timer: 0, patrolIndex: 0, attackImpactTimer: 0 };
     this.addActorShadows(staff);
     this.tagWorldAction(staff.root, { type: "employee", id });
     this.staff.set(id, staff);
-  }
-
-  private createProceduralDog(): Actor {
-    const root = new TransformNode("staff-shepherd-dog", this.scene);
-    root.position.set(-5.8, this.heightAt(-5.8, -5.5), -5.5);
-    const fur = new PBRMaterial("dog-fur-material", this.scene);
-    fur.albedoColor = new Color3(0.18, 0.13, 0.09);
-    fur.roughness = 0.95;
-    const tan = new PBRMaterial("dog-tan-material", this.scene);
-    tan.albedoColor = new Color3(0.68, 0.42, 0.2);
-    tan.roughness = 0.9;
-    const body = MeshBuilder.CreateCapsule("dog-body", { height: 1.55, radius: 0.42, tessellation: 8 }, this.scene);
-    body.parent = root;
-    body.rotation.x = Math.PI / 2;
-    body.position.y = 0.72;
-    body.material = fur;
-    const head = MeshBuilder.CreateIcoSphere("dog-head", { radius: 0.43, subdivisions: 1 }, this.scene);
-    head.parent = root;
-    head.position.set(0, 0.95, 0.82);
-    head.material = tan;
-    const muzzle = MeshBuilder.CreateBox("dog-muzzle", { width: 0.38, height: 0.25, depth: 0.48 }, this.scene);
-    muzzle.parent = root;
-    muzzle.position.set(0, 0.84, 1.16);
-    muzzle.material = tan;
-    for (const side of [-1, 1]) {
-      const ear = MeshBuilder.CreateCylinder(`dog-ear-${side}`, { height: 0.55, diameterTop: 0, diameterBottom: 0.28, tessellation: 5 }, this.scene);
-      ear.parent = root;
-      ear.position.set(side * 0.25, 1.35, 0.77);
-      ear.material = fur;
-      for (const z of [-0.45, 0.45]) {
-        const leg = MeshBuilder.CreateCylinder(`dog-leg-${side}-${z}`, { height: 0.68, diameter: 0.16, tessellation: 6 }, this.scene);
-        leg.parent = root;
-        leg.position.set(side * 0.28, 0.34, z);
-        leg.material = tan;
-        this.castShadows(leg);
-      }
-      this.castShadows(ear);
-    }
-    const tail = MeshBuilder.CreateCylinder("dog-tail", { height: 0.9, diameter: 0.14, tessellation: 6 }, this.scene);
-    tail.parent = root;
-    tail.position.set(0, 0.95, -0.9);
-    tail.rotation.x = -0.75;
-    tail.material = fur;
-    this.castShadows(body);
-    this.castShadows(head);
-    return { root, meshForwardNode: root, meshForwardAxis: Vector3.Forward(), animations: [], currentAnimation: "" };
   }
 
   private updateStaff(dt: number): void {
@@ -1534,23 +1505,35 @@ export class StormGame {
       hunter.timer = Math.max(0, hunter.timer - dt);
       const hunterLevel = this.state.employees.hunter;
       const target = this.allCows().find((cow) => cow.alive);
-      if (target) {
+      if (hunter.attackTarget) {
+        hunter.attackImpactTimer -= dt;
+        if (hunter.attackImpactTimer <= 0) {
+          const attackTarget = hunter.attackTarget;
+          hunter.attackTarget = undefined;
+          if (attackTarget.alive && Vector3.Distance(hunter.root.position, attackTarget.root.position) <= 2.7) {
+            this.damageCow(attackTarget, 1);
+          }
+        }
+      } else if (target) {
         const distance = Vector3.Distance(hunter.root.position, target.root.position);
         if (distance > 2.35) {
           this.moveActorToward(hunter, target.root.position, hunterLevel >= 2 ? 2.4 : 2.15, dt);
-          this.playAnimation(hunter, "Run", true);
+          this.playAnimation(hunter, "run", true);
         } else if (hunter.timer <= 0) {
           hunter.timer = hunterLevel >= 2 ? 1.1 : 1.45;
-          this.playAnimation(hunter, "Slash", false);
-          this.damageCow(target, 1);
-        }
+          hunter.attackTarget = target;
+          hunter.attackImpactTimer = 9 / 24;
+          this.playAnimation(hunter, "attack", false, true);
+        } else this.playAnimation(hunter, "idle", true);
       }
     }
     const cashier = this.staff.get("cashier");
     if (cashier) {
       const post = STALL_POSITION.add(new Vector3(1.7, 0, 1));
-      if (Vector3.Distance(cashier.root.position, post) > 0.35) this.moveActorToward(cashier, post, 1.7, dt);
-      else this.playAnimation(cashier, "Idle", true);
+      if (Vector3.Distance(cashier.root.position, post) > 0.35) {
+        this.moveActorToward(cashier, post, 1.7, dt);
+        this.playAnimation(cashier, "walk", true);
+      } else this.playAnimation(cashier, "idle", true);
     }
     const dog = this.staff.get("dog");
     if (dog) {
@@ -1560,7 +1543,9 @@ export class StormGame {
         ? this.drops.reduce<MeatDrop | undefined>((oldest, candidate) => !oldest || candidate.expiresAt < oldest.expiresAt ? candidate : oldest, undefined)
         : this.drops[0];
       if (drop && this.state.displayedMeat < capacity) {
-        if (this.moveActorToward(dog, drop.root.position, dogLevel >= 2 ? 3.72 : 3.1, dt)) {
+        const reachedDrop = this.moveActorToward(dog, drop.root.position, dogLevel >= 2 ? 3.72 : 3.1, dt);
+        this.playAnimation(dog, reachedDrop ? "idle" : "walk", true);
+        if (reachedDrop) {
           const picked = [drop];
           if (dogLevel >= 2 && capacity - this.state.displayedMeat >= 2) {
             const second = this.drops
@@ -1581,7 +1566,10 @@ export class StormGame {
         }
       } else {
         const post = STALL_POSITION.add(new Vector3(2.5, 0, -0.4));
-        if (Vector3.Distance(dog.root.position, post) > 0.4) this.moveActorToward(dog, post, dogLevel >= 2 ? 2.82 : 2.35, dt);
+        if (Vector3.Distance(dog.root.position, post) > 0.4) {
+          this.moveActorToward(dog, post, dogLevel >= 2 ? 2.82 : 2.35, dt);
+          this.playAnimation(dog, "walk", true);
+        } else this.playAnimation(dog, "idle", true);
       }
     }
   }

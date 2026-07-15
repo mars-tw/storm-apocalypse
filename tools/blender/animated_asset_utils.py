@@ -415,6 +415,131 @@ def create_customer_actions(armature):
     _reset_pose(armature)
 
 
+def create_staff_actions(armature, include_attack=False):
+    """R10 staff locomotion on the shared 18-bone hierarchy.
+
+    The actor root remains gameplay-owned.  These clips only articulate the
+    visual skeleton, with readable contact/passing poses for both walk and run.
+    Hunter assets can opt into an anticipation/impact/recovery attack clip.
+    """
+    action = _new_action(armature, "idle")
+    _key_pose(armature, 1, rotations={"spine": (0.018, 0, 0), "head": (-0.012, 0, -0.018)})
+    _key_pose(
+        armature,
+        18,
+        rotations={"spine": (-0.024, 0.008, 0.022), "chest": (0.018, 0, -0.018), "head": (0.015, -0.008, 0.026)},
+        locations={"pelvis": (0, 0, 0.012)},
+    )
+    _key_pose(armature, 36, rotations={"spine": (0.018, 0, 0), "head": (-0.012, 0, -0.018)})
+    _finish_action(armature, action, "idle", 1, 36)
+
+    action = _new_action(armature, "walk")
+    for frame, side in ((1, 1), (9, 0), (17, -1), (25, 0), (33, 1)):
+        if side:
+            _key_pose(
+                armature,
+                frame,
+                rotations={
+                    "spine": (0.075, 0, -0.04 * side),
+                    "chest": (-0.025, 0, 0.055 * side),
+                    "head": (-0.035, 0, -0.02 * side),
+                    "thigh.L": (0.48 * side, 0, 0.025),
+                    "shin.L": (-0.25 * max(side, 0), 0, 0),
+                    "thigh.R": (-0.48 * side, 0, -0.025),
+                    "shin.R": (0.25 * min(side, 0), 0, 0),
+                    "upper_arm.L": (-0.40 * side, 0, -0.055),
+                    "forearm.L": (-0.12, 0, 0),
+                    "upper_arm.R": (0.40 * side, 0, 0.055),
+                    "forearm.R": (-0.12, 0, 0),
+                },
+                locations={"root": (0, 0, 0.024)},
+            )
+        else:
+            _key_pose(
+                armature,
+                frame,
+                rotations={
+                    "spine": (0.055, 0, 0),
+                    "thigh.L": (-0.06, 0, 0), "shin.L": (0.30, 0, 0),
+                    "thigh.R": (-0.06, 0, 0), "shin.R": (0.30, 0, 0),
+                },
+                locations={"root": (0, 0, -0.01)},
+            )
+    _finish_action(armature, action, "walk", 1, 33)
+
+    action = _new_action(armature, "run")
+    for frame, side in ((1, 1), (7, 0), (13, -1), (19, 0), (25, 1)):
+        if side:
+            _key_pose(
+                armature,
+                frame,
+                rotations={
+                    "spine": (0.15, 0, -0.055 * side),
+                    "chest": (-0.05, 0, 0.09 * side),
+                    "head": (-0.08, 0, -0.035 * side),
+                    "thigh.L": (0.72 * side, 0, 0.04),
+                    "shin.L": (-0.35 * max(side, 0), 0, 0),
+                    "thigh.R": (-0.72 * side, 0, -0.04),
+                    "shin.R": (0.35 * min(side, 0), 0, 0),
+                    "upper_arm.L": (-0.62 * side, 0, -0.1),
+                    "forearm.L": (-0.12, 0, 0),
+                    "upper_arm.R": (0.62 * side, 0, 0.1),
+                    "forearm.R": (-0.12, 0, 0),
+                },
+                locations={"root": (0, 0, 0.035)},
+            )
+        else:
+            _key_pose(
+                armature,
+                frame,
+                rotations={
+                    "spine": (0.12, 0, 0),
+                    "thigh.L": (-0.08, 0, 0), "shin.L": (0.42, 0, 0),
+                    "thigh.R": (-0.08, 0, 0), "shin.R": (0.42, 0, 0),
+                },
+                locations={"root": (0, 0, -0.012)},
+            )
+    _finish_action(armature, action, "run", 1, 25)
+
+    if include_attack:
+        action = _new_action(armature, "attack")
+        _key_pose(armature, 1)
+        _key_pose(
+            armature,
+            6,
+            rotations={
+                "pelvis": (0, 0, 0.12), "spine": (-0.08, 0.08, 0.30), "chest": (-0.08, 0.05, 0.36),
+                "head": (-0.05, -0.04, -0.18), "upper_arm.R": (-1.30, 0.24, 0.40),
+                "forearm.R": (-0.55, 0.12, 0.16), "upper_arm.L": (0.52, -0.18, -0.36),
+                "forearm.L": (0.42, 0.04, -0.10),
+            },
+            locations={"root": (0, -0.03, 0.01)},
+        )
+        _key_pose(
+            armature,
+            9,
+            rotations={
+                "pelvis": (0, 0, -0.14), "spine": (0.12, -0.05, -0.30), "chest": (0.08, -0.04, -0.36),
+                "head": (0.04, 0.03, 0.14), "upper_arm.R": (1.02, -0.28, -0.42),
+                "forearm.R": (0.38, -0.10, -0.22), "upper_arm.L": (-0.42, 0.12, 0.28),
+                "forearm.L": (0.22, 0, 0.08),
+            },
+            locations={"root": (0, 0.08, -0.018)},
+        )
+        _key_pose(
+            armature,
+            16,
+            rotations={"spine": (0.04, 0, -0.10), "chest": (0.02, 0, -0.12), "upper_arm.R": (0.30, 0, -0.12)},
+        )
+        _key_pose(armature, 24)
+        _finish_action(armature, action, "attack", 1, 24)
+
+    bpy.context.scene.frame_start = 1
+    bpy.context.scene.frame_end = 36
+    bpy.context.scene.frame_set(1)
+    _reset_pose(armature)
+
+
 def create_object_clip(target, clip_name, keyframes):
     """Add an NLA track; same-named tracks merge into one glTF AnimationGroup."""
     action = _new_action(target, f"{target.name}_{clip_name}")
