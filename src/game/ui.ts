@@ -111,7 +111,7 @@ export class UiController {
     const promptHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "穿越雪地 · 空白鍵揮砍";
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
-    root.dataset.uiVersion = "R9";
+    root.dataset.uiVersion = "R11";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -374,15 +374,31 @@ export class UiController {
   showWorldAction(target: WorldActionTarget): void {
     this.activeWorldAction = target;
     this.worldAction.hidden = false;
-    const x = Math.min(window.innerWidth - 136, Math.max(136, target.x));
-    const y = Math.min(window.innerHeight - 18, Math.max(76, target.y));
-    this.worldAction.style.left = `${Math.round(x)}px`;
-    this.worldAction.style.top = `${Math.round(y)}px`;
+    this.positionWorldAction(target.x, target.y);
   }
 
   hideWorldAction(): void {
     this.activeWorldAction = null;
     this.worldAction.hidden = true;
+  }
+
+  private positionWorldAction(x: number, y: number): void {
+    this.worldAction.style.left = `${Math.round(x)}px`;
+    this.worldAction.style.top = `${Math.round(y)}px`;
+
+    const margin = 12;
+    const rect = this.worldAction.getBoundingClientRect();
+    let offsetX = 0;
+    let offsetY = 0;
+    if (rect.left < margin) offsetX = margin - rect.left;
+    else if (rect.right > window.innerWidth - margin) offsetX = window.innerWidth - margin - rect.right;
+    if (rect.top < margin) offsetY = margin - rect.top;
+    else if (rect.bottom > window.innerHeight - margin) offsetY = window.innerHeight - margin - rect.bottom;
+
+    if (offsetX !== 0 || offsetY !== 0) {
+      this.worldAction.style.left = `${Math.round(x + offsetX)}px`;
+      this.worldAction.style.top = `${Math.round(y + offsetY)}px`;
+    }
   }
 
   update(state: RuntimeState): void {
@@ -553,6 +569,7 @@ export class UiController {
     this.worldActionDetail.textContent = action.detail;
     this.worldActionPrice.textContent = action.label;
     this.applyActionState(this.worldActionButton, action);
+    this.positionWorldAction(target.x, target.y);
   }
 
   private updateQuest(state: RuntimeState): void {

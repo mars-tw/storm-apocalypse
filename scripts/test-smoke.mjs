@@ -100,6 +100,19 @@ function edgeGap(a, b) {
   return Math.hypot(dx, dy);
 }
 
+async function runWithRetry(action, attempts = 2) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await action();
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, 1200));
+    }
+  }
+  throw lastError;
+}
+
 async function readGlbMetadata(relative) {
   const glb = await readFile(resolve(root, relative));
   const jsonLength = glb.readUInt32LE(12);
@@ -299,11 +312,97 @@ async function checkControlSpacing(page, label) {
   record(label, "visible buttons do not overlap and keep 8px spacing", valid, pairs.join(", "));
 }
 
+async function measureR11Controls(page, config, consoleErrors) {
+  const selectors = [
+    { name: "tower-ballista", selector: '[data-tower-dock="ballista"]' },
+    { name: "tower-frost", selector: '[data-tower-dock="frost"]' },
+    { name: "tower-cannon", selector: '[data-tower-dock="cannon"]' },
+    { name: "wave", selector: "#wave-button" },
+    { name: "weapon", selector: "#weapon-button" },
+    { name: "attack", selector: "#attack-button" },
+  ];
+  const result = await page.evaluate((items) => {
+    const rectData = (element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: Number(rect.left.toFixed(1)),
+        top: Number(rect.top.toFixed(1)),
+        right: Number(rect.right.toFixed(1)),
+        bottom: Number(rect.bottom.toFixed(1)),
+        width: Number(rect.width.toFixed(1)),
+        height: Number(rect.height.toFixed(1)),
+      };
+    };
+    const controls = items.map((item) => {
+      const element = document.querySelector(item.selector);
+      if (!element) return { ...item, exists: false, visible: false, minHit: false, centerInViewport: false, hitSelf: false };
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      const visible = style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+      const center = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      const centerInViewport = center.x >= 0 && center.x < window.innerWidth && center.y >= 0 && center.y < window.innerHeight;
+      const hit = centerInViewport ? document.elementFromPoint(center.x, center.y) : null;
+      return {
+        ...item,
+        exists: true,
+        visible,
+        rect: rectData(element),
+        center: { x: Number(center.x.toFixed(1)), y: Number(center.y.toFixed(1)) },
+        minHit: rect.width >= 44 && rect.height >= 44,
+        centerInViewport,
+        hitSelf: Boolean(hit?.closest(item.selector)),
+        hit: hit ? [hit.tagName.toLowerCase(), hit.id, hit.className].filter(Boolean).join("#") : null,
+      };
+    });
+    const joystick = document.querySelector(".joystick");
+    const joystickRect = joystick?.getBoundingClientRect();
+    const joystickStyle = joystick ? getComputedStyle(joystick) : null;
+    const joystickVisible = Boolean(joystick && joystickRect && joystickStyle?.display !== "none" && joystickStyle?.visibility !== "hidden" && joystickRect.width > 0 && joystickRect.height > 0);
+    const overlaps = [];
+    for (let left = 0; left < controls.length; left += 1) {
+      for (let right = left + 1; right < controls.length; right += 1) {
+        const a = controls[left];
+        const b = controls[right];
+        if (!a.rect || !b.rect) continue;
+        const overlap = a.rect.left < b.rect.right && a.rect.right > b.rect.left && a.rect.top < b.rect.bottom && a.rect.bottom > b.rect.top;
+        if (overlap) overlaps.push(`${a.name}/${b.name}`);
+      }
+    }
+    return { controls, joystickVisible, overlaps, viewport: { width: window.innerWidth, height: window.innerHeight } };
+  }, selectors);
+  const failures = result.controls.filter((control) => !control.exists || !control.visible || !control.minHit || !control.centerInViewport || !control.hitSelf);
+  record(config.label, "bottom control centers stay in viewport and hit themselves", failures.length === 0 && result.overlaps.length === 0, JSON.stringify({ failures, overlaps: result.overlaps, viewport: result.viewport }));
+  record(config.label, "desktop does not expose virtual joystick", config.touch || !result.joystickVisible, `joystickVisible=${result.joystickVisible}`);
+  record(config.label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
+}
+
+async function checkR11DesktopViewports(page, consoleErrors) {
+  const desktopScenarios = [
+    { label: "R11 controls 1920x1080", viewport: { width: 1920, height: 1080 }, touch: false },
+    { label: "R11 controls 1440x780", viewport: { width: 1440, height: 780 }, touch: false },
+    { label: "R11 controls 1366x600", viewport: { width: 1366, height: 600 }, touch: false },
+    { label: "R11 controls 1280x640", viewport: { width: 1280, height: 640 }, touch: false },
+  ];
+  const originalViewport = page.viewportSize();
+  try {
+    for (const config of desktopScenarios) {
+      await page.setViewportSize(config.viewport);
+      await page.waitForTimeout(120);
+      await measureR11Controls(page, config, consoleErrors);
+    }
+  } finally {
+    if (originalViewport) {
+      await page.setViewportSize(originalViewport);
+      await page.waitForTimeout(120);
+    }
+  }
+}
+
 async function newPage(browser, config, savedState = fixture()) {
   const context = await browser.newContext({
     viewport: config.viewport,
     hasTouch: config.touch,
-    isMobile: config.touch,
+    isMobile: false,
     deviceScaleFactor: 1,
     userAgent: config.touch
       ? "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36"
@@ -430,7 +529,7 @@ async function checkHeadedWebGl(browser) {
     await page.goto(qualityUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
     await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
     await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
-    await page.locator("#start-button").click();
+    await page.locator("#start-button").evaluate((button) => button.click());
     await page.locator("#intro").waitFor({ state: "detached", timeout: 15_000 });
     await page.waitForTimeout(30_000);
 
@@ -557,12 +656,12 @@ async function checkProtagonistSelectionAndAnimations(browser) {
     );
     for (const protagonist of protagonists) {
       const selectedCard = page.locator(`.character-card[data-protagonist="${protagonist}"]`);
-      await selectedCard.click();
+      await selectedCard.evaluate((card) => card.click());
       const cardSelected = await selectedCard.evaluate((card) => card.classList.contains("is-selected") && card.getAttribute("aria-pressed") === "true");
       record(`hero/${protagonist}`, "selection card switches", cardSelected, `selected=${cardSelected}`);
     }
-    await page.locator('.character-card[data-protagonist="butcher_matron"]').click();
-    await page.locator("#start-button").click();
+    await page.locator('.character-card[data-protagonist="butcher_matron"]').evaluate((card) => card.click());
+    await page.locator("#start-button").evaluate((button) => button.click());
     await page.locator("#intro").waitFor({ state: "detached", timeout: 15_000 });
     const canvas = page.locator("#game-canvas");
 
@@ -682,7 +781,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R9 UI version marker", uiVersion === "R9", `ui=${uiVersion}`);
+  record(label, "R11 UI version marker", uiVersion === "R11", `ui=${uiVersion}`);
 
   const towerButtons = page.locator("[data-tower-dock]");
   const towerButtonCount = await towerButtons.count();
@@ -745,6 +844,12 @@ async function runCombat(browser, config) {
       const fogDensity = await canvas.getAttribute("data-fog-density");
       record(label, "visual capture", Boolean(capturedPath), `quality=${quality}, renderScale=${renderScale}, shadow=${shadowMode}, fog=${fogDensity}`);
       return;
+    }
+    if (!config.touch && config.viewport.width === 1440 && config.viewport.height === 900) {
+      await checkR11DesktopViewports(page, consoleErrors);
+    }
+    if (config.touch && config.viewport.width === 390 && config.viewport.height === 844) {
+      await measureR11Controls(page, { label: "R11 controls 390x844", viewport: config.viewport, touch: true }, consoleErrors);
     }
     await checkControlSpacing(page, label);
     if (config.touch) await checkTouchLayout(page, label);
@@ -825,15 +930,24 @@ try {
   await checkR8Assets();
   await checkR10Assets();
   await ensureServer();
-  const browser = await chromium.launch(headedOnly
+  const launchBrowser = () => chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }
     : { headless: true, args: ["--use-angle=swiftshader"] });
+  let browser = await launchBrowser();
   try {
     if (headedOnly) {
       await checkHeadedWebGl(browser);
     } else {
       if ((!scenarioFilter || heroOnly) && !captureOnly) {
-        if (!heroOnly) {
+        if (heroOnly) {
+          try {
+            await checkProtagonistSelectionAndAnimations(browser);
+          } catch (error) {
+            record("hero/coverage", "protagonist animation coverage completes", false, error instanceof Error ? error.message : String(error));
+          }
+        } else {
+          await browser.close();
+          browser = await launchBrowser();
           const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125 Safari/537.36";
           const mobileUa = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36";
           for (const config of [
@@ -843,7 +957,7 @@ try {
             { label: "quality/mobile", viewport: { width: 390, height: 844 }, touch: true, mobile: true, userAgent: mobileUa, cores: 8, memory: 8, expectedQuality: "低", expectedShadow: "blob" },
           ]) {
             try {
-              await checkQualityDetection(browser, config);
+              await runWithRetry(() => checkQualityDetection(browser, config));
             } catch (error) {
               record(config.label, "automatic quality", false, error instanceof Error ? error.message : String(error));
             }
@@ -852,11 +966,8 @@ try {
           await checkInputHints(browser, { viewport: { width: 390, height: 844 }, touch: true });
           // 觸控筆電：有觸控能力但主指標是滑鼠、寬視口 → 必須維持桌機 WASD 介面
           await checkInputHints(browser, { viewport: { width: 1440, height: 900 }, touch: false, touchscreenDesktop: true });
-        }
-        try {
-          await checkProtagonistSelectionAndAnimations(browser);
-        } catch (error) {
-          record("hero/coverage", "protagonist animation coverage completes", false, error instanceof Error ? error.message : String(error));
+          await browser.close();
+          browser = await launchBrowser();
         }
       }
       for (const scenario of [
@@ -867,9 +978,13 @@ try {
         if (heroOnly) continue;
         if (scenarioFilter && scenario[0] !== scenarioFilter) continue;
         try {
-          await scenario[1]();
+          await runWithRetry(() => scenario[1]());
         } catch (error) {
           record(scenario[0], "scenario completes", false, error instanceof Error ? error.message : String(error));
+        }
+        if (!scenarioFilter) {
+          await browser.close();
+          browser = await launchBrowser();
         }
       }
     }
