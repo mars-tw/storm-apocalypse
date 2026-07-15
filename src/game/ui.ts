@@ -1,8 +1,31 @@
 import { EMPLOYEES, MAIN_QUESTS, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { currentLoopDefinition, currentMainQuest, type QuestCompletion } from "./quests";
-import type { EmployeeId, ProtagonistId, RuntimeState, TowerId } from "./state";
+import type { EmployeeId, ProtagonistId, RuntimeState, TowerId, WeaponId } from "./state";
 
 type ShopCategory = "weapon" | "employee" | "pasture";
+type ShopTab = "weapon" | "employee" | "regular" | "expansion";
+
+export type WorldActionTarget =
+  | { type: "tower"; id: TowerId; x: number; y: number }
+  | { type: "employee"; id: EmployeeId; x: number; y: number }
+  | { type: "pasture"; id: "pasture2"; x: number; y: number };
+
+interface ActionState {
+  title: string;
+  detail: string;
+  label: string;
+  disabled: boolean;
+  active: boolean;
+  locked: boolean;
+  icon: string;
+}
+
+const SHOP_TABS: ReadonlyArray<{ id: ShopTab; label: string }> = [
+  { id: "weapon", label: "武裝" },
+  { id: "employee", label: "員工" },
+  { id: "regular", label: "常客" },
+  { id: "expansion", label: "擴張" },
+];
 
 function detectTouchMode(): boolean {
   const userAgentData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;
@@ -46,9 +69,18 @@ export class UiController {
   private readonly loopProgressFill: HTMLElement;
   private readonly prompt: HTMLElement;
   private readonly commandPanel: HTMLElement;
+  private readonly towerDock: HTMLElement;
   private readonly waveButton: HTMLButtonElement;
+  private readonly weaponButton: HTMLButtonElement;
+  private readonly weaponIcon: HTMLElement;
   private readonly attackButton: HTMLButtonElement;
   private readonly attackIcon: HTMLElement;
+  private readonly worldAction: HTMLElement;
+  private readonly worldActionButton: HTMLButtonElement;
+  private readonly worldActionIcon: HTMLElement;
+  private readonly worldActionTitle: HTMLElement;
+  private readonly worldActionDetail: HTMLElement;
+  private readonly worldActionPrice: HTMLElement;
   private readonly toastHost: HTMLElement;
   private readonly result: HTMLElement;
   private readonly resultTitle: HTMLElement;
@@ -58,6 +90,8 @@ export class UiController {
   private readonly requiresProtagonistSelection: boolean;
   private selectedProtagonist: ProtagonistId = "butcher_matron";
   private renderedChapter = 0;
+  private activeShopTab: ShopTab = "weapon";
+  private activeWorldAction: WorldActionTarget | null = null;
 
   onStart: () => void = () => undefined;
   onAttackStart: () => void = () => undefined;
@@ -67,6 +101,7 @@ export class UiController {
   onProtagonistSelect: (id: ProtagonistId) => void = () => undefined;
   onShopAction: (category: ShopCategory, id: string) => void = () => undefined;
   onTowerAction: (id: TowerId) => void = () => undefined;
+  onWeaponCycle: () => void = () => undefined;
 
   constructor(root: HTMLElement, state: RuntimeState) {
     this.touchMode = detectTouchMode();
@@ -76,7 +111,7 @@ export class UiController {
     const promptHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "穿越雪地 · 空白鍵揮砍";
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
-    root.dataset.uiVersion = "R7";
+    root.dataset.uiVersion = "R9";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -102,6 +137,8 @@ export class UiController {
         <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
         <button class="start-button" id="start-button" disabled><span>踏 入 暴 風</span><small>${startHint}</small></button>
       </div>`;
+    const shopTabs = SHOP_TABS.map((tab) => `
+      <button class="command-tab${tab.id === this.activeShopTab ? " is-active" : ""}" type="button" data-shop-tab="${tab.id}" role="tab" aria-selected="${tab.id === this.activeShopTab}" aria-controls="shop-section-${tab.id}">${tab.label}</button>`).join("");
     root.innerHTML = `
       <div class="vignette"></div>
       <header class="hud hud--top">
@@ -132,18 +169,33 @@ export class UiController {
       <button class="panel-toggle panel-toggle--shop" id="shop-toggle" aria-label="開關整備商店" aria-controls="command-panel" aria-expanded="false">整備</button>
       <aside class="command-panel" id="command-panel">
         <div class="command-panel__head"><div><small>北境補給站</small><b>武裝與自動化</b></div><button id="shop-close" aria-label="關閉整備商店">×</button></div>
-        <section><h3>武器鏈</h3><div class="shop-grid">${WEAPONS.map((item) => `<button class="shop-item" data-category="weapon" data-id="${item.id}">${icon(`weapon-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small>${item.description}</small></span><em data-price="weapon-${item.id}"></em></button>`).join("")}</div></section>
-        <section><h3>自動化員工</h3><div class="shop-grid">${EMPLOYEES.map((item) => `<button class="shop-item" data-category="employee" data-id="${item.id}">${icon(`skill-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small data-description="employee-${item.id}">${item.description}</small></span><em data-price="employee-${item.id}"></em></button>`).join("")}</div></section>
-        <section class="regulars"><h3>北境常客</h3><div class="regular-list">${NAMED_CUSTOMERS.map((customer) => `<article data-regular="${customer.id}"><div><b>${customer.name}</b><small>${customer.preference}</small></div><span><i></i><em>0 / 10</em></span></article>`).join("")}</div></section>
-        <section><h3>牧場擴張</h3><button class="shop-item" data-category="pasture" data-id="pasture2">${icon("skill-butcher", "shop-item__icon")}<span class="shop-item__copy"><b>炸開牧場 2</b><small>強化牛 · 生命 9 · 掉落 6 肉</small></span><em data-price="pasture-pasture2"></em></button></section>
-        <section><h3>防禦塔</h3><div class="shop-grid">${TOWERS.map((item) => `<button class="shop-item" data-tower="${item.id}">${icon(`tower-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small>${item.description}</small></span><em data-price="tower-${item.id}"></em></button>`).join("")}</div></section>
+        <div class="command-tabs" role="tablist" aria-label="整備分類">${shopTabs}</div>
+        <section id="shop-section-weapon" class="shop-section is-active" data-shop-section="weapon" role="tabpanel"><h3>武器鏈</h3><div class="shop-grid">${WEAPONS.map((item) => `<button class="shop-item" data-category="weapon" data-id="${item.id}">${icon(`weapon-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small>${item.description}</small></span><em data-price="weapon-${item.id}"></em></button>`).join("")}</div></section>
+        <section id="shop-section-employee" class="shop-section" data-shop-section="employee" role="tabpanel" hidden><h3>自動化員工</h3><div class="shop-grid">${EMPLOYEES.map((item) => `<button class="shop-item" data-category="employee" data-id="${item.id}">${icon(`skill-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small data-description="employee-${item.id}">${item.description}</small></span><em data-price="employee-${item.id}"></em></button>`).join("")}</div></section>
+        <section id="shop-section-regular" class="shop-section regulars" data-shop-section="regular" role="tabpanel" hidden><h3>北境常客</h3><div class="regular-list">${NAMED_CUSTOMERS.map((customer) => `<article data-regular="${customer.id}"><div><b>${customer.name}</b><small>${customer.preference}</small></div><span><i></i><em>0 / 10</em></span></article>`).join("")}</div></section>
+        <section id="shop-section-expansion" class="shop-section" data-shop-section="expansion" role="tabpanel" hidden><h3>牧場擴張</h3><button class="shop-item" data-category="pasture" data-id="pasture2">${icon("skill-butcher", "shop-item__icon")}<span class="shop-item__copy"><b>炸開牧場 2</b><small>強化牛 · 生命 9 · 掉落 6 肉</small></span><em data-price="pasture-pasture2"></em></button></section>
       </aside>
 
       <div class="context-prompt" id="context-prompt"><kbd>${promptKey}</kbd><span>${promptHint}</span></div>
       <div class="bottom-controls">
         <div class="joystick" aria-label="移動搖桿"><span class="joystick__ring"></span><span class="joystick__knob"></span></div>
-        <button class="wave-button" id="wave-button" disabled><small>準備防守</small><b>至少建造一座塔</b></button>
-        <button class="attack-button" id="attack-button" aria-label="攻擊"><i id="attack-icon" class="asset-icon asset-icon--weapon-machete attack-button__icon" aria-hidden="true"></i><small>揮砍</small></button>
+        <div class="combat-dock">
+          <div class="tower-dock" id="tower-dock" aria-label="防禦塔快捷列">
+            ${TOWERS.map((item) => `<button class="tower-dock__button" type="button" data-tower-dock="${item.id}">${icon(`tower-${item.id}`, "tower-dock__icon")}<span><b>${item.name}</b><small data-tower-dock-status="${item.id}">建造</small></span></button>`).join("")}
+          </div>
+          <button class="wave-button" id="wave-button" disabled><small>準備防守</small><b>至少建造一座塔</b></button>
+        </div>
+        <div class="right-combat-controls">
+          <button class="weapon-button" id="weapon-button" type="button" aria-label="切換武器"><i id="weapon-cycle-icon" class="asset-icon asset-icon--weapon-machete weapon-button__icon" aria-hidden="true"></i><small>武器</small></button>
+          <button class="attack-button" id="attack-button" aria-label="攻擊"><i id="attack-icon" class="asset-icon asset-icon--weapon-machete attack-button__icon" aria-hidden="true"></i><small>揮砍</small></button>
+        </div>
+      </div>
+      <div class="world-action-popover" id="world-action-popover" hidden>
+        <button class="world-action-popover__button" id="world-action-button" type="button">
+          <i id="world-action-icon" class="asset-icon asset-icon--tower-ballista world-action-popover__icon" aria-hidden="true"></i>
+          <span><b id="world-action-title">建造</b><small id="world-action-detail">選擇操作</small></span>
+          <em id="world-action-price"></em>
+        </button>
       </div>
       <div class="toast-host" id="toast-host"></div>
 
@@ -187,9 +239,18 @@ export class UiController {
     this.loopProgressFill = get("loop-progress-fill");
     this.prompt = get("context-prompt");
     this.commandPanel = get("command-panel");
+    this.towerDock = get("tower-dock");
     this.waveButton = get("wave-button");
+    this.weaponButton = get("weapon-button");
+    this.weaponIcon = get("weapon-cycle-icon");
     this.attackButton = get("attack-button");
     this.attackIcon = get("attack-icon");
+    this.worldAction = get("world-action-popover");
+    this.worldActionButton = get("world-action-button");
+    this.worldActionIcon = get("world-action-icon");
+    this.worldActionTitle = get("world-action-title");
+    this.worldActionDetail = get("world-action-detail");
+    this.worldActionPrice = get("world-action-price");
     this.toastHost = get("toast-host");
     this.result = get("result");
     this.resultTitle = get("result-title");
@@ -230,6 +291,20 @@ export class UiController {
       shopToggle.setAttribute("aria-expanded", String(shopOpen));
       this.panelScrim.classList.toggle("is-active", this.touchMode && (questOpen || shopOpen));
     };
+
+    for (const tab of root.querySelectorAll<HTMLButtonElement>("[data-shop-tab]")) {
+      bindImmediate(tab, () => this.setShopTab(tab.dataset.shopTab as ShopTab));
+    }
+    for (const button of this.towerDock.querySelectorAll<HTMLButtonElement>("[data-tower-dock]")) {
+      bindImmediate(button, () => this.onTowerAction(button.dataset.towerDock as TowerId));
+    }
+    bindImmediate(this.weaponButton, () => this.onWeaponCycle());
+    bindImmediate(this.worldActionButton, () => {
+      if (!this.activeWorldAction) return;
+      if (this.activeWorldAction.type === "tower") this.onTowerAction(this.activeWorldAction.id);
+      else if (this.activeWorldAction.type === "employee") this.onShopAction("employee", this.activeWorldAction.id);
+      else this.onShopAction("pasture", this.activeWorldAction.id);
+    });
 
     for (const card of root.querySelectorAll<HTMLButtonElement>("[data-protagonist]")) {
       card.addEventListener("click", () => {
@@ -276,9 +351,7 @@ export class UiController {
     this.commandPanel.addEventListener("click", (event) => {
       const button = (event.target as HTMLElement).closest<HTMLButtonElement>(".shop-item");
       if (!button || button.disabled) return;
-      const tower = button.dataset.tower as TowerId | undefined;
-      if (tower) this.onTowerAction(tower);
-      else this.onShopAction(button.dataset.category as ShopCategory, button.dataset.id ?? "");
+      this.onShopAction(button.dataset.category as ShopCategory, button.dataset.id ?? "");
     });
   }
 
@@ -296,6 +369,20 @@ export class UiController {
   enterGame(): void {
     this.intro.classList.add("is-leaving");
     window.setTimeout(() => this.intro.remove(), 900);
+  }
+
+  showWorldAction(target: WorldActionTarget): void {
+    this.activeWorldAction = target;
+    this.worldAction.hidden = false;
+    const x = Math.min(window.innerWidth - 136, Math.max(136, target.x));
+    const y = Math.min(window.innerHeight - 18, Math.max(76, target.y));
+    this.worldAction.style.left = `${Math.round(x)}px`;
+    this.worldAction.style.top = `${Math.round(y)}px`;
+  }
+
+  hideWorldAction(): void {
+    this.activeWorldAction = null;
+    this.worldAction.hidden = true;
   }
 
   update(state: RuntimeState): void {
@@ -320,9 +407,152 @@ export class UiController {
           : `<small>敵情：${this.waveForecast(state.wave + 1)}</small><b>啟動第 ${state.wave + 1} 波夜襲</b>`;
     this.attackIcon.className = `asset-icon asset-icon--weapon-${state.weapon} attack-button__icon`;
     this.attackButton.querySelector("small")!.textContent = state.weapon === "smg" ? "掃射" : state.weapon === "axe" ? "橫掃" : "揮砍";
+    this.updateWeaponButton(state);
+    this.updateTowerDock(state);
+    this.updateWorldAction(state);
     this.updateQuest(state);
     this.updateShop(state);
     this.updateRegulars(state);
+  }
+
+  private setShopTab(tab: ShopTab): void {
+    this.activeShopTab = tab;
+    for (const button of this.commandPanel.querySelectorAll<HTMLButtonElement>("[data-shop-tab]")) {
+      const active = button.dataset.shopTab === tab;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", String(active));
+    }
+    for (const section of this.commandPanel.querySelectorAll<HTMLElement>("[data-shop-section]")) {
+      const active = section.dataset.shopSection === tab;
+      section.classList.toggle("is-active", active);
+      section.hidden = !active;
+    }
+  }
+
+  private unlockedWeapons(state: RuntimeState): WeaponId[] {
+    return WEAPONS.map((weapon) => weapon.id).filter((id) => state.weapons[id]);
+  }
+
+  private updateWeaponButton(state: RuntimeState): void {
+    const unlocked = this.unlockedWeapons(state);
+    const current = WEAPONS.find((weapon) => weapon.id === state.weapon)!;
+    const nextIndex = (unlocked.indexOf(state.weapon) + 1) % Math.max(1, unlocked.length);
+    const next = WEAPONS.find((weapon) => weapon.id === unlocked[nextIndex]) ?? current;
+    this.weaponIcon.className = `asset-icon asset-icon--weapon-${state.weapon} weapon-button__icon`;
+    this.weaponButton.disabled = unlocked.length <= 1;
+    this.weaponButton.dataset.weapon = state.weapon;
+    this.weaponButton.dataset.nextWeapon = next.id;
+    this.weaponButton.setAttribute("aria-label", unlocked.length <= 1 ? `目前武器：${current.name}` : `切換武器：${current.name} → ${next.name}`);
+  }
+
+  private towerActionState(state: RuntimeState, id: TowerId): ActionState {
+    const definition = TOWERS.find((tower) => tower.id === id)!;
+    const level = state.towers[id];
+    const maxed = level >= 3;
+    const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.defenseShop : SHOP_UNLOCK_CHAPTER.towerUpgrade;
+    const locked = !maxed && !hasCompletedChapter(state, unlockChapter);
+    const cost = maxed ? 0 : towerCostForState(state, id, level);
+    const shortfall = Math.max(0, cost - state.money);
+    return {
+      title: level > 0 ? `${definition.name} Lv.${level}` : definition.name,
+      detail: maxed ? "塔基已滿級" : level === 0 ? definition.description : `${definition.description} · 升至 Lv.${level + 1}`,
+      label: maxed
+        ? "滿級"
+        : locked
+          ? `手冊 ${unlockChapter}`
+          : shortfall > 0
+            ? `缺 ✦ ${shortfall}`
+            : level === 0 ? `建造 ✦ ${cost}` : `升級 ✦ ${cost}`,
+      disabled: state.waveActive || maxed || locked || shortfall > 0,
+      active: level > 0,
+      locked,
+      icon: `tower-${id}`,
+    };
+  }
+
+  private employeeActionState(state: RuntimeState, id: EmployeeId): ActionState {
+    const definition = EMPLOYEES.find((employee) => employee.id === id)!;
+    const level = state.employees[id];
+    const maxed = level >= 2;
+    const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.employeeShop : SHOP_UNLOCK_CHAPTER.employeeUpgrade;
+    const locked = !maxed && !hasCompletedChapter(state, unlockChapter);
+    const cost = maxed ? 0 : level === 0 ? definition.price : definition.upgradePrice ?? 0;
+    const shortfall = Math.max(0, cost - state.money);
+    return {
+      title: level > 0 ? `${definition.name} Lv.${level}` : definition.name,
+      detail: maxed ? definition.upgradeDescription ?? "已滿級" : level === 0 ? definition.description : `升至 Lv2：${definition.upgradeDescription}`,
+      label: maxed
+        ? "滿級"
+        : locked
+          ? `手冊 ${unlockChapter}`
+          : shortfall > 0
+            ? `缺 ✦ ${shortfall}`
+            : level === 0 ? `雇用 ✦ ${cost}` : `升級 ✦ ${cost}`,
+      disabled: state.waveActive || maxed || locked || shortfall > 0,
+      active: level > 0,
+      locked,
+      icon: `skill-${id}`,
+    };
+  }
+
+  private pastureActionState(state: RuntimeState): ActionState {
+    const locked = !state.pasture2Unlocked && !hasCompletedChapter(state, SHOP_UNLOCK_CHAPTER.pasture2);
+    const shortfall = Math.max(0, 260 - state.money);
+    return {
+      title: "牧場 2",
+      detail: state.pasture2Unlocked ? "第二牧場已開放" : "點牧場圍欄炸開林線，解鎖強化牛",
+      label: state.pasture2Unlocked
+        ? "已開放"
+        : locked
+          ? `手冊 ${SHOP_UNLOCK_CHAPTER.pasture2}`
+          : shortfall > 0
+            ? `缺 ✦ ${shortfall}`
+            : "擴張 ✦ 260",
+      disabled: state.waveActive || state.pasture2Unlocked || locked || shortfall > 0,
+      active: state.pasture2Unlocked,
+      locked,
+      icon: "skill-butcher",
+    };
+  }
+
+  private applyActionState(button: HTMLButtonElement, action: ActionState): void {
+    button.disabled = action.disabled;
+    button.classList.toggle("is-owned", action.active);
+    button.classList.toggle("is-locked", action.locked);
+    button.dataset.actionState = action.locked ? "locked" : action.disabled ? "disabled" : action.active ? "active" : "ready";
+    button.title = `${action.title} · ${action.detail}`;
+  }
+
+  private updateTowerDock(state: RuntimeState): void {
+    for (const item of TOWERS) {
+      const action = this.towerActionState(state, item.id);
+      const button = this.towerDock.querySelector<HTMLButtonElement>(`[data-tower-dock="${item.id}"]`);
+      const title = button?.querySelector<HTMLElement>("b");
+      const status = button?.querySelector<HTMLElement>(`[data-tower-dock-status="${item.id}"]`);
+      if (!button || !title || !status) continue;
+      this.applyActionState(button, action);
+      button.dataset.level = state.towers[item.id].toString();
+      title.textContent = state.towers[item.id] > 0 ? `Lv.${state.towers[item.id]}` : item.name;
+      status.textContent = action.label;
+      button.setAttribute("aria-label", `${action.title}，${action.label}`);
+    }
+  }
+
+  private updateWorldAction(state: RuntimeState): void {
+    if (!this.activeWorldAction) return;
+    const target = this.activeWorldAction;
+    const action = target.type === "tower"
+      ? this.towerActionState(state, target.id)
+      : target.type === "employee"
+        ? this.employeeActionState(state, target.id)
+        : this.pastureActionState(state);
+    this.worldAction.dataset.actionType = target.type;
+    this.worldAction.dataset.actionId = target.id;
+    this.worldActionIcon.className = `asset-icon asset-icon--${action.icon} world-action-popover__icon`;
+    this.worldActionTitle.textContent = action.title;
+    this.worldActionDetail.textContent = action.detail;
+    this.worldActionPrice.textContent = action.label;
+    this.applyActionState(this.worldActionButton, action);
   }
 
   private updateQuest(state: RuntimeState): void {
@@ -373,14 +603,14 @@ export class UiController {
       button.classList.toggle("is-locked", Boolean(lockText));
     };
     for (const item of WEAPONS) {
-      const owned = item.id === "machete" || item.id === "axe" && state.weapon !== "machete" || item.id === "smg" && state.weapon === "smg";
+      const owned = state.weapons[item.id];
       const equipped = state.weapon === item.id;
       const unlockChapter = item.id === "axe" ? SHOP_UNLOCK_CHAPTER.axe : item.id === "smg" ? SHOP_UNLOCK_CHAPTER.smg : 0;
       const chapterLock = !owned && unlockChapter > 0 && !hasCompletedChapter(state, unlockChapter)
         ? `🔒 完成手冊第 ${unlockChapter} 章解鎖`
         : undefined;
-      const chainLock = !owned && item.id === "smg" && state.weapon === "machete" && !chapterLock ? "🔒 需先購買迴旋斧" : undefined;
-      set(`weapon-${item.id}`, equipped ? "使用中" : owned ? "已擁有" : `✦ ${item.price}`, equipped || owned || state.money < item.price || state.waveActive, equipped, chapterLock ?? chainLock);
+      const chainLock = !owned && item.id === "smg" && !state.weapons.axe && !chapterLock ? "🔒 需先購買迴旋斧" : undefined;
+      set(`weapon-${item.id}`, equipped ? "使用中" : owned ? "已解鎖" : `購買 ✦ ${item.price}`, equipped || owned || state.money < item.price || state.waveActive, equipped, chapterLock ?? chainLock);
     }
     for (const item of EMPLOYEES) {
       const id = item.id as EmployeeId;
@@ -395,14 +625,6 @@ export class UiController {
     }
     const pastureLock = !state.pasture2Unlocked && !hasCompletedChapter(state, SHOP_UNLOCK_CHAPTER.pasture2) ? `🔒 完成手冊第 ${SHOP_UNLOCK_CHAPTER.pasture2} 章解鎖` : undefined;
     set("pasture-pasture2", state.pasture2Unlocked ? "已開放" : "✦ 260", state.pasture2Unlocked || state.money < 260 || state.waveActive, state.pasture2Unlocked, pastureLock);
-    for (const item of TOWERS) {
-      const level = state.towers[item.id];
-      const price = towerCostForState(state, item.id, level);
-      const text = level >= 3 ? "滿級 Lv.3" : level === 0 ? `建造 ✦ ${price}` : `升級 Lv.${level + 1} · ✦ ${price}`;
-      const unlockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.defenseShop : SHOP_UNLOCK_CHAPTER.towerUpgrade;
-      const lock = level < 3 && !hasCompletedChapter(state, unlockChapter) ? `🔒 完成手冊第 ${unlockChapter} 章解鎖` : undefined;
-      set(`tower-${item.id}`, text, level >= 3 || state.money < price || state.waveActive, level > 0, lock);
-    }
   }
 
   private updateRegulars(state: RuntimeState): void {

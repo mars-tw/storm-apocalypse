@@ -13,11 +13,13 @@ import {
   GlowLayer,
   HemisphericLight,
   LoadAssetContainerAsync,
+  Matrix,
   Mesh,
   MeshBuilder,
   ParticleSystem,
   PBRMaterial,
   PointLight,
+  PointerEventTypes,
   Scene,
   SceneInstrumentation,
   ShadowGenerator,
@@ -114,6 +116,16 @@ interface StaffActor extends Actor {
   id: EmployeeId;
   timer: number;
   patrolIndex: number;
+}
+
+type WorldPickAction =
+  | { type: "tower"; id: TowerId }
+  | { type: "employee"; id: EmployeeId }
+  | { type: "pasture"; id: "pasture2" };
+
+interface StormMetadata {
+  stormStatic?: boolean;
+  stormAction?: WorldPickAction;
 }
 
 type CustomerPhase = "hidden" | "arriving" | "buying" | "leaving";
@@ -344,8 +356,11 @@ export class StormGame {
       }
     });
     this.input = new InputController(ui.joystick);
+    this.bindWorldActions();
     if (this.smokeMode) {
       (window as Window & { __stormSelectProtagonist?: (id: ProtagonistId) => void }).__stormSelectProtagonist = (id) => this.selectProtagonist(id);
+      (window as Window & { __stormStartWave?: () => void }).__stormStartWave = () => this.startWave();
+      (window as Window & { __stormWorldPoint?: (type: WorldPickAction["type"], id: string) => { x: number; y: number } | null }).__stormWorldPoint = (type, id) => this.worldActionScreenPoint(type, id);
     }
     this.createTerrain();
     this.createSnow();
@@ -427,6 +442,15 @@ export class StormGame {
   startAttack(): void { this.input.startAttack(); }
   stopAttack(): void { this.input.stopAttack(); }
   startWave(): void { this.input.queueWave(); }
+  cycleWeapon(): void {
+    const unlocked = WEAPONS.map((weapon) => weapon.id).filter((id) => this.state.weapons[id]);
+    if (unlocked.length <= 1) {
+      this.ui.toast("尚未解鎖第二把武器。", "ice");
+      return;
+    }
+    const next = unlocked[(unlocked.indexOf(this.state.weapon) + 1) % unlocked.length];
+    this.equipWeapon(next, true);
+  }
 
   shopAction(category: "weapon" | "employee" | "pasture", id: string): void {
     if (category === "weapon") this.buyWeapon(id as WeaponId);
@@ -435,6 +459,67 @@ export class StormGame {
   }
 
   towerAction(id: TowerId): void { this.buyOrUpgradeTower(id); }
+
+  private bindWorldActions(): void {
+    this.scene.onPointerObservable.add((pointerInfo) => {
+      if (pointerInfo.type !== PointerEventTypes.POINTERPICK || !this.started || this.endShown) return;
+      const action = this.worldActionForMesh(pointerInfo.pickInfo?.pickedMesh ?? null);
+      const event = pointerInfo.event;
+      if (!action) {
+        this.ui.hideWorldAction();
+        return;
+      }
+      this.ui.showWorldAction({
+        ...action,
+        x: event.clientX,
+        y: event.clientY,
+      });
+    });
+  }
+
+  private tagWorldAction(root: TransformNode | AbstractMesh, action: WorldPickAction): void {
+    root.metadata = { ...(root.metadata as StormMetadata | null ?? {}), stormAction: action } satisfies StormMetadata;
+    if ("isPickable" in root) root.isPickable = true;
+    for (const mesh of root.getChildMeshes(false)) {
+      mesh.isPickable = true;
+      mesh.metadata = { ...(mesh.metadata as StormMetadata | null ?? {}), stormAction: action } satisfies StormMetadata;
+    }
+  }
+
+  private worldActionForMesh(mesh: AbstractMesh | null): WorldPickAction | null {
+    let current: TransformNode | AbstractMesh | null = mesh;
+    while (current) {
+      const action = (current.metadata as StormMetadata | null)?.stormAction;
+      if (action) return action;
+      current = current.parent as TransformNode | AbstractMesh | null;
+    }
+    return null;
+  }
+
+  private worldActionScreenPoint(type: WorldPickAction["type"], id: string): { x: number; y: number } | null {
+    let position: Vector3 | null = null;
+    if (type === "tower" && (id === "ballista" || id === "frost" || id === "cannon")) {
+      position = TOWER_POSITIONS[id].clone();
+      position.y = this.heightAt(position.x, position.z) + 0.7;
+    } else if (type === "pasture" && id === "pasture2") {
+      position = new Vector3(5.2, this.heightAt(5.2, -3.2) + 0.7, -3.2);
+    } else if (type === "employee" && (id === "hunter" || id === "cashier" || id === "dog")) {
+      const actor = this.staff.get(id);
+      if (actor) position = actor.root.position.add(new Vector3(0, 1.2, 0));
+      else if (id === "cashier") position = new Vector3(-5.65, this.heightAt(-5.65, -6.3) + 1.2, -6.3);
+      else if (id === "dog") position = new Vector3(-5.15, this.heightAt(-5.15, -8.45) + 0.9, -8.45);
+    }
+    if (!position) return null;
+    const canvas = this.engine.getRenderingCanvas();
+    if (!canvas) return null;
+    const viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+    const projected = Vector3.Project(position, Matrix.Identity(), this.scene.getTransformMatrix(), viewport);
+    const bounds = canvas.getBoundingClientRect();
+    return {
+      x: bounds.left + projected.x * bounds.width / this.engine.getRenderWidth(),
+      y: bounds.top + projected.y * bounds.height / this.engine.getRenderHeight(),
+    };
+  }
 
   private createTerrain(): void {
     const ground = MeshBuilder.CreateGround("wind-carved-snow", { width: 56, height: 48, subdivisions: 72, updatable: true }, this.scene);
@@ -602,17 +687,20 @@ export class StormGame {
     place("holiday/cabin-roof-point.glb", new Vector3(3.12, 2.46, 0), Math.PI, 1.62);
     place("holiday/lantern.glb", new Vector3(-1.15, 2.25, -2.23), Math.PI, 1.25);
     place("holiday/lantern.glb", new Vector3(1.15, 2.25, -2.23), Math.PI, 1.25);
-    place("custom/butcher-stall.glb", new Vector3(0, 0, -3.05), 0, 1);
+    const stall = place("custom/butcher-stall.glb", new Vector3(0, 0, -3.05), 0, 1);
+    this.tagWorldAction(stall, { type: "employee", id: "cashier" });
 
     const checkout = this.instantiateStatic("custom/cash-register.glb", "butcher-checkout");
     checkout.position.set(-5.65, this.heightAt(-5.65, -6.3), -6.3);
     checkout.rotation.y = -Math.PI / 2;
     checkout.scaling.setAll(0.82);
+    this.tagWorldAction(checkout, { type: "employee", id: "cashier" });
 
     const doghouse = this.instantiateStatic("custom/doghouse.glb", "shepherd-doghouse");
     doghouse.position.set(-5.15, this.heightAt(-5.15, -8.45), -8.45);
     doghouse.rotation.y = -0.28;
     doghouse.scaling.setAll(0.84);
+    this.tagWorldAction(doghouse, { type: "employee", id: "dog" });
 
     for (let index = 0; index < 3; index += 1) {
       const coin = this.instantiateStatic("custom/coin.glb", `checkout-coin-${index}`);
@@ -675,12 +763,15 @@ export class StormGame {
       fence.position.set(x, this.heightAt(x, z), z);
       fence.rotation.y = rotation;
       fence.scaling.setAll(1.55);
+      this.tagWorldAction(fence, { type: "pasture", id: "pasture2" });
     }
     const gate = this.instantiateStatic("fence-gate.glb", "pasture-gate");
     gate.position.set(5.2, this.heightAt(5.2, -3.2), -3.2);
     gate.scaling.setAll(1.55);
+    this.tagWorldAction(gate, { type: "pasture", id: "pasture2" });
     const hayRing = this.createWorldRing("pasture-marker", PASTURE_CENTER, 3.3, new Color3(0.2, 0.75, 0.82));
     hayRing.visibility = 0.42;
+    this.tagWorldAction(hayRing, { type: "pasture", id: "pasture2" });
   }
 
   private buildForest(): void {
@@ -800,6 +891,7 @@ export class StormGame {
       padMaterial.roughness = 0.45;
       padMaterial.alpha = 0.72;
       pad.material = padMaterial;
+      this.tagWorldAction(pad, { type: "tower", id });
 
       const towerFile: Record<TowerId, string> = {
         ballista: "custom/tower-ballista.glb",
@@ -814,6 +906,7 @@ export class StormGame {
       );
       const weapon = actor.root.getChildTransformNodes(false).find((node) => node.name.includes("AimPivot")) ?? actor.root;
       weapon.rotationQuaternion = null;
+      this.tagWorldAction(actor.root, { type: "tower", id });
       actor.root.setEnabled(this.state.towers[id] > 0);
       pad.setEnabled(this.state.towers[id] === 0);
       this.towerActors.set(id, { ...actor, id, weapon, pad, cooldown: 0, animationLodPaused: false });
@@ -1200,10 +1293,14 @@ export class StormGame {
 
   private buyWeapon(id: WeaponId): void {
     const item = WEAPONS.find((weapon) => weapon.id === id);
-    if (!item || id === "machete" || this.state.weapon === id || this.state.waveActive) return;
+    if (!item || this.state.waveActive) return;
+    if (this.state.weapons[id]) {
+      this.equipWeapon(id, true);
+      return;
+    }
     const unlockChapter = id === "axe" ? SHOP_UNLOCK_CHAPTER.axe : SHOP_UNLOCK_CHAPTER.smg;
     if (!this.requireChapter(unlockChapter)) return;
-    if (id === "smg" && this.state.weapon === "machete") {
+    if (id === "smg" && !this.state.weapons.axe) {
       this.ui.toast("先掌握迴旋斧，才能購買衝鋒槍。", "danger");
       return;
     }
@@ -1212,10 +1309,23 @@ export class StormGame {
       return;
     }
     this.state.money -= item.price;
+    this.state.weapons[id] = true;
+    this.equipWeapon(id);
+    this.ui.toast(`武器已解鎖：${item.name}`, "warm");
+    this.processQuests();
+  }
+
+  private equipWeapon(id: WeaponId, announce = false): void {
+    if (!this.state.weapons[id]) return;
+    if (this.state.weapon === id) {
+      if (announce) this.ui.toast(`目前武器：${WEAPONS.find((weapon) => weapon.id === id)!.name}`, "ice");
+      return;
+    }
     this.state.weapon = id;
     this.createWeaponModel();
     saveState(this.state);
-    this.ui.toast(`武器已升級：${item.name}`, "warm");
+    this.ui.update(this.state);
+    if (announce) this.ui.toast(`切換武器：${WEAPONS.find((weapon) => weapon.id === id)!.name}`, "ice");
     this.processQuests();
   }
 
@@ -1314,8 +1424,10 @@ export class StormGame {
       fence.position.set(px, this.heightAt(px, pz), pz);
       fence.rotation.y = rotation;
       fence.scaling.setAll(1.25);
+      this.tagWorldAction(fence, { type: "pasture", id: "pasture2" });
     }
-    this.createWorldRing("pasture-2-unlocked-ring", PASTURE_2_CENTER, 9.2, new Color3(0.78, 0.29, 0.11));
+    const pastureRing = this.createWorldRing("pasture-2-unlocked-ring", PASTURE_2_CENTER, 9.2, new Color3(0.78, 0.29, 0.11));
+    this.tagWorldAction(pastureRing, { type: "pasture", id: "pasture2" });
     this.strongCow = {
       ...this.instantiateActor("cow.glb", "pasture-2-strong-cow", PASTURE_2_CENTER, 0.5),
       hp: 9,
@@ -1365,6 +1477,7 @@ export class StormGame {
       staff = { ...actor, id, timer: 0, patrolIndex: 0 };
     }
     this.addActorShadows(staff);
+    this.tagWorldAction(staff.root, { type: "employee", id });
     this.staff.set(id, staff);
   }
 

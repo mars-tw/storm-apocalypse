@@ -1,4 +1,4 @@
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 const SAVE_KEY = "storm-apocalypse-save-v1";
 
 export type WeaponId = "machete" | "axe" | "smg";
@@ -49,6 +49,7 @@ export interface SaveState {
   towerBuilt: boolean;
   bestWave: number;
   weapon: WeaponId;
+  weapons: Record<WeaponId, boolean>;
   protagonistId: ProtagonistId;
   employees: Record<EmployeeId, EmployeeLevel>;
   customerAffinity: Record<NamedCustomerId, number>;
@@ -106,6 +107,7 @@ const DEFAULT_SAVE: SaveState = {
   towerBuilt: false,
   bestWave: 0,
   weapon: "machete",
+  weapons: { machete: true, axe: false, smg: false },
   protagonistId: "butcher_matron",
   employees: { hunter: 0, cashier: 0, dog: 0 },
   customerAffinity: { ...DEFAULT_AFFINITY },
@@ -154,7 +156,14 @@ function migrate(input: unknown): SaveState {
   const towers = record(raw.towers);
   const quest = record(raw.quest);
   const stats = record(raw.stats);
+  const weapons = record(raw.weapons);
   const weapon = raw.weapon === "axe" || raw.weapon === "smg" ? raw.weapon : "machete";
+  const ownedWeapons: Record<WeaponId, boolean> = {
+    machete: true,
+    axe: boolean(weapons.axe) || weapon === "axe" || weapon === "smg",
+    smg: boolean(weapons.smg) || weapon === "smg",
+  };
+  const equippedWeapon: WeaponId = ownedWeapons[weapon] ? weapon : ownedWeapons.smg ? "smg" : ownedWeapons.axe ? "axe" : "machete";
   const wave = finite(raw.wave, 0, 0, 30);
   const money = finite(raw.money, DEFAULT_SAVE.money);
   const ballista = finite(towers.ballista, oldTowerBuilt ? 1 : 0, 0, 3);
@@ -182,7 +191,8 @@ function migrate(input: unknown): SaveState {
     stallLevel: finite(raw.stallLevel, 1, 1, 4),
     towerBuilt: ballista > 0,
     bestWave: finite(raw.bestWave, wave, 0, 30),
-    weapon,
+    weapon: equippedWeapon,
+    weapons: ownedWeapons,
     protagonistId: protagonist(raw.protagonistId),
     employees: {
       hunter: employeeLevel(employees.hunter),
@@ -243,6 +253,7 @@ export function loadState(): RuntimeState {
     customerAffinity: { ...DEFAULT_AFFINITY },
     customerRewardsClaimed: [],
     customerAffinityGained: { ...DEFAULT_AFFINITY },
+    weapons: { ...DEFAULT_SAVE.weapons },
     towers: { ...DEFAULT_SAVE.towers },
     quest: { ...DEFAULT_SAVE.quest },
     stats: { ...DEFAULT_STATS },
@@ -281,6 +292,7 @@ export function saveState(state: RuntimeState): void {
     towerBuilt: state.towers.ballista > 0,
     bestWave: Math.max(state.bestWave, state.wave),
     weapon: state.weapon,
+    weapons: { ...state.weapons },
     protagonistId: state.protagonistId,
     employees: { ...state.employees },
     customerAffinity: { ...state.customerAffinity },

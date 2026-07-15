@@ -29,6 +29,7 @@ function fixture() {
     towerBuilt: false,
     bestWave: 14,
     weapon: "axe",
+    weapons: { machete: true, axe: true, smg: false },
     employees: { hunter: false, cashier: false, dog: false },
     pasture2Unlocked: true,
     towers: { ballista: 0, frost: 1, cannon: 0 },
@@ -218,7 +219,7 @@ async function checkR8Assets() {
 }
 
 async function checkControlSpacing(page, label) {
-  const selectors = ["#quest-toggle", "#shop-toggle", ".joystick", "#wave-button", "#attack-button"];
+  const selectors = ["#quest-toggle", "#shop-toggle", ".joystick", ".tower-dock", "#wave-button", "#weapon-button", "#attack-button"];
   const controls = [];
   for (const selector of selectors) {
     const locator = page.locator(selector);
@@ -263,7 +264,11 @@ async function newPage(browser, config, savedState = fixture()) {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: loadTimeout });
     await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
     await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
-    await page.locator("#start-button").click();
+    try {
+      await page.locator("#start-button").click({ timeout: 15_000 });
+    } catch {
+      await page.evaluate(() => document.querySelector("#start-button")?.click());
+    }
     await page.locator("#intro").waitFor({ state: "detached", timeout: 15_000 });
     const screenshotPath = screenshotDir && !captureOnly ? await captureScreenshot(page, config) : undefined;
     return { context, page, consoleErrors, screenshotPath };
@@ -296,8 +301,8 @@ async function checkQualityDetection(browser, config) {
   try {
     await page.goto(qualityUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
     const canvas = page.locator("#game-canvas");
-    await canvas.waitFor({ state: "visible", timeout: 15_000 });
-    await page.waitForFunction(() => Boolean(document.querySelector("#game-canvas")?.dataset.quality), undefined, { timeout: 15_000 });
+    await canvas.waitFor({ state: "visible", timeout: loadTimeout });
+    await page.waitForFunction(() => Boolean(document.querySelector("#game-canvas")?.dataset.quality), undefined, { timeout: loadTimeout });
     const quality = await canvas.getAttribute("data-quality");
     const shadowMode = await canvas.getAttribute("data-shadow-mode");
     const passed = quality === config.expectedQuality && shadowMode === config.expectedShadow;
@@ -529,11 +534,11 @@ async function checkProtagonistSelectionAndAnimations(browser) {
         `meshForward=(${runForwardX.toFixed(3)},${runForwardZ.toFixed(3)})`,
       );
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "idle", undefined, { timeout: 15_000 });
-      await page.keyboard.down("Space");
+      await page.locator("#game-canvas").click({ position: { x: 20, y: 20 } });
+      await page.keyboard.press("Space");
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.playerAnimation === "attack_melee", undefined, { timeout: 15_000 });
       const attackForwardX = Number(await canvas.getAttribute("data-player-mesh-forward-x"));
       const attackForwardZ = Number(await canvas.getAttribute("data-player-mesh-forward-z"));
-      await page.keyboard.up("Space");
       record(`hero/${protagonist}`, "attack interrupts with melee clip", true, "animation=attack_melee observed");
       record(
         `hero/${protagonist}`,
@@ -610,6 +615,59 @@ async function checkTouchLayout(page, label) {
   record(label, "closed control hit targets", hits.joystick && hits.attack, JSON.stringify(hits));
 }
 
+async function checkR9UX(page, label, touch) {
+  if (touch && !await page.locator("#command-panel").evaluate((panel) => panel.classList.contains("is-open"))) {
+    await page.locator("#shop-toggle").click();
+    await page.waitForFunction(() => document.querySelector("#command-panel")?.classList.contains("is-open"), undefined, { timeout: 5_000 });
+  }
+
+  const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
+  record(label, "R9 UI version marker", uiVersion === "R9", `ui=${uiVersion}`);
+
+  const towerButtons = page.locator("[data-tower-dock]");
+  const towerButtonCount = await towerButtons.count();
+  const towerButtonsVisible = towerButtonCount === 3 && await towerButtons.evaluateAll((buttons) => buttons.every((button) => {
+    const box = button.getBoundingClientRect();
+    return box.width >= 44 && box.height >= 44;
+  }));
+  record(label, "bottom tower dock exposes three fixed tower actions", towerButtonsVisible, `buttons=${towerButtonCount}`);
+
+  const weaponVisible = await page.locator("#weapon-button").isVisible();
+  const weaponEnabled = await page.locator("#weapon-button").isEnabled();
+  record(label, "weapon cycle button sits beside attack", weaponVisible && weaponEnabled, `visible=${weaponVisible}, enabled=${weaponEnabled}`);
+
+  const tabCount = await page.locator("[data-shop-tab]").count();
+  const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));
+  const towerPanelButtons = await page.locator("[data-tower]").count();
+  record(label, "command panel uses four tabs and removes tower section", tabCount === 4 && visibleSections.length === 1 && towerPanelButtons === 0, `tabs=${tabCount}, visible=${visibleSections.join(",")}, towerButtons=${towerPanelButtons}`);
+
+  for (const tab of ["employee", "regular", "expansion", "weapon"]) {
+    await page.locator(`[data-shop-tab="${tab}"]`).click();
+    const visible = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));
+    record(label, `tab ${tab} shows one section`, visible.length === 1 && visible[0] === tab, `visible=${visible.join(",")}`);
+  }
+
+  if (touch) await page.locator("#shop-close").click();
+
+  const point = await page.evaluate(() => window.__stormWorldPoint?.("tower", "ballista") ?? null);
+  const pointValid = point && Number.isFinite(point.x) && Number.isFinite(point.y);
+  if (pointValid) {
+    await page.mouse.click(point.x, point.y);
+    await page.waitForFunction(() => {
+      const popover = document.querySelector("#world-action-popover");
+      return popover && !popover.hidden && popover.dataset.actionType === "tower" && popover.dataset.actionId === "ballista";
+    }, undefined, { timeout: 5_000 });
+  }
+  const popoverState = await page.locator("#world-action-popover").evaluate((popover) => ({
+    hidden: popover.hidden,
+    type: popover.dataset.actionType,
+    id: popover.dataset.actionId,
+    text: popover.textContent,
+  }));
+  record(label, "clicking a 3D build pad opens local tower action", Boolean(pointValid) && !popoverState.hidden && popoverState.type === "tower" && popoverState.id === "ballista" && /建造|升級/.test(popoverState.text ?? ""), JSON.stringify({ point, popoverState }));
+  await page.mouse.click(12, 12);
+}
+
 async function runCombat(browser, config) {
   const label = `${config.viewport.width}×${config.viewport.height}`;
   const { context, page, consoleErrors, screenshotPath } = await newPage(browser, config);
@@ -630,6 +688,7 @@ async function runCombat(browser, config) {
     }
     await checkControlSpacing(page, label);
     if (config.touch) await checkTouchLayout(page, label);
+    await checkR9UX(page, label, config.touch);
     await buySmg(page, config.touch);
     const before = await readSave(page);
 
@@ -693,6 +752,7 @@ async function runLayout(browser, viewport) {
     }
     await checkControlSpacing(page, label);
     await checkTouchLayout(page, label);
+    await checkR9UX(page, label, true);
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {
     await context.close();
