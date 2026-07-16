@@ -1,4 +1,6 @@
-export const SAVE_VERSION = 4;
+import type { QualityLevel } from "./quality";
+
+export const SAVE_VERSION = 5;
 const SAVE_KEY = "storm-apocalypse-save-v1";
 
 export type WeaponId = "machete" | "axe" | "smg";
@@ -45,6 +47,7 @@ export interface SaveState {
   version: number;
   money: number;
   wave: number;
+  baseHealth: number;
   stallLevel: number;
   towerBuilt: boolean;
   bestWave: number;
@@ -67,13 +70,12 @@ export interface RuntimeState extends SaveState {
   requiresProtagonistSelection: boolean;
   carriedMeat: number;
   displayedMeat: number;
-  baseHealth: number;
   waveActive: boolean;
   enemiesRemaining: number;
   selectedTower: TowerId;
   currentFps: number;
   drawCalls: number;
-  quality: "低" | "中" | "高";
+  quality: QualityLevel;
 }
 
 const DEFAULT_STATS: LifetimeStats = {
@@ -103,6 +105,7 @@ const DEFAULT_SAVE: SaveState = {
   version: SAVE_VERSION,
   money: 35,
   wave: 0,
+  baseHealth: 100,
   stallLevel: 1,
   towerBuilt: false,
   bestWave: 0,
@@ -188,6 +191,7 @@ function migrate(input: unknown): SaveState {
     version: SAVE_VERSION,
     money,
     wave,
+    baseHealth: finite(raw.baseHealth, 100, 0, 100),
     stallLevel: finite(raw.stallLevel, 1, 1, 4),
     towerBuilt: ballista > 0,
     bestWave: finite(raw.bestWave, wave, 0, 30),
@@ -273,7 +277,6 @@ export function loadState(): RuntimeState {
     requiresProtagonistSelection,
     carriedMeat: 0,
     displayedMeat: 0,
-    baseHealth: 100,
     waveActive: false,
     enemiesRemaining: 0,
     selectedTower: "ballista",
@@ -288,6 +291,7 @@ export function saveState(state: RuntimeState): void {
     version: SAVE_VERSION,
     money: state.money,
     wave: state.wave,
+    baseHealth: state.baseHealth,
     stallLevel: state.stallLevel,
     towerBuilt: state.towers.ballista > 0,
     bestWave: Math.max(state.bestWave, state.wave),

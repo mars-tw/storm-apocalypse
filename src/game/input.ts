@@ -10,6 +10,7 @@ export class InputController {
   private joystickPointer: number | null = null;
   private joystickCenter = Vector2.Zero();
   private readonly knob: HTMLElement;
+  private enabled = true;
 
   constructor(private readonly joystickZone: HTMLElement) {
     this.knob = joystickZone.querySelector<HTMLElement>(".joystick__knob")!;
@@ -23,6 +24,7 @@ export class InputController {
   }
 
   get movement(): Vector2 {
+    if (!this.enabled) return Vector2.Zero();
     const keyboard = new Vector2(
       Number(this.keys.has("KeyD") || this.keys.has("ArrowRight")) - Number(this.keys.has("KeyA") || this.keys.has("ArrowLeft")),
       Number(this.keys.has("KeyW") || this.keys.has("ArrowUp")) - Number(this.keys.has("KeyS") || this.keys.has("ArrowDown")),
@@ -32,6 +34,7 @@ export class InputController {
   }
 
   startAttack(): void {
+    if (!this.enabled) return;
     this.attackQueued = true;
     this.attackHeld = true;
   }
@@ -45,10 +48,12 @@ export class InputController {
   }
 
   queueBuild(): void {
+    if (!this.enabled) return;
     this.buildQueued = true;
   }
 
   queueWave(): void {
+    if (!this.enabled) return;
     this.waveQueued = true;
   }
 
@@ -70,7 +75,13 @@ export class InputController {
     return value;
   }
 
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+    if (!enabled) this.clear();
+  }
+
   private readonly onKeyDown = (event: KeyboardEvent): void => {
+    if (!this.enabled) return;
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)) event.preventDefault();
     this.keys.add(event.code);
     if (event.code === "Space" || event.code === "KeyE") {
@@ -89,6 +100,7 @@ export class InputController {
   };
 
   private readonly onJoystickDown = (event: PointerEvent): void => {
+    if (!this.enabled) return;
     event.preventDefault();
     this.joystickPointer = event.pointerId;
     this.joystickZone.classList.add("is-pressed");
@@ -111,14 +123,20 @@ export class InputController {
   };
 
   private readonly onBlur = (): void => {
+    this.clear();
+  };
+
+  private clear(): void {
     this.keys.clear();
     this.attackHeld = false;
     this.attackQueued = false;
+    this.buildQueued = false;
+    this.waveQueued = false;
     this.joystickPointer = null;
     this.joystick.setAll(0);
     this.joystickZone.classList.remove("is-pressed");
     this.knob.style.transform = "translate3d(0, 0, 0)";
-  };
+  }
 
   private updateJoystick(event: PointerEvent): void {
     const raw = new Vector2(event.clientX - this.joystickCenter.x, event.clientY - this.joystickCenter.y);

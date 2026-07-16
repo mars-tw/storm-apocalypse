@@ -11,6 +11,7 @@ const url = process.env.SMOKE_URL ?? "http://127.0.0.1:4173/storm-apocalypse/?sm
 const qualityUrl = new URL(url);
 qualityUrl.searchParams.delete("smoke");
 const saveKey = "storm-apocalypse-save-v1";
+const settingsKey = "storm-apocalypse-settings-v1";
 const scenarioFilter = process.env.SMOKE_SCENARIO;
 const heroOnly = scenarioFilter === "heroes";
 const loadTimeout = 180_000;
@@ -22,12 +23,13 @@ let server;
 
 function fixture() {
   return {
-    version: 2,
+    version: 5,
     money: 9999,
-    wave: 14,
+    wave: 5,
+    baseHealth: 63,
     stallLevel: 4,
     towerBuilt: false,
-    bestWave: 14,
+    bestWave: 5,
     weapon: "axe",
     weapons: { machete: true, axe: true, smg: false },
     employees: { hunter: false, cashier: false, dog: false },
@@ -51,7 +53,7 @@ function fixture() {
       towerKills: 0,
       damageDealt: 0,
       damageTaken: 0,
-      wavesCleared: 14,
+      wavesCleared: 5,
       campaignWins: 0,
     },
     lastSavedAt: 0,
@@ -291,8 +293,35 @@ async function checkR10Assets() {
   }
 }
 
+async function checkR12Systems() {
+  try {
+    const [audio, game, director, state] = await Promise.all([
+      readFile(resolve(root, "src/game/audio.ts"), "utf8"),
+      readFile(resolve(root, "src/game/StormGame.ts"), "utf8"),
+      readFile(resolve(root, "src/game/waveDirector.ts"), "utf8"),
+      readFile(resolve(root, "src/game/state.ts"), "utf8"),
+    ]);
+    const cues = ["hit", "swing", "build", "sale", "wave", "boss", "towerAlarm", "ui"];
+    const cueContract = cues.every((cue) => audio.includes(`\"${cue}\"`));
+    const runtimeWiring = cues.filter((cue) => cue !== "ui").every((cue) => game.includes(`this.audio.play(\"${cue}\")`));
+    record("audio/R12", "eight procedural WebAudio cues are registered and wired to runtime events", cueContract && runtimeWiring, `cues=${cues.join(",")}, wired=${runtimeWiring}`);
+    const directorContract = /event:\s*"whiteout"/u.test(director)
+      && /event:\s*"elite_surge"/u.test(director)
+      && /spawnInterval:\s*Math\.max\(0\.3,\s*baseInterval\s*\*\s*0\.72\)/u.test(director)
+      && /hpMultiplier:\s*1\.2/u.test(director)
+      && game.includes("enemyTypeForWave(plan, order)");
+    record("director/R12", "whiteout and elite event waves change spawn rhythm and composition", directorContract, "whiteout=fast runner surge, elite_surge=brute/high-HP formation");
+    const healthContract = /interface SaveState[\s\S]*baseHealth:\s*number/u.test(state)
+      && /baseHealth:\s*state\.baseHealth/u.test(state)
+      && /saveState\(this\.state\);[\s\S]{0,180}正在破壞肉舖壁壘/u.test(game);
+    record("save/R12", "base health is versioned and saved on impact", healthContract, "SaveState.baseHealth + impact-frame saveState wiring");
+  } catch (error) {
+    record("systems/R12", "R12 static contracts load", false, error instanceof Error ? error.message : String(error));
+  }
+}
+
 async function checkControlSpacing(page, label) {
-  const selectors = ["#quest-toggle", "#shop-toggle", ".joystick", ".tower-dock", "#wave-button", "#weapon-button", "#attack-button"];
+  const selectors = ["#settings-button", "#quest-toggle", "#shop-toggle", ".joystick", ".tower-dock", "#wave-button", "#weapon-button", "#attack-button"];
   const controls = [];
   for (const selector of selectors) {
     const locator = page.locator(selector);
@@ -320,6 +349,7 @@ async function measureR11Controls(page, config, consoleErrors) {
     { name: "wave", selector: "#wave-button" },
     { name: "weapon", selector: "#weapon-button" },
     { name: "attack", selector: "#attack-button" },
+    { name: "settings", selector: "#settings-button" },
   ];
   const result = await page.evaluate((items) => {
     const rectData = (element) => {
@@ -376,6 +406,103 @@ async function measureR11Controls(page, config, consoleErrors) {
   record(config.label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
 }
 
+async function inspectSystemPanel(page, label, tab) {
+  await page.locator(`[data-system-tab="${tab}"]`).click();
+  await page.waitForTimeout(60);
+  const result = await page.evaluate(() => {
+    const menu = document.querySelector("#system-menu");
+    const card = document.querySelector(".system-menu__card");
+    const body = document.querySelector(".system-menu__body");
+    const active = document.querySelector(".system-panel.is-active");
+    if (!menu || !card || !body || !active) return { exists: false, controls: [], cardInside: false, panelFits: false };
+    const cardRect = card.getBoundingClientRect();
+    const controls = [...menu.querySelectorAll("button:not(:disabled), input:not(:disabled)")]
+      .filter((element) => getComputedStyle(element).display !== "none" && element.getClientRects().length > 0)
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const hit = document.elementFromPoint(centerX, centerY);
+        return {
+          id: element.id || element.getAttribute("data-system-tab") || element.getAttribute("data-quality") || element.tagName,
+          width: Number(rect.width.toFixed(1)),
+          height: Number(rect.height.toFixed(1)),
+          minHit: rect.width >= 44 && rect.height >= 44,
+          inViewport: rect.left >= 0 && rect.top >= 0 && rect.right <= window.innerWidth && rect.bottom <= window.innerHeight,
+          hitSelf: hit === element || Boolean(hit && element.contains(hit)),
+        };
+      });
+    return {
+      exists: true,
+      controls,
+      cardInside: cardRect.left >= 0 && cardRect.top >= 0 && cardRect.right <= window.innerWidth && cardRect.bottom <= window.innerHeight,
+      panelFits: active.scrollHeight <= body.clientHeight + 1,
+      body: { clientHeight: body.clientHeight, panelScrollHeight: active.scrollHeight },
+    };
+  });
+  const failures = result.controls.filter((control) => !control.minHit || !control.inViewport || !control.hitSelf);
+  record(label, `${tab} settings panel stays reachable without long scrolling`, result.exists && result.cardInside && result.panelFits && failures.length === 0, JSON.stringify({ failures, body: result.body }));
+}
+
+async function checkR12SystemMenu(page, label, fullChecks = false) {
+  const beforePosition = {
+    x: Number(await page.locator("#game-canvas").getAttribute("data-player-x")),
+    z: Number(await page.locator("#game-canvas").getAttribute("data-player-z")),
+  };
+  await page.locator("#settings-button").click();
+  await page.locator("#system-menu").waitFor({ state: "visible" });
+  await page.keyboard.down("w");
+  await page.waitForTimeout(180);
+  await page.keyboard.up("w");
+  const afterPosition = {
+    x: Number(await page.locator("#game-canvas").getAttribute("data-player-x")),
+    z: Number(await page.locator("#game-canvas").getAttribute("data-player-z")),
+  };
+  const paused = await page.locator("#game-canvas").getAttribute("data-paused");
+  const unchanged = Math.abs(afterPosition.x - beforePosition.x) < 0.001 && Math.abs(afterPosition.z - beforePosition.z) < 0.001;
+  record(label, "pause menu freezes simulation input", paused === "true" && unchanged, `paused=${paused}, player=${JSON.stringify(beforePosition)}→${JSON.stringify(afterPosition)}`);
+
+  await inspectSystemPanel(page, label, "game");
+  if (fullChecks) {
+    await page.locator('[data-quality="high"]').click();
+    await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.quality === "高");
+    await page.locator('[data-quality="auto"]').click();
+    await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.quality === "低");
+    record(label, "manual quality override applies and auto mode restores detection", true, "high→auto/low");
+    const favicon = await page.evaluate(async () => {
+      const href = document.querySelector('link[rel="icon"]')?.href;
+      if (!href) return { href: null, ok: false, type: null };
+      const response = await fetch(href);
+      return { href, ok: response.ok, type: response.headers.get("content-type") };
+    });
+    record(label, "favicon is explicitly linked and returns SVG 200", favicon.ok && favicon.type?.includes("image/svg+xml"), JSON.stringify(favicon));
+  }
+
+  await inspectSystemPanel(page, label, "audio");
+  if (fullChecks) {
+    await page.locator("#master-volume").fill("25");
+    await page.locator("#mute-toggle").click();
+    const audioState = await page.evaluate((key) => ({ debug: window.__stormAudio, saved: JSON.parse(localStorage.getItem(key) ?? "null") }), settingsKey);
+    const cues = Object.keys(audioState.debug?.counts ?? {}).sort();
+    const expectedCues = ["boss", "build", "hit", "sale", "swing", "towerAlarm", "ui", "wave"].sort();
+    record(label, "volume and mute persist while all eight audio cues remain available", audioState.saved?.masterVolume === 0.25 && audioState.saved?.muted === true && JSON.stringify(cues) === JSON.stringify(expectedCues), JSON.stringify({ saved: audioState.saved, cues }));
+    await page.locator("#mute-toggle").click();
+    await page.locator("#master-volume").fill("80");
+  }
+
+  await inspectSystemPanel(page, label, "system");
+  const saveBefore = await readSave(page);
+  await page.locator("#reset-save-open").click();
+  await page.locator("#reset-confirm").waitFor({ state: "visible" });
+  await page.locator("#reset-save-cancel").click();
+  const saveAfter = await readSave(page);
+  record(label, "reset save requires confirmation and cancel preserves progress", JSON.stringify(saveAfter) === JSON.stringify(saveBefore), `wave=${saveAfter?.wave}, health=${saveAfter?.baseHealth}`);
+
+  await page.keyboard.press("Escape");
+  await page.locator("#system-menu").waitFor({ state: "hidden" });
+  record(label, "Escape closes the modal and resumes simulation", await page.locator("#game-canvas").getAttribute("data-paused") === "false", "modal hidden, paused=false");
+}
+
 async function checkR11DesktopViewports(page, consoleErrors) {
   const desktopScenarios = [
     { label: "R11 controls 1920x1080", viewport: { width: 1920, height: 1080 }, touch: false },
@@ -389,6 +516,9 @@ async function checkR11DesktopViewports(page, consoleErrors) {
       await page.setViewportSize(config.viewport);
       await page.waitForTimeout(120);
       await measureR11Controls(page, config, consoleErrors);
+      if (config.viewport.width === 1366 || config.viewport.width === 1280) {
+        await checkR12SystemMenu(page, `R12 menu ${config.viewport.width}x${config.viewport.height}`, config.viewport.width === 1366);
+      }
     }
   } finally {
     if (originalViewport) {
@@ -409,7 +539,9 @@ async function newPage(browser, config, savedState = fixture()) {
       : undefined,
   });
   if (savedState) {
-    await context.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: savedState });
+    await context.addInitScript(({ key, value }) => {
+      if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify(value));
+    }, { key: saveKey, value: savedState });
   }
   const page = await context.newPage();
   const consoleErrors = [];
@@ -667,8 +799,8 @@ async function checkProtagonistSelectionAndAnimations(browser) {
 
     for (const protagonist of protagonists) {
       await page.evaluate((id) => window.__stormSelectProtagonist?.(id), protagonist);
-      await page.waitForFunction((id) => document.querySelector("#game-canvas")?.dataset.protagonist === id, protagonist, { timeout: 10_000 });
-      const selectedId = await canvas.getAttribute("data-protagonist");
+      await page.waitForFunction((id) => document.querySelector("#game-canvas")?.dataset.debugProtagonist === id, protagonist, { timeout: 10_000 });
+      const selectedId = await canvas.getAttribute("data-debug-protagonist");
       record(`hero/${protagonist}`, "selected model enters game", selectedId === protagonist, `protagonist=${selectedId}`);
       const clips = (await canvas.getAttribute("data-player-clips") ?? "").split(",").filter(Boolean);
       const expectedClips = ["attack_melee", "attack_ranged", "idle", "run"];
@@ -781,7 +913,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R11 UI version marker", uiVersion === "R11", `ui=${uiVersion}`);
+  record(label, "R12 UI version marker", uiVersion === "R12", `ui=${uiVersion}`);
 
   const towerButtons = page.locator("[data-tower-dock]");
   const towerButtonCount = await towerButtons.count();
@@ -810,12 +942,21 @@ async function checkR9UX(page, label, touch) {
 
   const point = await page.evaluate(() => window.__stormWorldPoint?.("tower", "ballista") ?? null);
   const pointValid = point && Number.isFinite(point.x) && Number.isFinite(point.y);
+  let popoverOpened = false;
   if (pointValid) {
-    await page.mouse.click(point.x, point.y);
-    await page.waitForFunction(() => {
-      const popover = document.querySelector("#world-action-popover");
-      return popover && !popover.hidden && popover.dataset.actionType === "tower" && popover.dataset.actionId === "ballista";
-    }, undefined, { timeout: 5_000 });
+    for (let attempt = 0; attempt < 2 && !popoverOpened; attempt += 1) {
+      await page.mouse.click(point.x, point.y);
+      try {
+        await page.waitForFunction(() => {
+          const popover = document.querySelector("#world-action-popover");
+          return popover && !popover.hidden && popover.dataset.actionType === "tower" && popover.dataset.actionId === "ballista";
+        }, undefined, { timeout: 2_500 });
+        popoverOpened = true;
+      } catch {
+        // WebGL hit testing can miss one pointer sample while a frame is busy;
+        // retry the same verified canvas coordinate once before failing the gate.
+      }
+    }
   }
   const popoverState = await page.locator("#world-action-popover").evaluate((popover) => ({
     hidden: popover.hidden,
@@ -823,7 +964,7 @@ async function checkR9UX(page, label, touch) {
     id: popover.dataset.actionId,
     text: popover.textContent,
   }));
-  record(label, "clicking a 3D build pad opens local tower action", Boolean(pointValid) && !popoverState.hidden && popoverState.type === "tower" && popoverState.id === "ballista" && /建造|升級/.test(popoverState.text ?? ""), JSON.stringify({ point, popoverState }));
+  record(label, "clicking a 3D build pad opens local tower action", Boolean(pointValid) && popoverOpened && !popoverState.hidden && popoverState.type === "tower" && popoverState.id === "ballista" && /建造|升級/.test(popoverState.text ?? ""), JSON.stringify({ point, popoverState }));
   await page.mouse.click(12, 12);
 }
 
@@ -850,7 +991,9 @@ async function runCombat(browser, config) {
     }
     if (config.touch && config.viewport.width === 390 && config.viewport.height === 844) {
       await measureR11Controls(page, { label: "R11 controls 390x844", viewport: config.viewport, touch: true }, consoleErrors);
+      await checkR12SystemMenu(page, "R12 menu 390x844");
     }
+    record(label, "saved base health loads without refilling", await page.locator("#base-health").innerText() === "63%", await page.locator("#base-health").innerText());
     await checkControlSpacing(page, label);
     if (config.touch) await checkTouchLayout(page, label);
     await checkR9UX(page, label, config.touch);
@@ -865,6 +1008,8 @@ async function runCombat(browser, config) {
     record(label, "SMG switches to ranged clip", rangedAnimation === "attack_ranged", `animation=${rangedAnimation}`);
     const afterCow = await readSave(page);
     record(label, `${config.touch ? "touch" : "keyboard"} SMG damages cow`, afterCow.stats.cowsKilled > before.stats.cowsKilled, `cowsKilled ${before.stats.cowsKilled}→${afterCow.stats.cowsKilled}`);
+    const combatAudio = await page.evaluate(() => window.__stormAudio);
+    record(label, "swing and hit cues follow attack and impact", combatAudio?.counts?.swing > 0 && combatAudio?.counts?.hit > 0, JSON.stringify(combatAudio?.counts));
 
     await moveNorthUntil(page, config.touch, label);
     if (config.touch) await page.locator("#wave-button").click();
@@ -873,6 +1018,9 @@ async function runCombat(browser, config) {
     const waveText = await page.locator("#hud-wave").innerText();
     const waveStarted = waveText.includes("夜襲");
     record(label, "wave starts", waveStarted, waveText);
+    const waveAudio = await page.evaluate(() => window.__stormAudio);
+    const waveEvent = await page.locator("#game-canvas").getAttribute("data-wave-event");
+    record(label, "event wave announces whiteout and plays wave cue", waveEvent === "whiteout" && waveAudio?.counts?.wave > 0, `event=${waveEvent}, waveCue=${waveAudio?.counts?.wave}`);
     if (!waveStarted) {
       record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
       return;
@@ -895,6 +1043,11 @@ async function runCombat(browser, config) {
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.towerAnimationLod?.includes("frost:paused"), undefined, { timeout: 5_000 });
       const towerLod = await page.locator("#game-canvas").getAttribute("data-tower-animation-lod");
       record(label, "distant tower animation LOD pauses", towerLod?.includes("frost:paused") === true, `lod=${towerLod}`);
+      const savedHealth = (await readSave(page))?.baseHealth;
+      await page.reload({ waitUntil: "domcontentloaded", timeout: loadTimeout });
+      await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
+      const reloadedHealth = Number((await page.locator("#base-health").innerText()).replace("%", ""));
+      record(label, "base health survives reload after wave repair or enemy impact", Number.isFinite(savedHealth) && reloadedHealth === savedHealth, `saved=${savedHealth}, reloaded=${reloadedHealth}`);
     }
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {
@@ -918,6 +1071,7 @@ async function runLayout(browser, viewport) {
     await checkControlSpacing(page, label);
     await checkTouchLayout(page, label);
     await checkR9UX(page, label, true);
+    await checkR12SystemMenu(page, "R12 menu 844x390");
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {
     await context.close();
@@ -929,6 +1083,7 @@ try {
   record("assets/R8.1", "portraits and menu background pass the luminance gate", luminance.pass, luminance.detail);
   await checkR8Assets();
   await checkR10Assets();
+  await checkR12Systems();
   await ensureServer();
   const launchBrowser = () => chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }

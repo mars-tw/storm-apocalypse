@@ -1,7 +1,7 @@
 # 暴風啟示錄 Storm Apocalypse
 
 [![Deploy Pages](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml/badge.svg)](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml)
-[![Version](https://img.shields.io/badge/version-0.2.1-c66b3d)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.4-c66b3d)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-79c3d2.svg)](LICENSE)
 
 在永夜暴雪中狩獵、經營最後一間肉舖，建立防線並在三十次鐘聲裡守住僅存的燈火。《暴風啟示錄》是一款可直接在瀏覽器遊玩的 3D 經營 × 動作 × 塔防遊戲。
@@ -17,7 +17,9 @@
 - **Blender 渲染 UI**：角色立繪、主選單背景、圖示、atlas 與 9-slice 元件由同一套 `bpy` 色票及燈光 preset 產出。
 - **任務鏈**：15 章生存手冊串起狩獵、肉舖經營、武器、員工、牧場與防禦塔解鎖，夜襲另有輪替目標。
 - **30 波戰役**：白晝整備、夜間守備、敵人梯次與每 10 波 Boss 戰，進度保存於瀏覽器本機。
-- **品質分檔**：依裝置能力自動套用低／中／高畫質，並以動態渲染比例與特效降級維持可玩性。
+- **R12 聲音與設定中樞**：八類零外部資產的 WebAudio 程序化音效，支援主音量、效果音、靜音、螢幕震動與暫停。
+- **事件波導演**：白幕突襲與精英壓境會改變敵人組成、血量、速度及出生節奏，不再只有固定數量公式。
+- **品質分檔**：依裝置能力自動套用低／中／高畫質，也可在設定中手動選擇自動／高／中／低；動態降級仍會保護幀率。
 
 ## 遊戲畫面
 
@@ -29,8 +31,8 @@
 
 | 平台 | 移動 | 攻擊 | 其他操作 |
 | --- | --- | --- | --- |
-| 桌機 | `WASD` 或方向鍵 | `Space` 或 `E`；按住可連續攻擊 | `B` 建造、`N` 啟動下一波；商店與任務亦可用畫面按鈕 |
-| 手機／平板 | 左下虛擬搖桿 | 右下「揮砍」按鈕 | 使用畫面按鈕開啟任務、補給站及波次 |
+| 桌機 | `WASD` 或方向鍵 | `Space` 或 `E`；按住可連續攻擊 | `B` 建造、`N` 啟動下一波、`Esc` 暫停／設定；商店與任務亦可用畫面按鈕 |
+| 手機／平板 | 左下虛擬搖桿 | 右下「揮砍」按鈕 | 使用畫面按鈕開啟任務、補給站、波次及右上設定 |
 
 ## 技術棧
 
@@ -40,7 +42,7 @@
 - Playwright（桌機、觸控、動畫契約與戰鬥 smoke 測試）
 - GitHub Actions + GitHub Pages
 
-目前版本為 **0.2.1**，與 [`package.json`](package.json) 及 lockfile 一致。
+目前版本為 **0.2.4**，與 [`package.json`](package.json) 及 lockfile 一致。
 
 ## 本地開發
 

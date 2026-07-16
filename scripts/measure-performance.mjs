@@ -17,9 +17,10 @@ let server;
 
 function fixture() {
   return {
-    version: 3,
+    version: 5,
     money: 9999,
     wave: 24,
+    baseHealth: 100,
     stallLevel: 4,
     towerBuilt: true,
     bestWave: 24,

@@ -32,12 +32,15 @@ import {
   VertexData,
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
+import type { ProceduralAudio } from "./audio";
 import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
-import { detectDeviceQuality, type QualityLevel } from "./quality";
+import { resolveQuality, type QualityLevel, type QualityPreference } from "./quality";
 import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
+import type { PlayerSettings } from "./settings";
 import { creditIncome, saveState, type EmployeeId, type NamedCustomerId, type ProtagonistId, type RuntimeState, type TowerId, type WeaponId } from "./state";
 import type { UiController } from "./ui";
+import { enemyTypeForWave, getWavePlan, type DirectorZombieType, type WavePlan } from "./waveDirector";
 
 interface Actor {
   root: TransformNode;
@@ -59,7 +62,7 @@ interface CowActor extends Actor {
   pastureCenter: Vector3;
 }
 
-type ZombieType = "walker" | "runner" | "brute" | "boss";
+type ZombieType = DirectorZombieType;
 type DamageSource = "player" | TowerId;
 
 interface ZombieActor extends Actor {
@@ -247,6 +250,10 @@ export class StormGame {
   private performanceTier = 0;
   private blobShadowsActive = false;
   private renderPixelRatio = 1;
+  private paused = false;
+  private cameraShake = 0;
+  private lastTowerAlarmAt = -10;
+  private currentWavePlan?: WavePlan;
   private readonly smokeMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke");
   private readonly showcaseMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("showcase");
 
@@ -254,8 +261,10 @@ export class StormGame {
     canvas: HTMLCanvasElement,
     private readonly ui: UiController,
     private readonly state: RuntimeState,
+    private readonly settings: PlayerSettings,
+    private readonly audio: ProceduralAudio,
   ) {
-    this.state.quality = this.detectQuality();
+    this.state.quality = this.detectQuality(this.settings.quality);
     const lowQuality = this.state.quality === "低";
     const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
     this.renderPixelRatio = lowQuality
@@ -346,7 +355,9 @@ export class StormGame {
       canvas.dataset.postEffects = this.glow || this.cinematicPipeline ? "on" : "off";
       canvas.dataset.fogDensity = this.scene.fogDensity.toFixed(4);
       canvas.dataset.saveVersion = this.state.version.toString();
-      canvas.dataset.protagonist = this.state.protagonistId;
+      canvas.dataset.debugProtagonist = this.state.protagonistId;
+      canvas.dataset.paused = String(this.paused);
+      canvas.dataset.waveEvent = this.currentWavePlan?.event ?? "none";
       canvas.dataset.customer = this.customer?.identity ?? "anonymous";
       if (this.player) {
         const meshForward = this.player.meshForwardNode.getDirection(this.player.meshForwardAxis).normalize();
@@ -402,7 +413,7 @@ export class StormGame {
     window.setInterval(() => this.monitorPerformance(), 2000);
     this.engine.runRenderLoop(() => {
       const dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.1);
-      this.update(dt);
+      if (!this.paused) this.update(dt);
       this.scene.render();
     });
   }
@@ -460,6 +471,29 @@ export class StormGame {
     this.ui.enterGame();
     const protagonist = PROTAGONISTS.find((entry) => entry.id === this.state.protagonistId)!;
     this.ui.toast(`「${protagonist.openingLine}」`, "ice");
+  }
+
+  setPaused(paused: boolean): void {
+    if (this.paused === paused) return;
+    this.paused = paused;
+    this.input.setEnabled(!paused);
+    this.scene.animationTimeScale = paused ? 0 : 1;
+    const canvas = this.engine.getRenderingCanvas();
+    if (canvas) canvas.dataset.paused = String(paused);
+    this.ui.update(this.state);
+  }
+
+  applySettings(settings: PlayerSettings): void {
+    Object.assign(this.settings, settings);
+    if (!this.settings.screenShake) this.cameraShake = 0;
+    const nextQuality = this.detectQuality(this.settings.quality);
+    if (nextQuality === this.state.quality) return;
+    this.state.quality = nextQuality;
+    this.performanceTier = 0;
+    this.lowFpsSamples = 0;
+    this.applyQualityLevel(nextQuality);
+    this.ui.update(this.state);
+    this.ui.toast(`畫質已切換為${nextQuality}檔`, "ice");
   }
 
   selectProtagonist(id: ProtagonistId): void {
@@ -620,7 +654,7 @@ export class StormGame {
       image.data[pixel + 3] = 255;
     }
     context.putImageData(image, 0, 0);
-    context.globalAlpha = 0.2;
+    context.globalAlpha = this.state.quality === "低" ? 0.14 : 0.2;
     context.strokeStyle = "#ffffff";
     for (let line = 0; line < Math.round(textureSize / 15); line += 1) {
       const y = random() * textureSize;
@@ -628,6 +662,29 @@ export class StormGame {
       context.moveTo(-20, y);
       context.bezierCurveTo(textureSize * 0.27, y - textureSize * 0.035, textureSize * 0.66, y + textureSize * 0.043, textureSize + 28, y - textureSize * 0.016);
       context.stroke();
+    }
+    if (this.state.quality !== "低") {
+      context.globalAlpha = 0.12;
+      context.lineWidth = Math.max(1, textureSize / 220);
+      context.strokeStyle = "#6f9dac";
+      for (let groove = 0; groove < Math.round(textureSize / 48); groove += 1) {
+        const y = random() * textureSize;
+        context.beginPath();
+        context.moveTo(-30, y);
+        context.bezierCurveTo(textureSize * 0.3, y + textureSize * 0.055, textureSize * 0.72, y - textureSize * 0.04, textureSize + 35, y + textureSize * 0.018);
+        context.stroke();
+      }
+      context.globalAlpha = 0.16;
+      context.lineWidth = 1;
+      context.strokeStyle = "#edfaff";
+      for (let crystal = 0; crystal < Math.round(textureSize / 5); crystal += 1) {
+        const x = random() * textureSize;
+        const y = random() * textureSize;
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x + 2 + random() * 4, y - 1 - random() * 3);
+        context.stroke();
+      }
     }
     texture.update(false);
     return texture;
@@ -1058,6 +1115,7 @@ export class StormGame {
     this.attackCooldown = recoveryAt;
     this.pendingPlayerAttack = { weapon, elapsed: 0, impactAt, recoveryAt, resolved: false };
     this.playAnimation(this.player, weapon === "smg" ? "attack_ranged" : "attack_melee", false, true);
+    this.audio.play("swing");
   }
 
   private updatePlayerAttack(dt: number): void {
@@ -1114,7 +1172,10 @@ export class StormGame {
         }
       }
     }
-    if (!hit) this.ui.toast("揮砍落空——動作會完整收勢。", "ice");
+    if (hit) {
+      this.audio.play("hit");
+      this.kickCameraShake(weapon === "smg" ? 0.08 : weapon === "axe" ? 0.2 : 0.14);
+    } else this.ui.toast("揮砍落空——動作會完整收勢。", "ice");
   }
 
   private playerWeaponDamage(base: number): number {
@@ -1219,6 +1280,7 @@ export class StormGame {
           if (this.customer.identity) this.addCustomerAffinity(this.customer.identity);
           this.updateMeatVisuals();
           saveState(this.state);
+          this.audio.play("sale");
           const customer = NAMED_CUSTOMERS.find((entry) => entry.id === this.customer.identity);
           this.ui.toast(`${customer ? customer.name : "交易"}結帳 · 收入 ✦ ${income}`, "warm");
         }
@@ -1432,6 +1494,7 @@ export class StormGame {
     animateBuild();
     this.createAttackRing(id === "frost" ? new Color3(0.25, 0.76, 1) : id === "cannon" ? new Color3(1, 0.31, 0.08) : new Color3(0.86, 0.66, 0.32), tower.root.position);
     saveState(this.state);
+    this.audio.play("build");
     this.ui.toast(`${definition.name}${level === 0 ? "完工" : `升至 Lv.${level + 1}`}。`, "warm");
     this.processQuests();
   }
@@ -1579,8 +1642,8 @@ export class StormGame {
     this.state.waveActive = true;
     this.state.baseHealth = Math.min(100, this.state.baseHealth + 12);
     const waveNumber = this.state.wave + 1;
-    this.enemiesToSpawn = Math.min(42, 4 + Math.ceil(waveNumber * 1.22));
-    if (waveNumber % 10 === 0) this.enemiesToSpawn += 1;
+    this.currentWavePlan = getWavePlan(waveNumber);
+    this.enemiesToSpawn = this.currentWavePlan.enemyCount;
     this.spawnTimer = 0.4;
     this.state.enemiesRemaining = this.enemiesToSpawn;
     this.waveStartedStock = this.state.displayedMeat;
@@ -1594,9 +1657,11 @@ export class StormGame {
       enemyCount: this.enemiesToSpawn,
       startingStock: this.waveStartedStock,
       startingHealth: this.state.baseHealth,
-      hasStockThreat: waveNumber % 10 === 0 || waveNumber >= 8 && this.enemiesToSpawn >= 5,
+      hasStockThreat: this.currentWavePlan.event === "boss" || this.currentWavePlan.event === "elite_surge" || waveNumber >= 8 && this.enemiesToSpawn >= 5,
     });
-    this.ui.toast(`警報：第 ${waveNumber} 波${waveNumber % 10 === 0 ? " Boss " : "屍群"}穿越北境！`, "danger");
+    saveState(this.state);
+    this.audio.play("wave");
+    this.ui.toast(`警報：第 ${waveNumber} 波 · ${this.currentWavePlan.title}！${this.currentWavePlan.announcement}`, "danger");
   }
 
   private updateWave(dt: number): void {
@@ -1606,7 +1671,7 @@ export class StormGame {
       if (this.spawnTimer <= 0) {
         this.spawnZombie(this.enemiesToSpawn);
         this.enemiesToSpawn -= 1;
-        this.spawnTimer = Math.max(0.38, 0.86 - this.state.wave * 0.014);
+        this.spawnTimer = this.currentWavePlan?.spawnInterval ?? Math.max(0.38, 0.86 - this.state.wave * 0.014);
       }
     }
     for (const zombie of this.zombies) {
@@ -1632,7 +1697,7 @@ export class StormGame {
         if (zombie.attackPhase === "anticipation" && zombie.attackTimer <= 0) {
           const blocked = this.state.customerAffinity.nurse_lin >= 6 && Math.random() < 0.08;
           const damage = Math.max(0, zombie.damage - (blocked ? 1 : 0));
-          this.state.baseHealth -= damage;
+          this.state.baseHealth = Math.max(0, this.state.baseHealth - damage);
           this.state.stats.damageTaken += damage;
           zombie.attackPhase = "recovery";
           zombie.attackTimer = timings.recovery;
@@ -1642,6 +1707,12 @@ export class StormGame {
             this.waveStockLost = true;
             this.updateMeatVisuals();
           }
+          this.kickCameraShake(zombie.type === "boss" ? 0.42 : zombie.type === "brute" ? 0.3 : 0.18);
+          if (this.state.baseHealth <= 35 && this.elapsed - this.lastTowerAlarmAt >= 3.5) {
+            this.lastTowerAlarmAt = this.elapsed;
+            this.audio.play("towerAlarm");
+          }
+          saveState(this.state);
           this.ui.toast(`${this.zombieLabel(zombie.type)}正在破壞肉舖壁壘！`, "danger");
           if (this.state.baseHealth <= 0) {
             this.finishGame(false);
@@ -1679,23 +1750,18 @@ export class StormGame {
 
   private spawnZombie(order: number): void {
     const wave = this.state.wave + 1;
+    const plan = this.currentWavePlan ?? getWavePlan(wave);
     const x = -6 + ((order * 4.7) % 12);
     const z = 20 - (order % 2) * 1.8;
-    const type: ZombieType = wave % 10 === 0 && order === 1
-      ? "boss"
-      : wave >= 8 && order % 5 === 0
-        ? "brute"
-        : wave >= 4 && order % 3 === 0
-          ? "runner"
-          : "walker";
+    const type: ZombieType = enemyTypeForWave(plan, order);
     const scale = type === "boss" ? 1.05 : type === "brute" ? 1.4 : type === "runner" ? 0.82 : 0.98;
     const zombieModel = type === "boss"
       ? "custom/boss-zombie.glb"
       : R8_ZOMBIE_MODELS[(wave + order) % R8_ZOMBIE_MODELS.length];
     const actor = this.instantiateActor(zombieModel, `zombie-${type}-${wave}-${order}-${this.elapsed}`, new Vector3(x, 0, z), scale);
     const baseHp = 3 + Math.floor(wave * 0.72);
-    const hp = Math.round(baseHp * (type === "boss" ? 8 : type === "brute" ? 2.35 : type === "runner" ? 0.72 : 1));
-    const speed = (0.92 + wave * 0.025) * (type === "runner" ? 1.75 : type === "brute" ? 0.72 : type === "boss" ? 0.62 : 1);
+    const hp = Math.round(baseHp * (type === "boss" ? 8 : type === "brute" ? 2.35 : type === "runner" ? 0.72 : 1) * plan.hpMultiplier);
+    const speed = (0.92 + wave * 0.025) * (type === "runner" ? 1.75 : type === "brute" ? 0.72 : type === "boss" ? 0.62 : 1) * plan.speedMultiplier;
     const zombie: ZombieActor = {
       ...actor,
       hp,
@@ -1713,6 +1779,11 @@ export class StormGame {
       animationLodPaused: false,
     };
     zombie.root.position.y = this.heightAt(x, z);
+    if (type === "boss") {
+      this.audio.play("boss");
+      this.kickCameraShake(0.5);
+      this.ui.toast("Boss 登場 · 巨型屍影撞進防線！", "danger");
+    }
     this.playAnimation(zombie, "Walk", true);
     this.addActorShadows(zombie);
     this.addZombieTypeVisual(zombie);
@@ -1930,11 +2001,21 @@ export class StormGame {
   }
 
   private updateCamera(dt: number): void {
-    const target = this.player.root.position.add(new Vector3(0, 1.2, 0));
+    const baseTarget = this.player.root.position.add(new Vector3(0, 1.2, 0));
+    this.cameraShake *= Math.exp(-dt * 10.5);
+    const shake = this.settings.screenShake && this.cameraShake > 0.002
+      ? new Vector3(Math.sin(this.elapsed * 73) * this.cameraShake, Math.sin(this.elapsed * 97) * this.cameraShake * 0.35, Math.cos(this.elapsed * 67) * this.cameraShake)
+      : Vector3.Zero();
+    const target = baseTarget.add(shake);
     this.camera.target.copyFrom(Vector3.Lerp(this.camera.target, target, Math.min(1, dt * 4.8)));
     const desiredRadius = this.state.waveActive ? 25 : 19;
     this.camera.radius += (desiredRadius - this.camera.radius) * Math.min(1, dt * 1.8);
     this.snowEmitter.position.copyFrom(this.camera.target.add(new Vector3(-2, 10, 0)));
+  }
+
+  private kickCameraShake(amount: number): void {
+    if (!this.settings.screenShake) return;
+    this.cameraShake = Math.max(this.cameraShake, amount);
   }
 
   private processQuests(): void {
@@ -2119,7 +2200,11 @@ export class StormGame {
   }
 
   private createBlobShadow(root: TransformNode): void {
-    if (root.getChildMeshes().some((mesh) => mesh.name === `${root.name}-blob-shadow`)) return;
+    const existing = root.getChildMeshes().find((mesh) => mesh.name === `${root.name}-blob-shadow`);
+    if (existing) {
+      existing.setEnabled(true);
+      return;
+    }
     if (!this.blobShadowMaterial) {
       const material = new StandardMaterial("mobile-blob-shadow-material", this.scene);
       material.diffuseColor = Color3.Black();
@@ -2417,8 +2502,8 @@ export class StormGame {
     this.shopLight.intensity = Math.min(this.shopLight.intensity, 8);
 
     const actors: Actor[] = [
-      this.player,
-      this.cow,
+      ...(this.player ? [this.player] : []),
+      ...(this.cow ? [this.cow] : []),
       ...(this.strongCow ? [this.strongCow] : []),
       ...this.customerVariants.values(),
       ...this.staff.values(),
@@ -2427,8 +2512,64 @@ export class StormGame {
     for (const actor of actors) this.addActorShadows(actor);
   }
 
-  private detectQuality(): QualityLevel {
-    return detectDeviceQuality({
+  private applyQualityLevel(level: QualityLevel): void {
+    const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
+    this.renderPixelRatio = level === "高" ? Math.min(1.25, devicePixelRatio) : Math.min(1, devicePixelRatio);
+    this.engine.setHardwareScalingLevel(1 / this.renderPixelRatio);
+    this.engine.resize();
+    if (this.snowParticles) this.snowParticles.emitRate = level === "低" ? 36 : level === "中" ? 150 : 340;
+    if (level === "低") {
+      this.dropExpensiveRenderingFeatures();
+      this.scene.imageProcessingConfiguration.contrast = 1.12;
+      this.scene.imageProcessingConfiguration.exposure = 1.05;
+      return;
+    }
+    this.restoreRealtimeRendering(level);
+  }
+
+  private restoreRealtimeRendering(level: Exclude<QualityLevel, "低">): void {
+    this.blobShadowsActive = false;
+    if (!this.shadows) {
+      this.shadows = new ShadowGenerator(level === "中" ? 1024 : 2048, this.sun, true);
+      this.shadows.usePercentageCloserFiltering = true;
+      this.shadows.filteringQuality = ShadowGenerator.QUALITY_MEDIUM;
+      this.shadows.bias = 0.002;
+      this.shadows.normalBias = 0.03;
+    }
+    this.shadows.setDarkness(0);
+    const shadowMap = this.shadows.getShadowMap();
+    if (shadowMap) shadowMap.refreshRate = 1;
+    for (const mesh of this.scene.meshes) {
+      if (mesh.name.endsWith("-blob-shadow")) {
+        mesh.setEnabled(false);
+        continue;
+      }
+      if (/wind-carved-snow|world-skirt|snow-path|attack-ring|type-tint/u.test(mesh.name)) {
+        mesh.receiveShadows = true;
+        continue;
+      }
+      this.castShadows(mesh);
+    }
+    if (!this.glow) {
+      this.glow = new GlowLayer("warm-window-glow", this.scene, { mainTextureFixedSize: 512, blurKernelSize: 48 });
+      this.glow.intensity = 0.48;
+    }
+    if (!this.cinematicPipeline) {
+      this.cinematicPipeline = new DefaultRenderingPipeline("storm-cinematic", true, this.scene, [this.camera]);
+      this.cinematicPipeline.fxaaEnabled = true;
+      this.cinematicPipeline.bloomEnabled = true;
+      this.cinematicPipeline.bloomThreshold = 0.78;
+      this.cinematicPipeline.bloomWeight = 0.2;
+      this.cinematicPipeline.bloomKernel = 48;
+      this.cinematicPipeline.imageProcessingEnabled = true;
+      this.cinematicPipeline.imageProcessing.contrast = 1.08;
+      this.cinematicPipeline.imageProcessing.exposure = 1.15;
+    }
+    this.cinematicPipeline.samples = level === "高" ? 2 : 1;
+  }
+
+  private detectQuality(preference: QualityPreference): QualityLevel {
+    return resolveQuality(preference, {
       smokeMode: this.smokeMode,
       userAgent: navigator.userAgent,
       maxTouchPoints: navigator.maxTouchPoints,

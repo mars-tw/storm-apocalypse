@@ -1,9 +1,12 @@
 import { EMPLOYEES, MAIN_QUESTS, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { currentLoopDefinition, currentMainQuest, type QuestCompletion } from "./quests";
+import type { PlayerSettings } from "./settings";
 import type { EmployeeId, ProtagonistId, RuntimeState, TowerId, WeaponId } from "./state";
+import { getWavePlan } from "./waveDirector";
 
 type ShopCategory = "weapon" | "employee" | "pasture";
 type ShopTab = "weapon" | "employee" | "regular" | "expansion";
+type SystemTab = "game" | "audio" | "system";
 
 export type WorldActionTarget =
   | { type: "tower"; id: TowerId; x: number; y: number }
@@ -87,11 +90,24 @@ export class UiController {
   private readonly resultCopy: HTMLElement;
   private readonly resultStats: HTMLElement;
   private readonly protagonistStatus: HTMLElement;
+  private readonly systemMenu: HTMLElement;
+  private readonly settingsButton: HTMLButtonElement;
+  private readonly masterVolume: HTMLInputElement;
+  private readonly sfxVolume: HTMLInputElement;
+  private readonly masterVolumeValue: HTMLOutputElement;
+  private readonly sfxVolumeValue: HTMLOutputElement;
+  private readonly muteButton: HTMLButtonElement;
+  private readonly shakeButton: HTMLButtonElement;
+  private readonly resetConfirm: HTMLElement;
   private readonly requiresProtagonistSelection: boolean;
   private selectedProtagonist: ProtagonistId = "butcher_matron";
   private renderedChapter = 0;
   private activeShopTab: ShopTab = "weapon";
   private activeWorldAction: WorldActionTarget | null = null;
+  private activeSystemTab: SystemTab = "game";
+  private systemMenuOpen = false;
+  private focusBeforeMenu: HTMLElement | null = null;
+  private settings: PlayerSettings;
 
   onStart: () => void = () => undefined;
   onAttackStart: () => void = () => undefined;
@@ -102,8 +118,11 @@ export class UiController {
   onShopAction: (category: ShopCategory, id: string) => void = () => undefined;
   onTowerAction: (id: TowerId) => void = () => undefined;
   onWeaponCycle: () => void = () => undefined;
+  onPauseChange: (paused: boolean) => void = () => undefined;
+  onSettingsChange: (settings: PlayerSettings) => void = () => undefined;
+  onUiSound: () => void = () => undefined;
 
-  constructor(root: HTMLElement, state: RuntimeState) {
+  constructor(root: HTMLElement, state: RuntimeState, settings: PlayerSettings) {
     this.touchMode = detectTouchMode();
     root.classList.toggle("is-touch", this.touchMode);
     const startHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "WASD 移動 · 空白鍵攻擊";
@@ -111,7 +130,8 @@ export class UiController {
     const promptHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "穿越雪地 · 空白鍵揮砍";
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
-    root.dataset.uiVersion = "R11";
+    this.settings = { ...settings };
+    root.dataset.uiVersion = "R12";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -148,7 +168,7 @@ export class UiController {
           <div class="resource"><span>🥩</span><div><small>背包</small><b id="hud-meat">0 / 6</b></div></div>
           <div class="resource"><span>▤</span><div><small>攤位存貨</small><b id="hud-stock">0 / 6</b></div></div>
         </div>
-        <div class="hud-status"><div class="wave-chip"><small>30 波戰役</small><b id="hud-wave">黎明 · 0 / 30</b></div><span class="protagonist-status" id="protagonist-status"></span><small id="performance-chip">高畫質</small></div>
+        <div class="hud-status"><div class="wave-chip"><small>30 波戰役</small><b id="hud-wave">黎明 · 0 / 30</b></div><span class="protagonist-status" id="protagonist-status"></span><small id="performance-chip">高畫質</small><button class="settings-button" id="settings-button" type="button" aria-label="開啟暫停與設定" aria-controls="system-menu" aria-expanded="false"><span aria-hidden="true">⚙</span></button></div>
       </header>
 
       <button class="panel-toggle panel-toggle--quest" id="quest-toggle" aria-label="開關生存手冊" aria-controls="quest-panel" aria-expanded="false">手冊 01 · 0/1</button>
@@ -198,6 +218,36 @@ export class UiController {
         </button>
       </div>
       <div class="toast-host" id="toast-host"></div>
+
+      <section class="system-menu" id="system-menu" role="dialog" aria-modal="true" aria-labelledby="system-menu-title" hidden>
+        <div class="system-menu__card">
+          <header class="system-menu__head"><div><small>北境行動中樞</small><h2 id="system-menu-title">暫停與設定</h2></div><button id="system-menu-close" type="button" aria-label="關閉設定並繼續遊戲">×</button></header>
+          <nav class="system-tabs" role="tablist" aria-label="設定分類">
+            <button class="is-active" type="button" role="tab" data-system-tab="game" aria-selected="true" aria-controls="system-panel-game">遊戲</button>
+            <button type="button" role="tab" data-system-tab="audio" aria-selected="false" aria-controls="system-panel-audio">聲音</button>
+            <button type="button" role="tab" data-system-tab="system" aria-selected="false" aria-controls="system-panel-system">系統</button>
+          </nav>
+          <div class="system-menu__body">
+            <section class="system-panel is-active" id="system-panel-game" data-system-panel="game" role="tabpanel">
+              <div class="setting-block"><div><b>畫質檔位</b><small>自動會依裝置能力選擇，手動檔位會保存。</small></div><div class="quality-options" role="group" aria-label="畫質檔位">
+                <button type="button" data-quality="auto">自動</button><button type="button" data-quality="high">高</button><button type="button" data-quality="medium">中</button><button type="button" data-quality="low">低</button>
+              </div></div>
+              <div class="setting-row"><span><b>螢幕震動</b><small>保留命中感，關閉後鏡頭保持穩定。</small></span><button class="setting-switch" id="shake-toggle" type="button" role="switch" aria-checked="true"><span></span><em>開啟</em></button></div>
+            </section>
+            <section class="system-panel" id="system-panel-audio" data-system-panel="audio" role="tabpanel" hidden>
+              <label class="volume-control" for="master-volume"><span><b>主音量</b><output id="master-volume-value" for="master-volume">80%</output></span><input id="master-volume" type="range" min="0" max="100" step="1" value="80"></label>
+              <label class="volume-control" for="sfx-volume"><span><b>效果音</b><output id="sfx-volume-value" for="sfx-volume">90%</output></span><input id="sfx-volume" type="range" min="0" max="100" step="1" value="90"></label>
+              <div class="setting-row"><span><b>靜音</b><small>保留音量值，一鍵關閉所有程序化音效。</small></span><button class="setting-switch" id="mute-toggle" type="button" role="switch" aria-checked="false"><span></span><em>關閉</em></button></div>
+            </section>
+            <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
+              <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
+              <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
+              <p class="system-note">R12 · 程序化 WebAudio · 本機存檔</p>
+            </section>
+          </div>
+          <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
+        </div>
+      </section>
 
       <section class="intro${this.requiresProtagonistSelection ? " intro--selection" : ""}" id="intro">
         <div class="intro__render" aria-hidden="true"><div class="intro__render-scene"></div><div class="intro__render-dust"></div></div>
@@ -257,6 +307,15 @@ export class UiController {
     this.resultCopy = get("result-copy");
     this.resultStats = get("result-stats");
     this.protagonistStatus = get("protagonist-status");
+    this.systemMenu = get("system-menu");
+    this.settingsButton = get("settings-button");
+    this.masterVolume = get("master-volume");
+    this.sfxVolume = get("sfx-volume");
+    this.masterVolumeValue = get("master-volume-value");
+    this.sfxVolumeValue = get("sfx-volume-value");
+    this.muteButton = get("mute-toggle");
+    this.shakeButton = get("shake-toggle");
+    this.resetConfirm = get("reset-confirm");
 
     const clearPressed = (): void => {
       for (const button of root.querySelectorAll("button.is-pressed")) button.classList.remove("is-pressed");
@@ -266,6 +325,9 @@ export class UiController {
     });
     root.addEventListener("pointerup", clearPressed);
     root.addEventListener("pointercancel", clearPressed);
+    root.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("button:not(:disabled)")) this.onUiSound();
+    });
     window.addEventListener("blur", () => {
       clearPressed();
       this.onAttackEnd();
@@ -289,6 +351,8 @@ export class UiController {
       this.commandPanel.classList.toggle("is-open", shopOpen);
       this.questToggle.setAttribute("aria-expanded", String(questOpen));
       shopToggle.setAttribute("aria-expanded", String(shopOpen));
+      this.questToggle.classList.toggle("is-panel-open", questOpen);
+      shopToggle.classList.toggle("is-panel-open", shopOpen);
       this.panelScrim.classList.toggle("is-active", this.touchMode && (questOpen || shopOpen));
     };
 
@@ -353,6 +417,36 @@ export class UiController {
       if (!button || button.disabled) return;
       this.onShopAction(button.dataset.category as ShopCategory, button.dataset.id ?? "");
     });
+    for (const tab of root.querySelectorAll<HTMLButtonElement>("[data-system-tab]")) {
+      bindImmediate(tab, () => this.setSystemTab(tab.dataset.systemTab as SystemTab));
+    }
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-quality]")) {
+      bindImmediate(button, () => this.updateSettings({ quality: button.dataset.quality as PlayerSettings["quality"] }));
+    }
+    bindImmediate(this.settingsButton, () => this.setSystemMenuOpen(true));
+    bindImmediate(get<HTMLButtonElement>("system-menu-close"), () => this.setSystemMenuOpen(false));
+    bindImmediate(get<HTMLButtonElement>("resume-button"), () => this.setSystemMenuOpen(false));
+    bindImmediate(this.muteButton, () => this.updateSettings({ muted: !this.settings.muted }));
+    bindImmediate(this.shakeButton, () => this.updateSettings({ screenShake: !this.settings.screenShake }));
+    bindImmediate(get<HTMLButtonElement>("reset-save-open"), () => {
+      this.resetConfirm.hidden = false;
+      get<HTMLButtonElement>("reset-save-cancel").focus();
+    });
+    bindImmediate(get<HTMLButtonElement>("reset-save-cancel"), () => {
+      this.resetConfirm.hidden = true;
+      get<HTMLButtonElement>("reset-save-open").focus();
+    });
+    bindImmediate(get<HTMLButtonElement>("reset-save-confirm"), () => this.onReset());
+    const updateVolume = (key: "masterVolume" | "sfxVolume", input: HTMLInputElement): void => {
+      this.updateSettings({ [key]: Number(input.value) / 100 });
+    };
+    this.masterVolume.addEventListener("input", () => updateVolume("masterVolume", this.masterVolume));
+    this.sfxVolume.addEventListener("input", () => updateVolume("sfxVolume", this.sfxVolume));
+    this.systemMenu.addEventListener("pointerdown", (event) => {
+      if (event.target === this.systemMenu) this.setSystemMenuOpen(false);
+    });
+    window.addEventListener("keydown", (event) => this.handleSystemMenuKey(event));
+    this.syncSettingsControls();
   }
 
   setLoading(progress: number, text: string): void {
@@ -369,6 +463,89 @@ export class UiController {
   enterGame(): void {
     this.intro.classList.add("is-leaving");
     window.setTimeout(() => this.intro.remove(), 900);
+  }
+
+  private setSystemMenuOpen(open: boolean): void {
+    if (this.systemMenuOpen === open) return;
+    this.systemMenuOpen = open;
+    if (open) {
+      this.focusBeforeMenu = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      this.systemMenu.hidden = false;
+      this.settingsButton.setAttribute("aria-expanded", "true");
+      document.documentElement.classList.add("is-paused");
+      this.onPauseChange(true);
+      this.systemMenu.querySelector<HTMLButtonElement>("#resume-button")?.focus();
+    } else {
+      this.systemMenu.hidden = true;
+      this.resetConfirm.hidden = true;
+      this.settingsButton.setAttribute("aria-expanded", "false");
+      document.documentElement.classList.remove("is-paused");
+      this.onPauseChange(false);
+      this.focusBeforeMenu?.focus();
+    }
+  }
+
+  private handleSystemMenuKey(event: KeyboardEvent): void {
+    if (event.code === "Escape") {
+      event.preventDefault();
+      this.setSystemMenuOpen(!this.systemMenuOpen);
+      return;
+    }
+    if (!this.systemMenuOpen || event.code !== "Tab") return;
+    const focusable = [...this.systemMenu.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled)")]
+      .filter((element) => !element.closest<HTMLElement>("[hidden]") && element.getClientRects().length > 0);
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  private setSystemTab(tab: SystemTab): void {
+    this.activeSystemTab = tab;
+    for (const button of this.systemMenu.querySelectorAll<HTMLButtonElement>("[data-system-tab]")) {
+      const active = button.dataset.systemTab === tab;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", String(active));
+    }
+    for (const panel of this.systemMenu.querySelectorAll<HTMLElement>("[data-system-panel]")) {
+      const active = panel.dataset.systemPanel === tab;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    }
+  }
+
+  private updateSettings(patch: Partial<PlayerSettings>): void {
+    this.settings = { ...this.settings, ...patch };
+    this.syncSettingsControls();
+    this.onSettingsChange({ ...this.settings });
+  }
+
+  private syncSettingsControls(): void {
+    this.masterVolume.value = String(Math.round(this.settings.masterVolume * 100));
+    this.sfxVolume.value = String(Math.round(this.settings.sfxVolume * 100));
+    this.masterVolumeValue.value = `${this.masterVolume.value}%`;
+    this.sfxVolumeValue.value = `${this.sfxVolume.value}%`;
+    this.muteButton.setAttribute("aria-checked", String(this.settings.muted));
+    this.muteButton.querySelector("em")!.textContent = this.settings.muted ? "開啟" : "關閉";
+    this.muteButton.classList.toggle("is-active", this.settings.muted);
+    this.shakeButton.setAttribute("aria-checked", String(this.settings.screenShake));
+    this.shakeButton.querySelector("em")!.textContent = this.settings.screenShake ? "開啟" : "關閉";
+    this.shakeButton.classList.toggle("is-active", this.settings.screenShake);
+    for (const button of this.systemMenu.querySelectorAll<HTMLButtonElement>("[data-quality]")) {
+      const selected = button.dataset.quality === this.settings.quality;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    }
+    this.systemMenu.dataset.activeTab = this.activeSystemTab;
+    this.systemMenu.dataset.quality = this.settings.quality;
+    this.systemMenu.dataset.muted = String(this.settings.muted);
+    this.systemMenu.dataset.screenShake = String(this.settings.screenShake);
   }
 
   showWorldAction(target: WorldActionTarget): void {
@@ -420,7 +597,7 @@ export class UiController {
         ? `<small>暴雪警報</small><b>第 ${state.wave + 1} 波交戰中</b>`
         : state.wave >= 30
           ? `<small>北境守住了</small><b>三十波戰役完成</b>`
-          : `<small>敵情：${this.waveForecast(state.wave + 1)}</small><b>啟動第 ${state.wave + 1} 波夜襲</b>`;
+          : `<small>敵情：${getWavePlan(state.wave + 1).forecast}</small><b>啟動第 ${state.wave + 1} 波 · ${getWavePlan(state.wave + 1).title}</b>`;
     this.attackIcon.className = `asset-icon asset-icon--weapon-${state.weapon} attack-button__icon`;
     this.attackButton.querySelector("small")!.textContent = state.weapon === "smg" ? "掃射" : state.weapon === "axe" ? "橫掃" : "揮砍";
     this.updateWeaponButton(state);
@@ -698,10 +875,4 @@ export class UiController {
     requestAnimationFrame(() => this.result.classList.add("is-visible"));
   }
 
-  private waveForecast(wave: number): string {
-    if (wave % 10 === 0) return "Boss · 重型群";
-    if (wave >= 16) return "奔行者＋蠻屍";
-    if (wave >= 6) return "行屍＋奔行者";
-    return "行屍";
-  }
 }

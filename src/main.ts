@@ -1,4 +1,6 @@
 import "./styles.css";
+import { ProceduralAudio } from "./game/audio";
+import { loadSettings, saveSettings } from "./game/settings";
 import { StormGame } from "./game/StormGame";
 import { loadState, resetSave } from "./game/state";
 import { UiController } from "./game/ui";
@@ -9,8 +11,10 @@ async function bootstrap(): Promise<void> {
   if (!canvas || !root) throw new Error("Storm Apocalypse mount points are missing.");
 
   const state = loadState();
-  const ui = new UiController(root, state);
-  const game = new StormGame(canvas, ui, state);
+  const settings = loadSettings();
+  const audio = new ProceduralAudio(settings);
+  const ui = new UiController(root, state, settings);
+  const game = new StormGame(canvas, ui, state, settings, audio);
   ui.onProtagonistSelect = (id) => game.selectProtagonist(id);
   ui.onStart = () => game.start();
   ui.onAttackStart = () => game.startAttack();
@@ -20,6 +24,16 @@ async function bootstrap(): Promise<void> {
   ui.onTowerAction = (id) => game.towerAction(id);
   ui.onWeaponCycle = () => game.cycleWeapon();
   ui.onReset = () => resetSave();
+  ui.onPauseChange = (paused) => game.setPaused(paused);
+  ui.onSettingsChange = (next) => {
+    Object.assign(settings, next);
+    saveSettings(settings);
+    audio.updateSettings(settings);
+    game.applySettings(settings);
+  };
+  ui.onUiSound = () => audio.play("ui");
+  window.addEventListener("pointerdown", () => void audio.unlock(), { capture: true, once: true });
+  window.addEventListener("keydown", () => void audio.unlock(), { capture: true, once: true });
 
   try {
     await game.initialize();

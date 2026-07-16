@@ -1,4 +1,5 @@
 export type QualityLevel = "低" | "中" | "高";
+export type QualityPreference = "auto" | "low" | "medium" | "high";
 
 export interface QualitySignals {
   smokeMode: boolean;
@@ -39,4 +40,12 @@ export function detectDeviceQuality(signals: QualitySignals): QualityLevel {
     || cpuReported && cores <= 6
   ) return "中";
   return "高";
+}
+
+export function resolveQuality(preference: QualityPreference, signals: QualitySignals): QualityLevel {
+  if (signals.smokeMode && preference === "auto") return "低";
+  if (preference === "low") return "低";
+  if (preference === "medium") return "中";
+  if (preference === "high") return "高";
+  return detectDeviceQuality(signals);
 }

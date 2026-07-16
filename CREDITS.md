@@ -7,7 +7,7 @@
 | 來源 | 授權 | 目前用途與檔案 | 稽核狀態 |
 | --- | --- | --- | --- |
 | [Quaternius — Ultimate Animated Animal Pack](https://quaternius.com/packs/ultimateanimatedanimals.html) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | `public/models/cow.glb`；牧場牛與強化牛底模，保留原包骨架及 Eating／Walk／Hit／Death 等動畫 | 執行期載入中 |
-| [Quaternius — Zombie Apocalypse Kit](https://quaternius.com/packs/zombieapocalypsekit.html) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | `survivor.glb` 作獵人、`customer.glb` 作收銀員與匿名顧客；`zombie.glb` 仍在 repo，但現行敵人已改載 `custom/zombies/` | 前兩者載入中；舊殭屍未載入 |
+| [Quaternius — Zombie Apocalypse Kit](https://quaternius.com/packs/zombieapocalypsekit.html) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | `survivor.glb`、`customer.glb`、`zombie.glb` 仍保留於 repo；R8/R10 後執行期角色已改載 `public/models/custom/` | 保留但執行期未載入 |
 | [Kenney — Nature Kit](https://kenney.nl/assets/nature-kit) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | `pine-a.glb`、`pine-b.glb`、`rock.glb`、`fence.glb`、`fence-gate.glb`、`campfire-stones.glb` | 執行期載入中 |
 | [Kenney — Tower Defense Kit](https://kenney.nl/assets/tower-defense-kit) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | `public/models/tower/arrow.glb` 作弩塔箭矢；`tower-body.glb`、`tower-weapon.glb` 與 colormap 仍在 repo | 箭矢載入中；舊塔未載入 |
 | [Kenney — Holiday Kit](https://kenney.nl/assets/holiday-kit) | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | `public/models/holiday/cabin-*.glb`、`lantern.glb` 與 colormap 作雪屋；`bench.glb` 仍在 repo | 雪屋與燈籠載入中；長椅未載入 |
@@ -36,9 +36,11 @@ CC0 素材可用於個人及商業用途，署名並非授權要求；本專案�
 
 - `public/models/custom/`：三主角、四名常客、三種 R8 殭屍、Boss、塔、武器、肉舖與互動道具，由 `tools/blender/*.py` 程序建模及匯出。
 - `public/images/`：角色立繪、主選單背景、塵霧層、圖示、atlas 與 9-slice UI，由 Blender 5.1 產線渲染。
+- `public/favicon.svg`：R12 自製北境閃電圖示，使用 repo 色票與純 SVG 路徑。
+- `src/game/audio.ts`：R12 以 WebAudio oscillator、濾波 noise 與 gain envelope 即時合成八類遊戲音效；不載入外部音檔。
 - `docs/evidence/R8/`：上述模型與 UI 的 turntable、角色陣容、主選單及遊戲畫面稽核證據。
 
-R8 原創素材沒有直接搬運 Quaternius、Kenney 或其他外部模型／貼圖；第三方 CC0 模型仍以本文件列出的獨立路徑保留。現行 repo 沒有音樂、音效或內嵌第三方字型檔。
+R8 原創素材沒有直接搬運 Quaternius、Kenney 或其他外部模型／貼圖；第三方 CC0 模型仍以本文件列出的獨立路徑保留。現行 repo 沒有音樂、外部音效檔或內嵌第三方字型檔；R12 音效全部在瀏覽器內即時合成，無新增授權依賴。
 
 ## 維護方式
 
