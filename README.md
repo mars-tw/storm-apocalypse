@@ -8,7 +8,7 @@
 
 **[立即線上遊玩](https://mars-tw.github.io/storm-apocalypse/)**
 
-![三位主角與北境肉舖的 Blender 主選單場景](docs/evidence/R8/after-menu-background.png)
+[![暴風啟示錄封面：誰來走進暴風](assets/cover.png)](https://mars-tw.github.io/storm-apocalypse/)
 
 ## 最新特色
 
