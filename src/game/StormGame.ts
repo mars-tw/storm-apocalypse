@@ -267,7 +267,9 @@ export class StormGame {
     this.state.quality = this.detectQuality(this.settings.quality);
     const lowQuality = this.state.quality === "低";
     const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
-    this.renderPixelRatio = lowQuality
+    this.renderPixelRatio = this.smokeMode
+      ? 0.5
+      : lowQuality
       ? Math.min(1, devicePixelRatio)
       : this.state.quality === "中"
         ? Math.min(1, devicePixelRatio)

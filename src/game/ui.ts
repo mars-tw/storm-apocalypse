@@ -107,6 +107,8 @@ export class UiController {
   private activeSystemTab: SystemTab = "game";
   private systemMenuOpen = false;
   private focusBeforeMenu: HTMLElement | null = null;
+  private promptSignature = "";
+  private promptTimer: number | undefined;
   private settings: PlayerSettings;
 
   onStart: () => void = () => undefined;
@@ -131,7 +133,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R12";
+    root.dataset.uiVersion = "R12.1";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -167,11 +169,12 @@ export class UiController {
           <div class="resource resource--gold"><span>✦</span><div><small>資金</small><b id="hud-money">35</b></div></div>
           <div class="resource"><span>🥩</span><div><small>背包</small><b id="hud-meat">0 / 6</b></div></div>
           <div class="resource"><span>▤</span><div><small>攤位存貨</small><b id="hud-stock">0 / 6</b></div></div>
+          <button class="panel-toggle panel-toggle--shop" id="shop-toggle" aria-label="開關整備商店" aria-controls="command-panel" aria-expanded="false">整備</button>
         </div>
         <div class="hud-status"><div class="wave-chip"><small>30 波戰役</small><b id="hud-wave">黎明 · 0 / 30</b></div><span class="protagonist-status" id="protagonist-status"></span><small id="performance-chip">高畫質</small><button class="settings-button" id="settings-button" type="button" aria-label="開啟暫停與設定" aria-controls="system-menu" aria-expanded="false"><span aria-hidden="true">⚙</span></button></div>
+        <button class="panel-toggle panel-toggle--quest" id="quest-toggle" aria-label="開關生存手冊" aria-controls="quest-panel" aria-expanded="false">手冊 01 · 0/1</button>
       </header>
 
-      <button class="panel-toggle panel-toggle--quest" id="quest-toggle" aria-label="開關生存手冊" aria-controls="quest-panel" aria-expanded="false">手冊 01 · 0/1</button>
       <div class="panel-scrim" id="panel-scrim" aria-hidden="true"></div>
       <aside class="quest-panel" id="quest-panel">
         <div class="quest-panel__line"><span id="quest-chapter">生存手冊 · 01 / 15</span><i></i><button id="quest-close" aria-label="收合生存手冊">×</button></div>
@@ -186,7 +189,6 @@ export class UiController {
         </section>
       </aside>
 
-      <button class="panel-toggle panel-toggle--shop" id="shop-toggle" aria-label="開關整備商店" aria-controls="command-panel" aria-expanded="false">整備</button>
       <aside class="command-panel" id="command-panel">
         <div class="command-panel__head"><div><small>北境補給站</small><b>武裝與自動化</b></div><button id="shop-close" aria-label="關閉整備商店">×</button></div>
         <div class="command-tabs" role="tablist" aria-label="整備分類">${shopTabs}</div>
@@ -196,7 +198,7 @@ export class UiController {
         <section id="shop-section-expansion" class="shop-section" data-shop-section="expansion" role="tabpanel" hidden><h3>牧場擴張</h3><button class="shop-item" data-category="pasture" data-id="pasture2">${icon("skill-butcher", "shop-item__icon")}<span class="shop-item__copy"><b>炸開牧場 2</b><small>強化牛 · 生命 9 · 掉落 6 肉</small></span><em data-price="pasture-pasture2"></em></button></section>
       </aside>
 
-      <div class="context-prompt" id="context-prompt"><kbd>${promptKey}</kbd><span>${promptHint}</span></div>
+      <div class="context-prompt" id="context-prompt" role="status" aria-live="polite"><kbd>${promptKey}</kbd><span>${promptHint}</span></div>
       <div class="bottom-controls">
         <div class="joystick" aria-label="移動搖桿"><span class="joystick__ring"></span><span class="joystick__knob"></span></div>
         <div class="combat-dock">
@@ -242,7 +244,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R12 · 程序化 WebAudio · 本機存檔</p>
+              <p class="system-note">R12.1 · 程序化 WebAudio · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
@@ -384,6 +386,10 @@ export class UiController {
     }
     this.startButton.addEventListener("click", () => {
       if (this.requiresProtagonistSelection) this.onProtagonistSelect(this.selectedProtagonist);
+      if (this.touchMode) {
+        this.promptSignature = "";
+        this.setPrompt(promptKey, promptHint, true);
+      }
       this.onStart();
     });
     this.attackButton.addEventListener("pointerdown", (event) => {
@@ -843,8 +849,24 @@ export class UiController {
   }
 
   setPrompt(key: string, text: string, visible = true): void {
+    const signature = `${key}\u0000${text}`;
+    if (!visible) {
+      window.clearTimeout(this.promptTimer);
+      this.prompt.classList.remove("is-visible");
+      return;
+    }
+    if (signature === this.promptSignature) return;
+    this.promptSignature = signature;
     this.prompt.innerHTML = `<kbd>${key}</kbd><span>${text}</span>`;
-    this.prompt.classList.toggle("is-visible", visible);
+    if (!this.touchMode) {
+      this.prompt.classList.add("is-visible");
+      return;
+    }
+    window.clearTimeout(this.promptTimer);
+    this.prompt.classList.remove("is-visible");
+    void this.prompt.offsetWidth;
+    this.prompt.classList.add("is-visible");
+    this.promptTimer = window.setTimeout(() => this.prompt.classList.remove("is-visible"), 3000);
   }
 
   toast(message: string, tone: "warm" | "danger" | "ice" = "warm"): void {

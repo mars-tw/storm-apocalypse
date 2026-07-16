@@ -341,6 +341,75 @@ async function checkControlSpacing(page, label) {
   record(label, "visible buttons do not overlap and keep 8px spacing", valid, pairs.join(", "));
 }
 
+async function checkMobileHudMutualExclusion(page, label) {
+  const result = await page.evaluate(() => {
+    const candidates = [...new Set(document.querySelectorAll([
+      "button",
+      "input",
+      "select",
+      "textarea",
+      "a[href]",
+      "[role=button]",
+      ".joystick",
+      ".resource",
+      ".wave-chip",
+      ".protagonist-status",
+      ".context-prompt",
+      ".toast",
+    ].join(",")))];
+    const isVisible = (element) => {
+      let current = element;
+      while (current) {
+        const style = getComputedStyle(current);
+        if (style.display === "none" || style.visibility === "hidden" || Number(style.opacity) <= 0.01) return false;
+        current = current.parentElement;
+      }
+      const rect = element.getBoundingClientRect();
+      return rect.width > 0
+        && rect.height > 0
+        && rect.right > 0
+        && rect.bottom > 0
+        && rect.left < window.innerWidth
+        && rect.top < window.innerHeight;
+    };
+    const describe = (element) => element.id
+      ? `#${element.id}`
+      : element.getAttribute("data-tower-dock")
+        ? `[data-tower-dock=${element.getAttribute("data-tower-dock")}]`
+        : element.classList.length > 0
+          ? `.${[...element.classList].join(".")}`
+          : element.tagName.toLowerCase();
+    const visible = candidates.filter(isVisible).map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        element,
+        name: describe(element),
+        rect: {
+          left: rect.left,
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+        },
+      };
+    });
+    const collisions = [];
+    for (let left = 0; left < visible.length; left += 1) {
+      for (let right = left + 1; right < visible.length; right += 1) {
+        const a = visible[left];
+        const b = visible[right];
+        if (a.element.contains(b.element) || b.element.contains(a.element)) continue;
+        const overlapX = Math.min(a.rect.right, b.rect.right) - Math.max(a.rect.left, b.rect.left);
+        const overlapY = Math.min(a.rect.bottom, b.rect.bottom) - Math.max(a.rect.top, b.rect.top);
+        if (overlapX > 8 && overlapY > 8) {
+          collisions.push(`${a.name}/${b.name}=${overlapX.toFixed(1)}×${overlapY.toFixed(1)}px`);
+        }
+      }
+    }
+    return { count: visible.length, collisions, viewport: `${window.innerWidth}×${window.innerHeight}` };
+  });
+  record(label, "mobile HUD mutex rejects visible overlaps over 8px", result.collisions.length === 0, JSON.stringify(result));
+}
+
 async function measureR11Controls(page, config, consoleErrors) {
   const selectors = [
     { name: "tower-ballista", selector: '[data-tower-dock="ballista"]' },
@@ -913,7 +982,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R12 UI version marker", uiVersion === "R12", `ui=${uiVersion}`);
+  record(label, "R12.1 UI version marker", uiVersion === "R12.1", `ui=${uiVersion}`);
 
   const towerButtons = page.locator("[data-tower-dock]");
   const towerButtonCount = await towerButtons.count();
@@ -990,6 +1059,7 @@ async function runCombat(browser, config) {
       await checkR11DesktopViewports(page, consoleErrors);
     }
     if (config.touch && config.viewport.width === 390 && config.viewport.height === 844) {
+      await checkMobileHudMutualExclusion(page, "HUD mutex 390×844");
       await measureR11Controls(page, { label: "R11 controls 390x844", viewport: config.viewport, touch: true }, consoleErrors);
       await checkR12SystemMenu(page, "R12 menu 390x844");
     }
@@ -1068,6 +1138,7 @@ async function runLayout(browser, viewport) {
       record(label, "visual capture", Boolean(screenshotPath), screenshotPath ?? "no screenshot");
       return;
     }
+    await checkMobileHudMutualExclusion(page, "HUD mutex 844×390");
     await checkControlSpacing(page, label);
     await checkTouchLayout(page, label);
     await checkR9UX(page, label, true);
