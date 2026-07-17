@@ -12,7 +12,9 @@ import {
   Engine,
   GlowLayer,
   HemisphericLight,
+  Layer,
   LoadAssetContainerAsync,
+  Material,
   Matrix,
   Mesh,
   MeshBuilder,
@@ -96,6 +98,14 @@ interface MeatDrop {
   expiresAt: number;
 }
 
+interface TransientCombatVfx {
+  mesh: Mesh;
+  age: number;
+  duration: number;
+  startScale: number;
+  endScale: number;
+}
+
 interface Projectile {
   root: TransformNode;
   target: ZombieActor;
@@ -160,12 +170,45 @@ const R10_ANONYMOUS_CUSTOMERS: ReadonlyArray<{ id: AnonymousCustomerVariant; mod
   { id: "anonymous-refugee", model: "custom/characters/customer-refugee.glb" },
 ];
 
+const R13_WORLD_MODELS = {
+  cowBrown: "custom/world/cow-brown.glb",
+  cowStrong: "custom/world/cow-strong.glb",
+  pines: [
+    "custom/world/pine-sentinel.glb",
+    "custom/world/pine-windswept.glb",
+    "custom/world/pine-young.glb",
+  ],
+  rocks: ["custom/world/rock-shelf.glb", "custom/world/rock-spire.glb"],
+  fence: "custom/world/fence-rail.glb",
+  gate: "custom/world/fence-gate.glb",
+  snowhouse: "custom/world/snowhouse-shell.glb",
+  snowhouseDoor: "custom/world/snowhouse-door.glb",
+  snowhouseWindow: "custom/world/snowhouse-window.glb",
+} as const;
+
+const R13_VFX_FILES = [
+  "snow-burst-a.png", "snow-burst-b.png",
+  "wood-splinter-a.png", "wood-splinter-b.png",
+  "health-warning-a.png", "health-warning-b.png",
+  "impact-decal-a.png", "impact-decal-b.png",
+] as const;
+
+const STATIC_MATERIAL_BATCH_FILES = new Set([
+  "custom/butcher-stall.glb",
+  "custom/cash-register.glb",
+  "custom/doghouse.glb",
+  "holiday/cabin-wreath.glb",
+  "holiday/lantern.glb",
+  "campfire-stones.glb",
+]);
+
 const ASSET_FILES = [
-  "cow.glb",
   ...R8_ZOMBIE_MODELS,
-  "pine-a.glb", "pine-b.glb", "rock.glb",
-  "fence.glb", "fence-gate.glb", "holiday/cabin-wall.glb", "holiday/cabin-wreath.glb",
-  "holiday/cabin-window.glb", "holiday/cabin-door.glb", "holiday/cabin-roof.glb", "holiday/cabin-roof-point.glb",
+  R13_WORLD_MODELS.cowBrown, R13_WORLD_MODELS.cowStrong,
+  ...R13_WORLD_MODELS.pines, ...R13_WORLD_MODELS.rocks,
+  R13_WORLD_MODELS.fence, R13_WORLD_MODELS.gate,
+  R13_WORLD_MODELS.snowhouse, R13_WORLD_MODELS.snowhouseDoor, R13_WORLD_MODELS.snowhouseWindow,
+  "holiday/cabin-wreath.glb",
   "holiday/lantern.glb", "tower/arrow.glb", "campfire-stones.glb",
   "custom/butcher-stall.glb", "custom/cash-register.glb", "custom/doghouse.glb",
   "custom/tower-ballista.glb", "custom/tower-frost.glb", "custom/tower-cannon.glb",
@@ -173,7 +216,6 @@ const ASSET_FILES = [
   "custom/meat-slice.glb", "custom/coin.glb", "custom/boss-zombie.glb",
   ...Object.values(R10_STAFF_MODELS),
   ...R10_ANONYMOUS_CUSTOMERS.map((entry) => entry.model),
-  "custom/strong-cow-accessories.glb",
   ...PROTAGONISTS.map((entry) => entry.model),
   ...NAMED_CUSTOMERS.map((entry) => entry.model),
 ] as const;
@@ -205,6 +247,11 @@ export class StormGame {
   private readonly shopLight: PointLight;
   private snowParticles?: ParticleSystem;
   private readonly ambientParticles: ParticleSystem[] = [];
+  private readonly combatVfxTextures = new Map<string, Texture>();
+  private readonly combatVfxMaterials = new Map<string, StandardMaterial>();
+  private readonly combatVfx: TransientCombatVfx[] = [];
+  private readonly combatVfxPool: Mesh[] = [];
+  private readonly damageWarningLayers: Layer[] = [];
   private blobShadowMaterial?: StandardMaterial;
   private player!: Actor;
   private cow!: CowActor;
@@ -229,6 +276,10 @@ export class StormGame {
   private pendingPlayerAttack?: PendingPlayerAttack;
   private damageEventCount = 0;
   private lastDamageAt = 0;
+  private vfxEventCount = 0;
+  private lastVfxAt = -10;
+  private vfxVariant = 0;
+  private damageWarningSerial = 0;
   private deduplicatedMaterials = 0;
   private spawnTimer = 0;
   private enemiesToSpawn = 0;
@@ -249,6 +300,9 @@ export class StormGame {
   private lowFpsSamples = 0;
   private performanceTier = 0;
   private blobShadowsActive = false;
+  private blobShadowSource?: Mesh;
+  private readonly zombieTypeRingSources = new Map<ZombieType, Mesh>();
+  private zombieBrutePlateSource?: Mesh;
   private renderPixelRatio = 1;
   private paused = false;
   private cameraShake = 0;
@@ -274,9 +328,12 @@ export class StormGame {
       : this.state.quality === "中"
         ? Math.min(1, devicePixelRatio)
         : Math.min(1.25, devicePixelRatio);
-    this.engine = new Engine(canvas, !lowQuality, {
-      preserveDrawingBuffer: !lowQuality,
-      stencil: !lowQuality,
+    // High quality already owns FXAA and 2x post-process sampling. Avoid a
+    // second context-level AA path plus retained framebuffer/stencil buffers;
+    // they add cost but no visible benefit to this forward-rendered scene.
+    this.engine = new Engine(canvas, false, {
+      preserveDrawingBuffer: false,
+      stencil: false,
       powerPreference: "high-performance",
     }, false);
     // Hardware scaling is the inverse of the desired pixel ratio in Babylon.
@@ -372,6 +429,9 @@ export class StormGame {
         canvas.dataset.attackPhase = this.playerAttackPhase();
         canvas.dataset.damageEvents = this.damageEventCount.toString();
         canvas.dataset.lastDamageAt = this.lastDamageAt.toFixed(3);
+        canvas.dataset.vfxAssets = R13_VFX_FILES.length.toString();
+        canvas.dataset.vfxEvents = this.vfxEventCount.toString();
+        canvas.dataset.lastVfxAt = this.lastVfxAt.toFixed(3);
         canvas.dataset.cowsKilled = this.state.stats.cowsKilled.toString();
         canvas.dataset.playerKills = this.state.stats.playerKills.toString();
         canvas.dataset.activeZombies = this.zombies.filter((zombie) => zombie.alive).length.toString();
@@ -451,7 +511,10 @@ export class StormGame {
       }
     };
     const loadConcurrency = this.state.quality === "低" ? 3 : 5;
-    await Promise.all(Array.from({ length: loadConcurrency }, () => loadWorker()));
+    await Promise.all([
+      ...Array.from({ length: loadConcurrency }, () => loadWorker()),
+      this.loadCombatVfx(),
+    ]);
     this.deduplicateAssetMaterials();
     this.ui.setLoading(0.86, "佈置牧場與肉舖…");
     this.buildEnvironment();
@@ -743,6 +806,132 @@ export class StormGame {
     }
   }
 
+  private async loadCombatVfx(): Promise<void> {
+    await Promise.all(R13_VFX_FILES.map((file) => new Promise<void>((resolve, reject) => {
+      const texture = new Texture(
+        `${import.meta.env.BASE_URL}images/vfx/r13/${file}`,
+        this.scene,
+        false,
+        false,
+        Texture.TRILINEAR_SAMPLINGMODE,
+        () => resolve(),
+        (message, exception) => reject(new Error(`R13 VFX texture failed: ${file} (${message ?? exception ?? "unknown"})`)),
+      );
+      texture.name = `R13 ${file}`;
+      texture.hasAlpha = true;
+      this.combatVfxTextures.set(file, texture);
+    })));
+    for (const file of ["health-warning-a.png", "health-warning-b.png"] as const) {
+      const layer = new Layer(`R13 ${file}`, null, this.scene, false, new Color4(1, 1, 1, 0.7));
+      layer.texture = this.combatVfxTextures.get(file)!;
+      layer.alphaTest = false;
+      layer.isEnabled = false;
+      this.damageWarningLayers.push(layer);
+    }
+  }
+
+  private combatVfxMaterial(file: string): StandardMaterial {
+    const existing = this.combatVfxMaterials.get(file);
+    if (existing) return existing;
+    const texture = this.combatVfxTextures.get(file)!;
+    const material = new StandardMaterial(`R13 VFX ${file}`, this.scene);
+    material.diffuseTexture = texture;
+    material.opacityTexture = texture;
+    material.emissiveTexture = texture;
+    material.useAlphaFromDiffuseTexture = true;
+    material.diffuseColor = Color3.White();
+    material.emissiveColor = Color3.White();
+    material.specularColor = Color3.Black();
+    material.backFaceCulling = false;
+    material.disableLighting = true;
+    material.freeze();
+    this.combatVfxMaterials.set(file, material);
+    return material;
+  }
+
+  private spawnBillboardVfx(file: string, position: Vector3, size: number, duration: number): void {
+    const mesh = this.acquireCombatVfxMesh(`R13-${file}-${this.vfxEventCount}`);
+    mesh.position.set(position.x, this.heightAt(position.x, position.z) + size * 0.32, position.z);
+    mesh.rotation.set(0, 0, 0);
+    mesh.billboardMode = Mesh.BILLBOARDMODE_ALL;
+    mesh.material = this.combatVfxMaterial(file);
+    mesh.visibility = 0.96;
+    mesh.scaling.setAll(size * 0.62);
+    this.combatVfx.push({ mesh, age: 0, duration, startScale: size * 0.62, endScale: size * 1.10 });
+  }
+
+  private spawnGroundDecal(position: Vector3): void {
+    const oldestDecal = this.combatVfx.findIndex((vfx) => vfx.duration > 1);
+    const decalCount = this.combatVfx.reduce((count, vfx) => count + (vfx.duration > 1 ? 1 : 0), 0);
+    const file = `impact-decal-${this.vfxVariant % 2 === 0 ? "a" : "b"}.png`;
+    const recycled = decalCount >= 6 && oldestDecal >= 0 ? this.combatVfx.splice(oldestDecal, 1)[0] : undefined;
+    const mesh = recycled?.mesh ?? this.acquireCombatVfxMesh(`R13-${file}-${this.vfxEventCount}`);
+    mesh.name = `R13-${file}-${this.vfxEventCount}`;
+    mesh.position.set(position.x, this.heightAt(position.x, position.z) + 0.045, position.z);
+    mesh.billboardMode = Mesh.BILLBOARDMODE_NONE;
+    mesh.rotation.x = Math.PI / 2;
+    mesh.rotation.y = this.vfxVariant * 1.618;
+    mesh.rotation.z = 0;
+    mesh.material = this.combatVfxMaterial(file);
+    mesh.visibility = 0.84;
+    mesh.scaling.setAll(2.55 * 0.72);
+    this.combatVfx.push({ mesh, age: 0, duration: 6.5, startScale: 2.55 * 0.72, endScale: 2.55 });
+  }
+
+  private acquireCombatVfxMesh(name: string): Mesh {
+    const mesh = this.combatVfxPool.pop() ?? MeshBuilder.CreatePlane("R13-vfx-unit-quad", { size: 1, sideOrientation: Mesh.DOUBLESIDE }, this.scene);
+    mesh.name = name;
+    mesh.isPickable = false;
+    mesh.setEnabled(true);
+    return mesh;
+  }
+
+  private triggerGroundImpactVfx(position: Vector3): void {
+    // SMG applies three damage packets on one impact frame; keep one authored
+    // visual hit instead of stacking three opaque billboards.
+    if (this.elapsed - this.lastVfxAt < 0.055) return;
+    const file = `snow-burst-${this.vfxVariant % 2 === 0 ? "a" : "b"}.png`;
+    this.vfxVariant += 1;
+    this.vfxEventCount += 1;
+    this.lastVfxAt = this.elapsed;
+    this.spawnBillboardVfx(file, position, 2.8, 0.34);
+    this.spawnGroundDecal(position);
+  }
+
+  private triggerBarrierHitVfx(position: Vector3, health: number): void {
+    const file = `wood-splinter-${this.vfxVariant % 2 === 0 ? "a" : "b"}.png`;
+    this.vfxVariant += 1;
+    this.vfxEventCount += 1;
+    this.lastVfxAt = this.elapsed;
+    this.spawnBillboardVfx(file, position.add(new Vector3(0, 0.55, 0)), health <= 35 ? 4.4 : 3.7, 0.42);
+    this.spawnGroundDecal(position);
+    const layerIndex = this.vfxVariant % this.damageWarningLayers.length;
+    const serial = ++this.damageWarningSerial;
+    for (const [index, layer] of this.damageWarningLayers.entries()) {
+      layer.isEnabled = index === layerIndex;
+      layer.color.a = health <= 35 ? 0.82 : 0.58;
+    }
+    window.setTimeout(() => {
+      if (serial === this.damageWarningSerial) this.damageWarningLayers[layerIndex].isEnabled = false;
+    }, health <= 35 ? 520 : 280);
+  }
+
+  private updateCombatVfx(dt: number): void {
+    for (let index = this.combatVfx.length - 1; index >= 0; index -= 1) {
+      const vfx = this.combatVfx[index];
+      vfx.age += dt;
+      const progress = Math.min(1, vfx.age / vfx.duration);
+      const eased = 1 - (1 - progress) * (1 - progress);
+      vfx.mesh.scaling.setAll(vfx.startScale + (vfx.endScale - vfx.startScale) * eased);
+      if (progress > 0.72) vfx.mesh.visibility = Math.max(0, (1 - progress) / 0.28);
+      if (progress < 1) continue;
+      vfx.mesh.setEnabled(false);
+      if (this.combatVfxPool.length < 16) this.combatVfxPool.push(vfx.mesh);
+      else vfx.mesh.dispose(false, false);
+      this.combatVfx.splice(index, 1);
+    }
+  }
+
   private buildEnvironment(): void {
     this.buildShop();
     this.buildPasture();
@@ -755,7 +944,7 @@ export class StormGame {
     shop.position.copyFrom(SHOP_POSITION);
     shop.position.y = this.heightAt(shop.position.x, shop.position.z);
 
-    const place = (file: string, local: Vector3, rotationY: number, scale = 2.15): TransformNode => {
+    const place = (file: string, local: Vector3, rotationY: number, scale = 1.35): TransformNode => {
       const model = this.instantiateStatic(file, `shop-${file}-${local.x}-${local.z}`);
       model.parent = shop;
       model.position.copyFrom(local);
@@ -764,20 +953,13 @@ export class StormGame {
       return model;
     };
 
-    place("holiday/cabin-door.glb", new Vector3(0, 0, 1.95), 0);
-    place("holiday/cabin-wall.glb", new Vector3(-2.15, 0, 1.95), 0);
-    place("holiday/cabin-wall.glb", new Vector3(2.15, 0, 1.95), 0);
-    place("holiday/cabin-wreath.glb", new Vector3(0, 0, -1.95), Math.PI);
-    place("holiday/cabin-window.glb", new Vector3(-2.15, 0, -1.95), Math.PI);
-    place("holiday/cabin-window.glb", new Vector3(2.15, 0, -1.95), Math.PI);
-    for (const x of [-3.15, 3.15]) {
-      for (const z of [-0.95, 1.05]) place("holiday/cabin-wall.glb", new Vector3(x, 0, z), x < 0 ? -Math.PI / 2 : Math.PI / 2);
-    }
-    for (const x of [-1.75, 0, 1.75]) place("holiday/cabin-roof.glb", new Vector3(x, 2.46, 0), 0, 1.62);
-    place("holiday/cabin-roof-point.glb", new Vector3(-3.12, 2.46, 0), 0, 1.62);
-    place("holiday/cabin-roof-point.glb", new Vector3(3.12, 2.46, 0), Math.PI, 1.62);
-    place("holiday/lantern.glb", new Vector3(-1.15, 2.25, -2.23), Math.PI, 1.25);
-    place("holiday/lantern.glb", new Vector3(1.15, 2.25, -2.23), Math.PI, 1.25);
+    place(R13_WORLD_MODELS.snowhouse, Vector3.Zero(), 0);
+    place(R13_WORLD_MODELS.snowhouseDoor, new Vector3(0, 0, -2.76), 0);
+    place(R13_WORLD_MODELS.snowhouseWindow, new Vector3(-1.55, 0.52, 2.74), Math.PI, 1.16);
+    place(R13_WORLD_MODELS.snowhouseWindow, new Vector3(3.08, 0.52, 0.25), -Math.PI / 2, 1.16);
+    place("holiday/cabin-wreath.glb", new Vector3(0, 1.55, 2.84), Math.PI, 1.45);
+    place("holiday/lantern.glb", new Vector3(-1.15, 2.30, -2.98), Math.PI, 1.08);
+    place("holiday/lantern.glb", new Vector3(1.15, 2.30, -2.98), Math.PI, 1.08);
     const stall = place("custom/butcher-stall.glb", new Vector3(0, 0, -3.05), 0, 1);
     this.tagWorldAction(stall, { type: "employee", id: "cashier" });
 
@@ -850,13 +1032,13 @@ export class StormGame {
       fencePositions.push([2.1, z, Math.PI / 2], [15.9, z, Math.PI / 2]);
     }
     for (const [x, z, rotation] of fencePositions) {
-      const fence = this.instantiateStatic("fence.glb", `pasture-fence-${x}-${z}`);
+      const fence = this.instantiateStatic(R13_WORLD_MODELS.fence, `pasture-fence-${x}-${z}`);
       fence.position.set(x, this.heightAt(x, z), z);
       fence.rotation.y = rotation;
       fence.scaling.setAll(1.55);
       this.tagWorldAction(fence, { type: "pasture", id: "pasture2" });
     }
-    const gate = this.instantiateStatic("fence-gate.glb", "pasture-gate");
+    const gate = this.instantiateStatic(R13_WORLD_MODELS.gate, "pasture-gate");
     gate.position.set(5.2, this.heightAt(5.2, -3.2), -3.2);
     gate.scaling.setAll(1.55);
     this.tagWorldAction(gate, { type: "pasture", id: "pasture2" });
@@ -882,13 +1064,16 @@ export class StormGame {
     }
     for (let index = 0; index < positions.length; index += 1) {
       const position = positions[index];
-      const tree = this.instantiateStatic(index % 3 === 0 ? "pine-b.glb" : "pine-a.glb", `snow-pine-${index}`);
+      const tree = this.instantiateStatic(R13_WORLD_MODELS.pines[index % R13_WORLD_MODELS.pines.length], `snow-pine-${index}`);
       tree.position.set(position.x, this.heightAt(position.x, position.y), position.y);
-      const scale = 1.5 + random() * 1.7;
+      // R13 pines are authored in real metres (3.15–4.9 m).  The retired
+      // Kenney sources needed a much larger instance multiplier; retaining it
+      // would create 15 m foreground trees that occlude the shop and pasture.
+      const scale = 0.82 + random() * 0.65;
       tree.scaling.set(scale * (0.92 + random() * 0.16), scale, scale * (0.92 + random() * 0.16));
       tree.rotation.y = random() * Math.PI * 2;
       if (index % 4 === 0) {
-        const rock = this.instantiateStatic("rock.glb", `forest-rock-${index}`);
+        const rock = this.instantiateStatic(R13_WORLD_MODELS.rocks[index % R13_WORLD_MODELS.rocks.length], `forest-rock-${index}`);
         rock.position.set(position.x + 1.4, this.heightAt(position.x + 1.4, position.y - 0.7), position.y - 0.7);
         rock.rotation.y = random() * Math.PI;
         rock.scaling.setAll(1.2 + random());
@@ -924,7 +1109,7 @@ export class StormGame {
     this.addActorShadows(this.player);
 
     this.cow = {
-      ...this.instantiateActor("cow.glb", "pasture-cow", PASTURE_CENTER, 0.39),
+      ...this.instantiateActor(R13_WORLD_MODELS.cowBrown, "pasture-cow", PASTURE_CENTER, 0.82),
       hp: 3,
       maxHp: 3,
       meatYield: 3,
@@ -1027,6 +1212,7 @@ export class StormGame {
   private update(dt: number): void {
     this.elapsed += dt;
     this.updateAtmosphere(dt);
+    this.updateCombatVfx(dt);
     if (!this.player) return;
     this.updateCamera(dt);
     this.updateDrops(dt);
@@ -1075,11 +1261,17 @@ export class StormGame {
           towerKills: this.waveTowerKills,
           seconds: this.state.waveActive ? Math.round((performance.now() - this.waveStartTime) / 1000) : 0,
         },
+        combatVfx: {
+          assets: R13_VFX_FILES.length,
+          events: this.vfxEventCount,
+          active: this.combatVfx.length,
+          lastAt: Number(this.lastVfxAt.toFixed(3)),
+        },
       };
     }
     this.uiUpdateTimer += dt;
     // HUD values are informational; updating the complete DOM tree at render
-    // frequency causes periodic layout frames on dense desktop scenes.  Keep
+    // frequency causes periodic layout frames on dense desktop scenes. Keep
     // gameplay/animation at full rate and publish UI state at a stable 10 Hz.
     if (this.uiUpdateTimer >= 0.1) {
       this.uiUpdateTimer = 0;
@@ -1189,6 +1381,7 @@ export class StormGame {
     cow.hp -= damage;
     this.damageEventCount += 1;
     this.lastDamageAt = this.elapsed;
+    this.triggerGroundImpactVfx(cow.root.position);
     this.playAnimation(cow, cow.hp > 0 ? "Idle_HitReact1" : "Death", false);
     if (cow.hp <= 0) this.killCow(cow);
     else this.ui.toast(`${cow.strong ? "強化牛" : "牛隻"}生命 ${cow.hp} / ${cow.maxHp}`, "danger");
@@ -1518,7 +1711,7 @@ export class StormGame {
       fenceOffsets.push([offset, -4.2, 0], [offset, 4.2, 0], [-5, offset, Math.PI / 2], [5, offset, Math.PI / 2]);
     }
     for (const [x, z, rotation] of fenceOffsets) {
-      const fence = this.instantiateStatic("fence.glb", `pasture-2-fence-${x}-${z}`);
+      const fence = this.instantiateStatic(R13_WORLD_MODELS.fence, `pasture-2-fence-${x}-${z}`);
       const px = PASTURE_2_CENTER.x + x;
       const pz = PASTURE_2_CENTER.z + z;
       fence.position.set(px, this.heightAt(px, pz), pz);
@@ -1529,7 +1722,7 @@ export class StormGame {
     const pastureRing = this.createWorldRing("pasture-2-unlocked-ring", PASTURE_2_CENTER, 9.2, new Color3(0.78, 0.29, 0.11));
     this.tagWorldAction(pastureRing, { type: "pasture", id: "pasture2" });
     this.strongCow = {
-      ...this.instantiateActor("cow.glb", "pasture-2-strong-cow", PASTURE_2_CENTER, 0.5),
+      ...this.instantiateActor(R13_WORLD_MODELS.cowStrong, "pasture-2-strong-cow", PASTURE_2_CENTER, 0.92),
       hp: 9,
       maxHp: 9,
       meatYield: 6,
@@ -1543,8 +1736,6 @@ export class StormGame {
     this.strongCow.root.position.y = this.heightAt(PASTURE_2_CENTER.x, PASTURE_2_CENTER.z);
     this.playAnimation(this.strongCow, "Eating", true);
     this.addActorShadows(this.strongCow);
-    const accessories = this.instantiateStatic("custom/strong-cow-accessories.glb", "pasture-2-strong-cow-accessories", false);
-    accessories.parent = this.strongCow.root;
   }
 
   private createStaff(id: EmployeeId): void {
@@ -1701,6 +1892,7 @@ export class StormGame {
           const damage = Math.max(0, zombie.damage - (blocked ? 1 : 0));
           this.state.baseHealth = Math.max(0, this.state.baseHealth - damage);
           this.state.stats.damageTaken += damage;
+          this.triggerBarrierHitVfx(target, this.state.baseHealth);
           zombie.attackPhase = "recovery";
           zombie.attackTimer = timings.recovery;
           if (blocked) this.ui.toast("林護理留下的繃帶穩住了壁壘 · 減免 1 傷", "ice");
@@ -1906,6 +2098,7 @@ export class StormGame {
     this.damageEventCount += 1;
     this.lastDamageAt = this.elapsed;
     this.state.stats.damageDealt += damage;
+    this.triggerGroundImpactVfx(zombie.root.position);
     this.playAnimation(zombie, "HitReact", false);
     if (zombie.hp <= 0) this.killZombie(zombie, source);
   }
@@ -2061,6 +2254,7 @@ export class StormGame {
     ) ?? root;
     const meshForwardAxis = file.startsWith("custom/characters/")
       || file.startsWith("custom/zombies/")
+      || file.startsWith("custom/world/cow-")
       || file === "custom/boss-zombie.glb"
       ? Vector3.Backward()
       : Vector3.Forward();
@@ -2086,9 +2280,29 @@ export class StormGame {
 
   private instantiateStatic(file: string, name: string, freezeEligible = true): TransformNode {
     const container = this.assets.get(file)!;
-    const entries = container.instantiateModelsToScene((source) => `${name}-${source}`, false, { doNotInstantiate: false });
+    const batchByMaterial = STATIC_MATERIAL_BATCH_FILES.has(file);
+    const entries = container.instantiateModelsToScene((source) => `${name}-${source}`, false, { doNotInstantiate: batchByMaterial });
     const root = new TransformNode(name, this.scene);
     for (const node of entries.rootNodes) node.parent = root;
+    if (batchByMaterial) {
+      const groups = new Map<number, Mesh[]>();
+      for (const mesh of root.getChildMeshes()) {
+        if (!(mesh instanceof Mesh) || mesh.getTotalVertices() === 0 || !mesh.material) continue;
+        const group = groups.get(mesh.material.uniqueId) ?? [];
+        group.push(mesh);
+        groups.set(mesh.material.uniqueId, group);
+      }
+      let batchIndex = 0;
+      for (const meshes of groups.values()) {
+        if (meshes.length < 2) continue;
+        for (const mesh of meshes) mesh.computeWorldMatrix(true);
+        const merged = Mesh.MergeMeshes(meshes, true, true, undefined, false, true);
+        if (!merged) continue;
+        merged.name = `${name}-material-batch-${batchIndex}`;
+        merged.parent = root;
+        batchIndex += 1;
+      }
+    }
     for (const mesh of root.getChildMeshes()) this.castShadows(mesh);
     root.metadata = { ...(root.metadata ?? {}), stormStatic: freezeEligible };
     return root;
@@ -2217,18 +2431,27 @@ export class StormGame {
       material.backFaceCulling = false;
       this.blobShadowMaterial = material;
     }
+    if (!this.blobShadowSource) {
+      const source = MeshBuilder.CreateDisc("shared-blob-shadow", { radius: 1, tessellation: 12 }, this.scene);
+      source.position.y = -1000;
+      source.rotation.x = Math.PI / 2;
+      source.material = this.blobShadowMaterial;
+      source.isPickable = false;
+      source.receiveShadows = false;
+      this.blobShadowSource = source;
+    }
+    this.blobShadowSource.setEnabled(true);
     const radius = root.name.includes("cow") || root.name.includes("boss")
       ? 1.08
       : root.name.includes("dog")
         ? 0.72
         : 0.62;
-    const blob = MeshBuilder.CreateDisc(`${root.name}-blob-shadow`, { radius, tessellation: 12 }, this.scene);
+    const blob = this.blobShadowSource.createInstance(`${root.name}-blob-shadow`);
     const inverseScale = 1 / Math.max(0.01, root.scaling.x);
     blob.parent = root;
     blob.position.y = 0.035 * inverseScale;
     blob.rotation.x = Math.PI / 2;
-    blob.scaling.setAll(inverseScale);
-    blob.material = this.blobShadowMaterial;
+    blob.scaling.setAll(radius * inverseScale);
     blob.isPickable = false;
     blob.receiveShadows = false;
   }
@@ -2402,9 +2625,6 @@ export class StormGame {
       brute: new Color3(0.55, 0.18, 0.12),
       boss: new Color3(0.48, 0.08, 0.26),
     };
-    const ring = MeshBuilder.CreateTorus(`${zombie.type}-type-tint`, { diameter: 1.45, thickness: zombie.type === "boss" ? 0.12 : 0.06, tessellation: 20 }, this.scene);
-    ring.parent = zombie.root;
-    ring.position.y = 0.08;
     let material = this.zombieTypeMaterials.get(zombie.type);
     if (!material) {
       material = new PBRMaterial(`${zombie.type}-shared-tint-material`, this.scene);
@@ -2414,14 +2634,31 @@ export class StormGame {
       material.freeze();
       this.zombieTypeMaterials.set(zombie.type, material);
     }
-    ring.material = material;
+    let ringSource = this.zombieTypeRingSources.get(zombie.type);
+    if (!ringSource) {
+      ringSource = MeshBuilder.CreateTorus(`shared-${zombie.type}-type-tint`, { diameter: 1.45, thickness: zombie.type === "boss" ? 0.12 : 0.06, tessellation: 20 }, this.scene);
+      ringSource.position.y = -1000;
+      ringSource.material = material;
+      ringSource.isPickable = false;
+      this.zombieTypeRingSources.set(zombie.type, ringSource);
+    }
+    const ring = ringSource.createInstance(`${zombie.type}-type-tint`);
+    ring.parent = zombie.root;
+    ring.position.y = 0.08;
+    ring.isPickable = false;
     if (zombie.type === "brute") {
+      if (!this.zombieBrutePlateSource) {
+        this.zombieBrutePlateSource = MeshBuilder.CreateBox("shared-brute-plate", { width: 0.62, height: 0.28, depth: 0.52 }, this.scene);
+        this.zombieBrutePlateSource.position.y = -1000;
+        this.zombieBrutePlateSource.material = material;
+        this.zombieBrutePlateSource.isPickable = false;
+      }
       for (const side of [-1, 1]) {
-        const plate = MeshBuilder.CreateBox(`${zombie.type}-plate-${side}`, { width: 0.62, height: 0.28, depth: 0.52 }, this.scene);
+        const plate = this.zombieBrutePlateSource.createInstance(`${zombie.type}-plate-${side}`);
         plate.parent = zombie.root;
         plate.position.set(side * 0.48, 1.65, 0);
         plate.rotation.z = side * 0.25;
-        plate.material = material;
+        plate.isPickable = false;
       }
     }
   }
@@ -2473,7 +2710,7 @@ export class StormGame {
     if (this.performanceTier === 1) this.dropExpensiveRenderingFeatures();
     // The first fallback must already satisfy the p95 frame-time gate; average
     // FPS can hide regular 33 ms frames behind enough 16 ms frames.
-    this.renderPixelRatio = this.performanceTier === 1 ? 0.65 : 0.5;
+    this.renderPixelRatio = this.performanceTier === 1 ? 0.55 : 0.4;
     this.engine.setHardwareScalingLevel(1 / this.renderPixelRatio);
     this.engine.resize();
     if (this.snowParticles) this.snowParticles.emitRate = this.performanceTier === 1 ? 24 : 12;
@@ -2483,25 +2720,39 @@ export class StormGame {
   }
 
   private dropExpensiveRenderingFeatures(): void {
-    // Keep the PCF sampler contract and its compatible depth texture alive, but
-    // stop paying for the per-frame shadow pass. Changing/removing that texture
-    // while Babylon replaces frozen effects can leave a stale shadow sampler on
-    // strict WebGL drivers. Darkness 1 hides the retained render-once map while
-    // the existing blob fallback preserves the R6 degraded visual result.
+    // Recompile frozen PBR effects once without shadow defines, then freeze
+    // them again after the render. Actor blobs preserve contact/readability.
     this.blobShadowsActive = true;
+    this.scene.shadowsEnabled = false;
     if (this.shadows) {
-      this.shadows.setDarkness(1);
-      const shadowMap = this.shadows.getShadowMap();
-      if (shadowMap) {
-        shadowMap.refreshRate = 0;
-        shadowMap.resetRefreshCounter();
-      }
+      const realtimeShadows = this.shadows;
+      this.shadows = undefined;
+      realtimeShadows.dispose();
+    }
+    this.refreshFrozenMaterialEffects();
+    for (const mesh of this.scene.meshes) mesh.receiveShadows = false;
+    // The desktop camera exposes most of the forest ring at once. Keep a clear
+    // low-poly silhouette while reducing only non-interactive detail; fences,
+    // actors, physics/colliders, interactions, and combat state stay intact.
+    for (const node of this.scene.transformNodes) {
+      const pine = /^snow-pine-(\d+)$/u.exec(node.name);
+      const rock = /^forest-rock-(\d+)$/u.exec(node.name);
+      const cull = (pine && Number(pine[1]) % 9 !== 0) || (rock && Number(rock[1]) % 16 !== 0);
+      if (!cull || !node.isEnabled()) continue;
+      node.metadata = { ...(node.metadata ?? {}), r13AdaptiveCulled: true };
+      node.setEnabled(false);
+    }
+    const adaptiveMeshCull = /(?:shop-holiday\/(?:cabin-wreath|lantern)\.glb|checkout-coin-|warm-window-|shop-campfire-stones|shop-custom\/butcher-stall\.glb-(?:CanopyStripe[135]|CounterBrace|FloorPlank|HamFat|Hook(?:Drop)?|PostBrace|PriceCoin|PriceMark)|butcher-checkout-(?:CrankHandle|DrawerPull|Key|Lamp)|shepherd-doghouse-(?:BackPlankSeam|Bone|DoorPost|Runner)|ballista-custom-tower-(?:LegBolt|RailCap|RuneSpoke|WindlassCrank|WindlassDrum|BowPlate|BowTip|BowInner|DeckRail|CrossBrace|SplayedLeg[13]|StoneStep|RuneInlay|BoltFletching)|frost-custom-tower-(?:OrbitShard[135]|FrostRune|GroundShard|CoreBand[AB]|SnowStep)|cannon-custom-tower-(?:TurntableTooth|FlameTongue[12]|BrazierGuard|CradlePin|TrunnionCap|FuseSocket|RecoilStop))/u;
+    for (const mesh of this.scene.meshes) {
+      if (!adaptiveMeshCull.test(mesh.name) || !mesh.isEnabled()) continue;
+      mesh.metadata = { ...(mesh.metadata ?? {}), r13AdaptiveCulled: true };
+      mesh.setEnabled(false);
     }
     this.cinematicPipeline?.dispose();
     this.cinematicPipeline = undefined;
     this.glow?.dispose();
     this.glow = undefined;
-    this.shopLight.intensity = Math.min(this.shopLight.intensity, 8);
+    this.shopLight.setEnabled(false);
 
     const actors: Actor[] = [
       ...(this.player ? [this.player] : []),
@@ -2531,6 +2782,18 @@ export class StormGame {
 
   private restoreRealtimeRendering(level: Exclude<QualityLevel, "低">): void {
     this.blobShadowsActive = false;
+    this.scene.shadowsEnabled = true;
+    this.shopLight.setEnabled(true);
+    for (const node of this.scene.transformNodes) {
+      if (!node.metadata?.r13AdaptiveCulled) continue;
+      node.setEnabled(true);
+      delete node.metadata.r13AdaptiveCulled;
+    }
+    for (const mesh of this.scene.meshes) {
+      if (!mesh.metadata?.r13AdaptiveCulled) continue;
+      mesh.setEnabled(true);
+      delete mesh.metadata.r13AdaptiveCulled;
+    }
     if (!this.shadows) {
       this.shadows = new ShadowGenerator(level === "中" ? 1024 : 2048, this.sun, true);
       this.shadows.usePercentageCloserFiltering = true;
@@ -2552,6 +2815,7 @@ export class StormGame {
       }
       this.castShadows(mesh);
     }
+    this.refreshFrozenMaterialEffects();
     if (!this.glow) {
       this.glow = new GlowLayer("warm-window-glow", this.scene, { mainTextureFixedSize: 512, blurKernelSize: 48 });
       this.glow.intensity = 0.48;
@@ -2568,6 +2832,17 @@ export class StormGame {
       this.cinematicPipeline.imageProcessing.exposure = 1.15;
     }
     this.cinematicPipeline.samples = level === "高" ? 2 : 1;
+  }
+
+  private refreshFrozenMaterialEffects(): void {
+    const materials = this.scene.materials.filter((material) => !material.name.includes("attack-ring") && !material.name.includes("blast"));
+    for (const material of materials) {
+      material.unfreeze();
+      material.markAsDirty(Material.AllDirtyFlag);
+    }
+    this.scene.onAfterRenderObservable.addOnce(() => {
+      for (const material of materials) material.freeze();
+    });
   }
 
   private detectQuality(preference: QualityPreference): QualityLevel {

@@ -1,0 +1,507 @@
+{
+  "release": "storm R13",
+  "pipeline": {
+    "authoring": "Blender MCP execute_code over localhost:9876",
+    "source": "tools/blender/world_r13.py",
+    "blender": "5.1",
+    "view_transform": "AgX",
+    "look": "AgX Base",
+    "exposure_ev": 1.25,
+    "lighting": "R8 warm key / cold fill / ember rim / cold bounce",
+    "material_response": "R8 COLOR_0 vertical value breakup with roughness-separated PBR surfaces",
+    "units": "meters",
+    "format": "GLB 2.0 Y-up"
+  },
+  "counts": {
+    "total": 12,
+    "cow": 2,
+    "pine": 3,
+    "rock": 2,
+    "fence": 2,
+    "snowhouse": 3
+  },
+  "all_gates_pass": true,
+  "assets": [
+    {
+      "path": "models/custom/world/cow-brown.glb",
+      "category": "cow",
+      "bytes": 379016,
+      "sha256": "aa12f49ab55b5b5ca52dcf5318d998c41a48a562fadcd9c5edb2476f07e6c446",
+      "triangles": 2180,
+      "triangle_budget": [
+        1600,
+        3000
+      ],
+      "bones": 19,
+      "clips": [
+        "idle",
+        "Eating",
+        "Walk",
+        "Idle_HitReact1",
+        "Death"
+      ],
+      "materials": [
+        {
+          "name": "R13 Cow Brown Hide",
+          "roughness": 0.8999999761581421,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Ice Teal Ear Tag",
+          "roughness": 0.47999998927116394,
+          "metallic": 0.18000000715255737
+        },
+        {
+          "name": "R13 Cow Shared Amber Eye",
+          "roughness": 0.3799999952316284,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Cream Patch",
+          "roughness": 0.9399999976158142,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Bone Horn",
+          "roughness": 0.8199999928474426,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Warm Muzzle",
+          "roughness": 0.8600000143051147,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Shared Hoof",
+          "roughness": 0.7400000095367432,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/cow-strong.glb",
+      "category": "cow",
+      "bytes": 397420,
+      "sha256": "5117ea07f5e74e1a71f175aa578f5f807bae5c6068fbf7273c4a8bac228225e5",
+      "triangles": 2352,
+      "triangle_budget": [
+        1600,
+        3000
+      ],
+      "bones": 19,
+      "clips": [
+        "idle",
+        "Eating",
+        "Walk",
+        "Idle_HitReact1",
+        "Death"
+      ],
+      "materials": [
+        {
+          "name": "R13 Cow Strong Charcoal Hide",
+          "roughness": 0.9100000262260437,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Ember Collar",
+          "roughness": 0.46000000834465027,
+          "metallic": 0.36000001430511475
+        },
+        {
+          "name": "R13 Cow Shared Amber Eye",
+          "roughness": 0.3799999952316284,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Strong Frost Patch",
+          "roughness": 0.949999988079071,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Strong Horn",
+          "roughness": 0.800000011920929,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Strong Muzzle",
+          "roughness": 0.8600000143051147,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Cow Shared Hoof",
+          "roughness": 0.7400000095367432,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/pine-sentinel.glb",
+      "category": "pine",
+      "bytes": 35500,
+      "sha256": "a2ee9f30c233c6eda5d434d0e3930935c0f61488713a371d9ba595869fb5dd24",
+      "triangles": 380,
+      "triangle_budget": [
+        250,
+        650
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Pine Sentinel Needles",
+          "roughness": 0.9599999785423279,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Bark",
+          "roughness": 0.9399999976158142,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Cut",
+          "roughness": 0.8899999856948853,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Snow",
+          "roughness": 0.9800000190734863,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/pine-windswept.glb",
+      "category": "pine",
+      "bytes": 35564,
+      "sha256": "6b8b96e5d53d540fab7759d05d9754565b63786c93378b0f7dc525d91dd0dee1",
+      "triangles": 380,
+      "triangle_budget": [
+        250,
+        650
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Pine Windswept Needles",
+          "roughness": 0.9599999785423279,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Bark",
+          "roughness": 0.9399999976158142,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Cut",
+          "roughness": 0.8899999856948853,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Snow",
+          "roughness": 0.9800000190734863,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/pine-young.glb",
+      "category": "pine",
+      "bytes": 30348,
+      "sha256": "ebbeeef0feb1733b395335416f65aa80db0806c7d1258b21d04c810d3241e432",
+      "triangles": 316,
+      "triangle_budget": [
+        220,
+        600
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Pine Young Needles",
+          "roughness": 0.9599999785423279,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Bark",
+          "roughness": 0.9399999976158142,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Cut",
+          "roughness": 0.8899999856948853,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Pine Snow",
+          "roughness": 0.9800000190734863,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/rock-shelf.glb",
+      "category": "rock",
+      "bytes": 34424,
+      "sha256": "809f32256993b404f749fae30e1438c4170c8af6df1987d71a105429a78ad4b6",
+      "triangles": 262,
+      "triangle_budget": [
+        180,
+        500
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Rock Shelf Stone",
+          "roughness": 0.9100000262260437,
+          "metallic": 0.019999999552965164
+        },
+        {
+          "name": "R13 Shared Rock Fracture",
+          "roughness": 0.8799999952316284,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Rock Snow",
+          "roughness": 0.9800000190734863,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/rock-spire.glb",
+      "category": "rock",
+      "bytes": 36604,
+      "sha256": "4bbfbba4d01f5ba8fa3ffa84db4fcd4653d946d234710f22f2f99b3b4d0565fe",
+      "triangles": 268,
+      "triangle_budget": [
+        180,
+        500
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Rock Spire Stone",
+          "roughness": 0.9100000262260437,
+          "metallic": 0.019999999552965164
+        },
+        {
+          "name": "R13 Shared Rock Fracture",
+          "roughness": 0.8799999952316284,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Rock Snow",
+          "roughness": 0.9800000190734863,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/fence-rail.glb",
+      "category": "fence",
+      "bytes": 38160,
+      "sha256": "55077d4b4de59316a167522a3455dffefd29a16209e6d87af7b21d33c499e5e3",
+      "triangles": 352,
+      "triangle_budget": [
+        220,
+        600
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Shared Fence Cut Wood",
+          "roughness": 0.8899999856948853,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Fence Snow",
+          "roughness": 0.9800000190734863,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Fence Weathered Wood",
+          "roughness": 0.9300000071525574,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/fence-gate.glb",
+      "category": "fence",
+      "bytes": 37076,
+      "sha256": "fad197370c90922701abb22a0c9c5bfeacc8d86646ae4bb48821e3429328241c",
+      "triangles": 348,
+      "triangle_budget": [
+        220,
+        650
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Shared Fence Cut Wood",
+          "roughness": 0.8899999856948853,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Fence Iron",
+          "roughness": 0.3799999952316284,
+          "metallic": 0.7200000286102295
+        },
+        {
+          "name": "R13 Shared Fence Snow",
+          "roughness": 0.9800000190734863,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Shared Fence Weathered Wood",
+          "roughness": 0.9300000071525574,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/snowhouse-shell.glb",
+      "category": "snowhouse",
+      "bytes": 55736,
+      "sha256": "923f9366b4fec9f8462284d8148532c8fccdcc7b55282bb1d4f537654ba56eae",
+      "triangles": 500,
+      "triangle_budget": [
+        350,
+        900
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Snowhouse Foundation",
+          "roughness": 0.9100000262260437,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Snowhouse Frost Plaster",
+          "roughness": 0.9700000286102295,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Snowhouse Roof Charcoal",
+          "roughness": 0.8899999856948853,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Snowhouse Roof Snow",
+          "roughness": 0.9900000095367432,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Snowhouse Timber",
+          "roughness": 0.9200000166893005,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/snowhouse-door.glb",
+      "category": "snowhouse",
+      "bytes": 39168,
+      "sha256": "9bbb9581d6982ebaa6baafc752f2191e799c765723a5095dd55a7f75b7570885",
+      "triangles": 336,
+      "triangle_budget": [
+        220,
+        600
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Snowhouse Door Brass",
+          "roughness": 0.3400000035762787,
+          "metallic": 0.699999988079071
+        },
+        {
+          "name": "R13 Snowhouse Door Iron",
+          "roughness": 0.36000001430511475,
+          "metallic": 0.7400000095367432
+        },
+        {
+          "name": "R13 Snowhouse Door Oxblood",
+          "roughness": 0.8600000143051147,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Snowhouse Door Snow",
+          "roughness": 0.9900000095367432,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Snowhouse Door Timber",
+          "roughness": 0.9100000262260437,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    },
+    {
+      "path": "models/custom/world/snowhouse-window.glb",
+      "category": "snowhouse",
+      "bytes": 30896,
+      "sha256": "95443a8b741b11d83a7a175a3059612190e71acdb2d96d6efce1431723614447",
+      "triangles": 256,
+      "triangle_budget": [
+        180,
+        500
+      ],
+      "bones": 0,
+      "clips": [],
+      "materials": [
+        {
+          "name": "R13 Snowhouse Warm Glass",
+          "roughness": 0.25999999046325684,
+          "metallic": 0.019999999552965164
+        },
+        {
+          "name": "R13 Snowhouse Window Iron",
+          "roughness": 0.3799999952316284,
+          "metallic": 0.7200000286102295
+        },
+        {
+          "name": "R13 Snowhouse Window Snow",
+          "roughness": 0.9900000095367432,
+          "metallic": 0
+        },
+        {
+          "name": "R13 Snowhouse Window Timber",
+          "roughness": 0.9100000262260437,
+          "metallic": 0
+        }
+      ],
+      "color_0_on_all_primitives": true,
+      "pass": true
+    }
+  ]
+}

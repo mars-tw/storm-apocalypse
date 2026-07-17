@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdir, readFile, stat } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -16,8 +17,10 @@ const scenarioFilter = process.env.SMOKE_SCENARIO;
 const heroOnly = scenarioFilter === "heroes";
 const loadTimeout = 180_000;
 const screenshotDir = process.env.SMOKE_SCREENSHOT_DIR;
+const outputPath = process.env.SMOKE_OUTPUT ? resolve(root, process.env.SMOKE_OUTPUT) : undefined;
 const captureOnly = process.env.SMOKE_CAPTURE_ONLY === "1";
 const headedOnly = process.argv.includes("--headed") || process.env.SMOKE_HEADED === "1";
+const angleBackend = process.env.SMOKE_ANGLE ?? "swiftshader";
 const results = [];
 let server;
 
@@ -271,25 +274,118 @@ async function checkR10Assets() {
   record("assets/R10", "staff, customer variants and articulated dog meet the R10 geometry, clip and forward contract", valid, details.join(", "));
 
   try {
-    const meta = await readGlbMetadata("public/models/custom/strong-cow-accessories.glb");
-    const authoredParts = ["StrongCowHornBaseL", "StrongCowHornBaseR", "StrongCowEmberCollar"];
-    const itemValid = meta.triangles > 0
-      && meta.triangles <= 800
-      && meta.clips.length === 0
+    const meta = await readGlbMetadata("public/models/custom/world/cow-strong.glb");
+    const authoredParts = ["CowStrongHornL", "CowStrongHornR", "CowStrongEmberCollar"];
+    const expectedClips = ["idle", "Eating", "Walk", "Idle_HitReact1", "Death"];
+    const itemValid = meta.triangles >= 1_600
+      && meta.triangles <= 3_000
+      && meta.bones === 19
+      && expectedClips.every((clip) => meta.clips.includes(clip))
       && authoredParts.every((part) => meta.nodes.some((node) => node.includes(part)));
-    record("assets/R10", "strong-cow horns and emissive collar ship as an authored Blender GLB", itemValid, `tris=${meta.triangles}, parts=${authoredParts.join("+")}`);
+    record("assets/R10→R13", "strong-cow horns and emissive collar are integrated into the articulated cow GLB", itemValid, `tris=${meta.triangles}, bones=${meta.bones}, clips=${meta.clips.join("+")}, parts=${authoredParts.join("+")}`);
   } catch (error) {
-    record("assets/R10", "strong-cow horns and emissive collar ship as an authored Blender GLB", false, error instanceof Error ? error.message : String(error));
+    record("assets/R10→R13", "strong-cow horns and emissive collar are integrated into the articulated cow GLB", false, error instanceof Error ? error.message : String(error));
   }
 
   try {
     const source = await readFile(resolve(root, "src/game/StormGame.ts"), "utf8");
     const legacyTokens = ["survivor.glb", "customer.glb", "createProceduralDog", "strong-cow-horn-material", "strong-cow-ember-collar"];
-    const expectedModels = ["staff-hunter.glb", "staff-cashier.glb", "staff-shepherd-dog.glb", "strong-cow-accessories.glb"];
+    const expectedModels = ["staff-hunter.glb", "staff-cashier.glb", "staff-shepherd-dog.glb", "custom/world/cow-strong.glb"];
     const itemValid = legacyTokens.every((token) => !source.includes(token)) && expectedModels.every((token) => source.includes(token));
-    record("wiring/R10", "runtime uses only authored R10 staff, dog and strong-cow accessory assets", itemValid, `legacy=${legacyTokens.filter((token) => source.includes(token)).join("+") || "none"}`);
+    record("wiring/R10→R13", "runtime uses authored R10 staff and dog plus the integrated R13 strong cow", itemValid, `legacy=${legacyTokens.filter((token) => source.includes(token)).join("+") || "none"}`);
   } catch (error) {
-    record("wiring/R10", "runtime uses only authored R10 staff, dog and strong-cow accessory assets", false, error instanceof Error ? error.message : String(error));
+    record("wiring/R10→R13", "runtime uses authored R10 staff and dog plus the integrated R13 strong cow", false, error instanceof Error ? error.message : String(error));
+  }
+}
+
+async function checkR13Assets() {
+  try {
+    const manifest = JSON.parse(await readFile(resolve(root, "public/models/custom/world/manifest-r13.json"), "utf8"));
+    const assets = manifest.assets ?? [];
+    const expectedCounts = { total: 12, cow: 2, pine: 3, rock: 2, fence: 2, snowhouse: 3 };
+    const countsValid = Object.entries(expectedCounts).every(([key, value]) => manifest.counts?.[key] === value);
+    const fileResults = await Promise.all(assets.map(async (asset) => {
+      const data = await readFile(resolve(root, "public", asset.path));
+      const hash = createHash("sha256").update(data).digest("hex");
+      return data.subarray(0, 4).toString("utf8") === "glTF" && hash === asset.sha256;
+    }));
+    const cowsValid = assets.filter((asset) => asset.category === "cow").every((asset) => asset.bones === 19
+      && ["idle", "Eating", "Walk", "Idle_HitReact1", "Death"].every((clip) => asset.clips.includes(clip)));
+    const valid = manifest.release === "storm R13"
+      && manifest.pipeline?.authoring?.includes("Blender MCP execute_code")
+      && manifest.pipeline?.view_transform === "AgX"
+      && manifest.all_gates_pass === true
+      && assets.length === 12
+      && countsValid
+      && fileResults.every(Boolean)
+      && assets.every((asset) => asset.pass && asset.color_0_on_all_primitives && asset.triangles >= asset.triangle_budget[0] && asset.triangles <= asset.triangle_budget[1])
+      && cowsValid;
+    record("assets/R13", "12 Blender-MCP world GLBs pass count, hash, budget, AgX, material and cow animation gates", valid, `counts=${JSON.stringify(manifest.counts)}, tris=${assets.reduce((sum, asset) => sum + asset.triangles, 0)}, cows19bones=${cowsValid}`);
+  } catch (error) {
+    record("assets/R13", "12 Blender-MCP world GLBs pass count, hash, budget, AgX, material and cow animation gates", false, error instanceof Error ? error.message : String(error));
+  }
+
+  try {
+    const manifest = JSON.parse(await readFile(resolve(root, "public/images/vfx/r13/manifest-r13.json"), "utf8"));
+    const assets = manifest.assets ?? [];
+    const runtimeResults = await Promise.all(assets.map(async (asset) => {
+      const data = await readFile(resolve(root, asset.runtime.path));
+      const hash = createHash("sha256").update(data).digest("hex");
+      return data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+        && data.readUInt32BE(16) === 1024
+        && data.readUInt32BE(20) === 1024
+        && data[25] === 6
+        && hash === asset.runtime.sha256;
+    }));
+    const valid = manifest.generator === "gpt-image-2 + local chroma-key removal"
+      && manifest.all_alpha_gates_pass === true
+      && assets.length === 8
+      && new Set(assets.map((asset) => asset.runtime.sha256)).size === 8
+      && assets.every((asset) => asset.model === "gpt-image-2"
+        && asset.rgba_master.width === 1254
+        && asset.rgba_master.height === 1254
+        && asset.alpha_gate.pass
+        && asset.alpha_gate.four_corners.every((alpha) => alpha === 0)
+        && asset.alpha_gate.occupancy > 0.01
+        && asset.alpha_gate.occupancy < 0.7)
+      && runtimeResults.every(Boolean);
+    record("assets/R13", "8 gpt-image-2 combat VFX pass RGBA, dimension, alpha-corner, hash and uniqueness gates", valid, `assets=${assets.length}, runtime=1024² RGBA, manual=${manifest.manual_cleanup_minutes_total}m, alphaQA=${manifest.alpha_qa_minutes_total}m`);
+  } catch (error) {
+    record("assets/R13", "8 gpt-image-2 combat VFX pass RGBA, dimension, alpha-corner, hash and uniqueness gates", false, error instanceof Error ? error.message : String(error));
+  }
+
+  try {
+    const source = await readFile(resolve(root, "src/game/StormGame.ts"), "utf8");
+    const expectedModels = [
+      "cow-brown.glb", "cow-strong.glb", "pine-sentinel.glb", "pine-windswept.glb", "pine-young.glb",
+      "rock-shelf.glb", "rock-spire.glb", "fence-rail.glb", "fence-gate.glb", "snowhouse-shell.glb",
+      "snowhouse-door.glb", "snowhouse-window.glb",
+    ];
+    const expectedVfx = [
+      "snow-burst-a.png", "snow-burst-b.png", "wood-splinter-a.png", "wood-splinter-b.png",
+      "health-warning-a.png", "health-warning-b.png", "impact-decal-a.png", "impact-decal-b.png",
+    ];
+    const legacyModels = [
+      "\"cow.glb\"", "\"pine-a.glb\"", "\"pine-b.glb\"", "\"rock.glb\"", "\"fence.glb\"",
+      "\"holiday/cabin-wall.glb\"", "\"holiday/cabin-window.glb\"", "\"holiday/cabin-door.glb\"",
+      "\"holiday/cabin-roof.glb\"", "\"strong-cow-accessories.glb\"",
+    ];
+    const impactStart = source.indexOf("private updateWave");
+    const impactEnd = source.indexOf("private updateZombieAnimationLod", impactStart);
+    const impactSource = source.slice(impactStart, impactEnd);
+    const damageIndex = impactSource.indexOf("this.state.baseHealth = Math.max");
+    const vfxIndex = impactSource.indexOf("this.triggerBarrierHitVfx");
+    const recoveryIndex = impactSource.indexOf("zombie.attackPhase = \"recovery\"");
+    const impactTiming = damageIndex >= 0 && vfxIndex > damageIndex && recoveryIndex > vfxIndex;
+    const valid = expectedModels.every((token) => source.includes(token))
+      && expectedVfx.every((token) => source.includes(token))
+      && legacyModels.every((token) => !source.includes(token))
+      && source.includes("this.triggerGroundImpactVfx(cow.root.position)")
+      && source.includes("this.triggerGroundImpactVfx(zombie.root.position)")
+      && impactTiming;
+    record("wiring/R13", "new world GLBs replace legacy references and VFX fire only on applied combat impacts", valid, `models=12, vfx=8, legacy=${legacyModels.filter((token) => source.includes(token)).join("+") || "none"}, impactOrder=${impactTiming}`);
+  } catch (error) {
+    record("wiring/R13", "new world GLBs replace legacy references and VFX fire only on applied combat impacts", false, error instanceof Error ? error.message : String(error));
   }
 }
 
@@ -1078,6 +1174,12 @@ async function runCombat(browser, config) {
     record(label, "SMG switches to ranged clip", rangedAnimation === "attack_ranged", `animation=${rangedAnimation}`);
     const afterCow = await readSave(page);
     record(label, `${config.touch ? "touch" : "keyboard"} SMG damages cow`, afterCow.stats.cowsKilled > before.stats.cowsKilled, `cowsKilled ${before.stats.cowsKilled}→${afterCow.stats.cowsKilled}`);
+    const impactVfx = await page.locator("#game-canvas").evaluate((canvas) => ({
+      assets: Number(canvas.dataset.vfxAssets),
+      events: Number(canvas.dataset.vfxEvents),
+      lastAt: Number(canvas.dataset.lastVfxAt),
+    }));
+    record(label, "R13 combat VFX are preloaded and spawn on the cow damage frame", impactVfx.assets === 8 && impactVfx.events > 0 && impactVfx.lastAt > 0, JSON.stringify(impactVfx));
     const combatAudio = await page.evaluate(() => window.__stormAudio);
     record(label, "swing and hit cues follow attack and impact", combatAudio?.counts?.swing > 0 && combatAudio?.counts?.hit > 0, JSON.stringify(combatAudio?.counts));
 
@@ -1113,6 +1215,8 @@ async function runCombat(browser, config) {
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.towerAnimationLod?.includes("frost:paused"), undefined, { timeout: 5_000 });
       const towerLod = await page.locator("#game-canvas").getAttribute("data-tower-animation-lod");
       record(label, "distant tower animation LOD pauses", towerLod?.includes("frost:paused") === true, `lod=${towerLod}`);
+      await page.locator("#settings-button").click();
+      await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.paused === "true", undefined, { timeout: 5_000 });
       const savedHealth = (await readSave(page))?.baseHealth;
       await page.reload({ waitUntil: "domcontentloaded", timeout: loadTimeout });
       await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
@@ -1154,11 +1258,12 @@ try {
   record("assets/R8.1", "portraits and menu background pass the luminance gate", luminance.pass, luminance.detail);
   await checkR8Assets();
   await checkR10Assets();
+  await checkR13Assets();
   await checkR12Systems();
   await ensureServer();
   const launchBrowser = () => chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }
-    : { headless: true, args: ["--use-angle=swiftshader"] });
+    : { headless: true, args: [`--use-angle=${angleBackend}`] });
   let browser = await launchBrowser();
   try {
     if (headedOnly) {
@@ -1223,4 +1328,16 @@ try {
 
 const failures = results.filter((result) => !result.pass);
 console.log(`\n${results.length - failures.length}/${results.length} checks passed; ${failures.length} failed.`);
+if (outputPath) {
+  await mkdir(resolve(outputPath, ".."), { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify({
+    measuredAt: new Date().toISOString(),
+    angleBackend,
+    passed: results.length - failures.length,
+    total: results.length,
+    failures: failures.length,
+    allPass: failures.length === 0,
+    results,
+  }, null, 2)}\n`, "utf8");
+}
 if (failures.length > 0) process.exitCode = 1;

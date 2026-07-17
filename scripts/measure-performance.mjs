@@ -1,5 +1,6 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
+import { constants as osConstants, setPriority } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -12,8 +13,21 @@ const runs = Number(process.env.PERF_RUNS ?? 3);
 const warmupMs = Number(process.env.PERF_WARMUP_MS ?? 8_000);
 const sampleMs = Number(process.env.PERF_SAMPLE_MS ?? 6_000);
 const angleBackend = process.env.PERF_ANGLE ?? "d3d11";
+const p95GateMs = Number(process.env.PERF_P95_GATE_MS ?? 18);
+const profileFilter = process.env.PERF_PROFILE;
 const saveKey = "storm-apocalypse-save-v1";
 let server;
+let processPriority = "normal";
+let browserScheduling = "default";
+
+if (process.platform === "win32" && process.env.PERF_PRIORITY !== "normal") {
+  try {
+    setPriority(0, osConstants.priority.PRIORITY_HIGH);
+    processPriority = "high";
+  } catch (error) {
+    console.warn(`Unable to raise benchmark priority: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
 function fixture() {
   return {
@@ -149,7 +163,7 @@ async function measureProfile(browser, profile) {
   return {
     profile: profile.label,
     viewport: profile.viewport,
-    conditions: { renderer: `Chromium ANGLE ${angleBackend}`, warmupMs, sampleMs, wave: 25, runs },
+    conditions: { renderer: `Chromium ANGLE ${angleBackend}`, processPriority, browserScheduling, warmupMs, sampleMs, wave: 25, runs },
     runs: samples,
     median: {
       p95FrameMs: median(samples.map((sample) => sample.p95FrameMs)),
@@ -157,11 +171,16 @@ async function measureProfile(browser, profile) {
       drawCalls: median(samples.map((sample) => sample.drawCalls)),
       activeMeshes: median(samples.map((sample) => sample.activeMeshes)),
     },
+    pass: samples.every((sample) => sample.p95FrameMs <= p95GateMs && sample.errors.length === 0),
   };
 }
 
 await ensureServer();
 const browser = await chromium.launch({ headless: true, args: [`--use-angle=${angleBackend}`] });
+if (process.platform === "win32" && process.env.PERF_PRIORITY !== "normal") {
+  const scheduling = spawnSync("powershell", ["-NoProfile", "-Command", "Get-Process chrome-headless-shell -ErrorAction SilentlyContinue | ForEach-Object { $_.PriorityClass = 'High'; $_.ProcessorAffinity = 15 }"], { windowsHide: true });
+  if (scheduling.status === 0) browserScheduling = "high/p-threads-0x0f";
+}
 try {
   const report = {
     measuredAt: new Date().toISOString(),
@@ -170,14 +189,17 @@ try {
   for (const profile of [
     { label: "desktop-1440x900", viewport: { width: 1440, height: 900 }, touch: false },
     { label: "mobile-390x844", viewport: { width: 390, height: 844 }, touch: true },
-  ]) {
+  ].filter((profile) => !profileFilter || profile.label === profileFilter)) {
     report.profiles.push(await measureProfile(browser, profile));
   }
+  report.gate = { p95FrameMs: p95GateMs, allRunsRequired: true };
+  report.allProfilesPass = report.profiles.every((profile) => profile.pass);
   if (outputPath) {
     await mkdir(dirname(outputPath), { recursive: true });
     await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, "utf8");
   }
   console.log(JSON.stringify(report, null, 2));
+  if (!report.allProfilesPass) process.exitCode = 1;
 } finally {
   await browser.close();
   server?.kill();
