@@ -45,6 +45,8 @@ function detectTouchMode(): boolean {
 export class UiController {
   readonly joystick: HTMLElement;
   readonly touchMode: boolean;
+  private readonly root: HTMLElement;
+  private readonly gameUi: HTMLElement;
   private readonly intro: HTMLElement;
   private readonly loadingBar: HTMLElement;
   private readonly loadingText: HTMLElement;
@@ -110,6 +112,8 @@ export class UiController {
   private promptSignature = "";
   private promptTimer: number | undefined;
   private settings: PlayerSettings;
+  private modalState: "intro" | "system" | "result" | null = "intro";
+  private prepModalOpen = false;
 
   onStart: () => void = () => undefined;
   onAttackStart: () => void = () => undefined;
@@ -125,6 +129,7 @@ export class UiController {
   onUiSound: () => void = () => undefined;
 
   constructor(root: HTMLElement, state: RuntimeState, settings: PlayerSettings) {
+    this.root = root;
     this.touchMode = detectTouchMode();
     root.classList.toggle("is-touch", this.touchMode);
     const startHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "WASD 移動 · 空白鍵攻擊";
@@ -133,7 +138,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R12.1";
+    root.dataset.uiVersion = "R14";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -162,6 +167,7 @@ export class UiController {
     const shopTabs = SHOP_TABS.map((tab) => `
       <button class="command-tab${tab.id === this.activeShopTab ? " is-active" : ""}" type="button" data-shop-tab="${tab.id}" role="tab" aria-selected="${tab.id === this.activeShopTab}" aria-controls="shop-section-${tab.id}">${tab.label}</button>`).join("");
     root.innerHTML = `
+      <div class="game-ui is-modal-hidden" id="game-ui" inert aria-hidden="true">
       <div class="vignette"></div>
       <header class="hud hud--top">
         <div class="brand-mark"><span class="brand-mark__sigil">✦</span><span><b>暴風啟示錄</b><small>STORM APOCALYPSE</small></span></div>
@@ -220,6 +226,7 @@ export class UiController {
         </button>
       </div>
       <div class="toast-host" id="toast-host"></div>
+      </div>
 
       <section class="system-menu" id="system-menu" role="dialog" aria-modal="true" aria-labelledby="system-menu-title" hidden>
         <div class="system-menu__card">
@@ -244,7 +251,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R12.1 · 程序化 WebAudio · 本機存檔</p>
+              <p class="system-note">R14 · 程序化 WebAudio · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
@@ -263,6 +270,7 @@ export class UiController {
       </div></section>`;
 
     const get = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
+    this.gameUi = get("game-ui");
     this.joystick = root.querySelector<HTMLElement>(".joystick")!;
     this.intro = get("intro");
     this.loadingBar = get("loading-bar");
@@ -356,6 +364,7 @@ export class UiController {
       this.questToggle.classList.toggle("is-panel-open", questOpen);
       shopToggle.classList.toggle("is-panel-open", shopOpen);
       this.panelScrim.classList.toggle("is-active", this.touchMode && (questOpen || shopOpen));
+      this.setPrepModalOpen(this.touchMode && shopOpen);
     };
 
     for (const tab of root.querySelectorAll<HTMLButtonElement>("[data-shop-tab]")) {
@@ -453,6 +462,15 @@ export class UiController {
     });
     window.addEventListener("keydown", (event) => this.handleSystemMenuKey(event));
     this.syncSettingsControls();
+    this.setModalState("intro");
+
+    if (import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke")) {
+      const smokeWindow = window as Window & { __stormEnterGame?: () => void; __stormShowResult?: () => void };
+      smokeWindow.__stormEnterGame = () => this.finishIntroTransition();
+      smokeWindow.__stormShowResult = () => {
+        this.showResult(true, "R14 modal mutual-exclusion gate", [["gate", "R14"]]);
+      };
+    }
   }
 
   setLoading(progress: number, text: string): void {
@@ -468,7 +486,50 @@ export class UiController {
 
   enterGame(): void {
     this.intro.classList.add("is-leaving");
-    window.setTimeout(() => this.intro.remove(), 900);
+    window.setTimeout(() => this.finishIntroTransition(), 900);
+  }
+
+  private finishIntroTransition(): void {
+    this.intro.remove();
+    if (this.modalState === "intro") this.setModalState(null);
+  }
+
+  private setModalState(state: "intro" | "system" | "result" | null): void {
+    this.modalState = state;
+    const modalOpen = state !== null;
+    this.root.dataset.modal = state ?? "none";
+    this.gameUi.classList.toggle("is-modal-hidden", modalOpen);
+    this.gameUi.inert = modalOpen;
+    this.gameUi.setAttribute("aria-hidden", String(modalOpen));
+
+    const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
+    if (canvas) {
+      canvas.inert = modalOpen || this.prepModalOpen;
+      canvas.setAttribute("aria-hidden", String(modalOpen || this.prepModalOpen));
+    }
+  }
+
+  private setPrepModalOpen(open: boolean): void {
+    this.prepModalOpen = open;
+    this.root.classList.toggle("is-prep-modal", open);
+    this.root.dataset.prepModal = String(open);
+    for (const element of this.gameUi.querySelectorAll<HTMLElement>([
+      ".hud",
+      ".quest-panel",
+      ".context-prompt",
+      ".bottom-controls",
+      ".world-action-popover",
+      ".toast-host",
+    ].join(","))) {
+      element.inert = open;
+      element.setAttribute("aria-hidden", String(open));
+    }
+    const canvas = document.querySelector<HTMLCanvasElement>("#game-canvas");
+    if (canvas) {
+      const hidden = open || this.modalState !== null;
+      canvas.inert = hidden;
+      canvas.setAttribute("aria-hidden", String(hidden));
+    }
   }
 
   private setSystemMenuOpen(open: boolean): void {
@@ -479,6 +540,7 @@ export class UiController {
       this.systemMenu.hidden = false;
       this.settingsButton.setAttribute("aria-expanded", "true");
       document.documentElement.classList.add("is-paused");
+      this.setModalState("system");
       this.onPauseChange(true);
       this.systemMenu.querySelector<HTMLButtonElement>("#resume-button")?.focus();
     } else {
@@ -486,6 +548,7 @@ export class UiController {
       this.resetConfirm.hidden = true;
       this.settingsButton.setAttribute("aria-expanded", "false");
       document.documentElement.classList.remove("is-paused");
+      this.setModalState(null);
       this.onPauseChange(false);
       this.focusBeforeMenu?.focus();
     }
@@ -493,6 +556,7 @@ export class UiController {
 
   private handleSystemMenuKey(event: KeyboardEvent): void {
     if (event.code === "Escape") {
+      if (this.modalState === "intro" || this.modalState === "result") return;
       event.preventDefault();
       this.setSystemMenuOpen(!this.systemMenuOpen);
       return;
@@ -882,6 +946,8 @@ export class UiController {
   }
 
   showResult(won: boolean, copy: string, stats: ReadonlyArray<[string, string]> = []): void {
+    if (this.systemMenuOpen) this.setSystemMenuOpen(false);
+    this.setModalState("result");
     this.result.hidden = false;
     this.resultTitle.textContent = won ? "黎明仍在" : "最後的燈熄了";
     this.resultCopy.textContent = copy;

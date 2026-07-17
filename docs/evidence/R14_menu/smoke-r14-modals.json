@@ -1,0 +1,136 @@
+{
+  "measuredAt": "2026-07-17T07:30:08.093Z",
+  "angleBackend": "swiftshader",
+  "passed": 21,
+  "total": 21,
+  "failures": 0,
+  "allPass": true,
+  "results": [
+    {
+      "viewport": "assets/R8.1",
+      "check": "portraits and menu background pass the luminance gate",
+      "pass": true,
+      "detail": "protagonist-butcher-matron.png=0.562/0.0%, protagonist-butcher-matron-medium.png=0.562/0.0%, protagonist-butcher-matron-low.png=0.562/0.0%, protagonist-vet-sniper.png=0.567/0.0%, protagonist-vet-sniper-medium.png=0.567/0.0%, protagonist-vet-sniper-low.png=0.567/0.0%, protagonist-mech-youth.png=0.619/0.0%, protagonist-mech-youth-medium.png=0.619/0.0%, protagonist-mech-youth-low.png=0.619/0.0%, menu-background.png=0.413/0.0%, menu-background-medium.png=0.413/0.0%, menu-background-low.png=0.414/0.0%"
+    },
+    {
+      "viewport": "assets/R8",
+      "check": "R8 character art, palettes and animation assets satisfy the shipping contract",
+      "pass": true,
+      "detail": "ui-atlas-low.png=512x384/183779B, ui-atlas-medium.png=768x576/386854B, ui-atlas-high.png=1024x768/632311B, menu-background.png=1920x1080/2037529B, panel-9s.png=192x192/30299B, button-9s.png=192x192/32112B, protagonist-butcher-matron.png=512x768/377867B, protagonist-vet-sniper.png=512x768/294489B, protagonist-mech-youth.png=512x768/302586B, preset=R8/palettes:3, butcher=3204tris/18bones/4clips, sniper=3724tris/18bones/4clips, mechanic=3376tris/18bones/4clips, zombie-ash=1216tris/5clips, zombie-frost=1360tris/5clips, zombie-rust=1324tris/5clips, npc-lao-zhou.glb=18bones/Idle+Walk/LaoZhouConicalHat+LaoZhouPipeStem, npc-nurse-lin.glb=18bones/Idle+Walk/NurseLinMedicalBag, npc-kid-bao.glb=18bones/Idle+Walk/KidBaoOversizeBackpack, npc-scout-he.glb=18bones/Idle+Walk/ScoutHeBinocularL"
+    },
+    {
+      "viewport": "animation/R8",
+      "check": "Boss stays within budget and has walk, attack, hurt and death clips",
+      "pass": true,
+      "detail": "tris=4296, clips=Idle,Walk,Idle_Attack,HitReact,Death"
+    },
+    {
+      "viewport": "assets/R10",
+      "check": "staff, customer variants and articulated dog meet the R10 geometry, clip and forward contract",
+      "pass": true,
+      "detail": "hunter=3224tris/18bones/idle+walk+run+attack/root180=true, cashier=3096tris/18bones/idle+walk+run/root180=true, customer-traveler=3212tris/18bones/idle+walk+run/root180=true, customer-forager=3156tris/18bones/idle+walk+run/root180=true, customer-refugee=3136tris/18bones/idle+walk+run/root180=true, shepherd-dog=3092tris/19bones/idle+walk+run/root180=true"
+    },
+    {
+      "viewport": "assets/R10→R13",
+      "check": "strong-cow horns and emissive collar are integrated into the articulated cow GLB",
+      "pass": true,
+      "detail": "tris=2352, bones=19, clips=idle+Eating+Walk+Idle_HitReact1+Death, parts=CowStrongHornL+CowStrongHornR+CowStrongEmberCollar"
+    },
+    {
+      "viewport": "wiring/R10→R13",
+      "check": "runtime uses authored R10 staff and dog plus the integrated R13 strong cow",
+      "pass": true,
+      "detail": "legacy=none"
+    },
+    {
+      "viewport": "assets/R13",
+      "check": "12 Blender-MCP world GLBs pass count, hash, budget, AgX, material and cow animation gates",
+      "pass": true,
+      "detail": "counts={\"total\":12,\"cow\":2,\"pine\":3,\"rock\":2,\"fence\":2,\"snowhouse\":3}, tris=7930, cows19bones=true"
+    },
+    {
+      "viewport": "assets/R13",
+      "check": "8 gpt-image-2 combat VFX pass RGBA, dimension, alpha-corner, hash and uniqueness gates",
+      "pass": true,
+      "detail": "assets=8, runtime=1024² RGBA, manual=0m, alphaQA=10m"
+    },
+    {
+      "viewport": "wiring/R13",
+      "check": "new world GLBs replace legacy references and VFX fire only on applied combat impacts",
+      "pass": true,
+      "detail": "models=12, vfx=8, legacy=none, impactOrder=true"
+    },
+    {
+      "viewport": "audio/R12",
+      "check": "eight procedural WebAudio cues are registered and wired to runtime events",
+      "pass": true,
+      "detail": "cues=hit,swing,build,sale,wave,boss,towerAlarm,ui, wired=true"
+    },
+    {
+      "viewport": "director/R12",
+      "check": "whiteout and elite event waves change spawn rhythm and composition",
+      "pass": true,
+      "detail": "whiteout=fast runner surge, elite_surge=brute/high-HP formation"
+    },
+    {
+      "viewport": "save/R12",
+      "check": "base health is versioned and saved on impact",
+      "pass": true,
+      "detail": "SaveState.baseHealth + impact-frame saveState wiring"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "intro modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"p\"}"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "settings modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"system\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#quality-options\"}"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "result modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"result\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#result-stats#result-stats\"}"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "selection modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"img\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "intro modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"p\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "mobile intro close removes start CTA and restores weapon hit target",
+      "pass": true,
+      "detail": "{\"pass\":true,\"startExists\":false,\"backgroundInert\":false,\"visibility\":\"visible\",\"hit\":\"weapon-cycle-icon\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "settings modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"system\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#quality-options\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "result modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"result\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#result-stats#result-stats\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "selection modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"span#character-card__copy\"}"
+    }
+  ]
+}

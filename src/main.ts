@@ -14,6 +14,13 @@ async function bootstrap(): Promise<void> {
   const settings = loadSettings();
   const audio = new ProceduralAudio(settings);
   const ui = new UiController(root, state, settings);
+  const uiOnlySmoke = import.meta.env.DEV
+    && new URLSearchParams(window.location.search).has("smoke")
+    && new URLSearchParams(window.location.search).has("ui-only");
+  if (uiOnlySmoke) {
+    ui.markReady();
+    return;
+  }
   const game = new StormGame(canvas, ui, state, settings, audio);
   ui.onProtagonistSelect = (id) => game.selectProtagonist(id);
   ui.onStart = () => game.start();

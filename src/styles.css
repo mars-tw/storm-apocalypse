@@ -38,6 +38,13 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .asset-icon--skill-dog { --icon-x:100%; --icon-y:0%; }
 #game-canvas { position: fixed; inset: 0; display: block; outline: none; }
 #app { position: fixed; inset: 0; pointer-events: none; }
+.game-ui.is-modal-hidden { visibility:hidden; pointer-events:none; }
+.is-prep-modal .hud,
+.is-prep-modal .quest-panel,
+.is-prep-modal .context-prompt,
+.is-prep-modal .bottom-controls,
+.is-prep-modal .world-action-popover,
+.is-prep-modal .toast-host { visibility:hidden; pointer-events:none; }
 .vignette { position: absolute; inset: 0; z-index: 2; background: radial-gradient(circle at 52% 46%, transparent 43%, rgba(2,9,15,.25) 78%, rgba(2,7,12,.64) 115%); }
 
 .hud { position: absolute; z-index: 10; pointer-events: none; }

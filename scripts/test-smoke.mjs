@@ -15,12 +15,16 @@ const saveKey = "storm-apocalypse-save-v1";
 const settingsKey = "storm-apocalypse-settings-v1";
 const scenarioFilter = process.env.SMOKE_SCENARIO;
 const heroOnly = scenarioFilter === "heroes";
+const modalOnly = scenarioFilter === "r14";
 const loadTimeout = 180_000;
 const screenshotDir = process.env.SMOKE_SCREENSHOT_DIR;
+const r14EvidenceDir = process.env.R14_EVIDENCE_DIR;
+const r14ViewportFilter = process.env.R14_VIEWPORT;
 const outputPath = process.env.SMOKE_OUTPUT ? resolve(root, process.env.SMOKE_OUTPUT) : undefined;
 const captureOnly = process.env.SMOKE_CAPTURE_ONLY === "1";
 const headedOnly = process.argv.includes("--headed") || process.env.SMOKE_HEADED === "1";
 const angleBackend = process.env.SMOKE_ANGLE ?? "swiftshader";
+const browserExecutable = process.env.SMOKE_EXECUTABLE;
 const results = [];
 let server;
 
@@ -66,7 +70,9 @@ function fixture() {
 async function reachable() {
   try {
     const response = await fetch(url);
-    return response.ok;
+    if (!response.ok) return false;
+    const html = await response.text();
+    return html.includes('id="game-canvas"') && html.includes('src="/src/main.ts"');
   } catch {
     return false;
   }
@@ -506,6 +512,163 @@ async function checkMobileHudMutualExclusion(page, label) {
   record(label, "mobile HUD mutex rejects visible overlaps over 8px", result.collisions.length === 0, JSON.stringify(result));
 }
 
+async function inspectR14ModalMutex(page, overlaySelector, expectedState) {
+  return page.evaluate(({ overlaySelector, expectedState }) => {
+    const background = document.querySelector("#game-ui");
+    const overlay = document.querySelector(overlaySelector);
+    const canvas = document.querySelector("#game-canvas");
+    if (!background || !overlay || !canvas) return { pass: false, reason: "modal contract elements missing" };
+
+    const interactive = [...background.querySelectorAll([
+      "button",
+      "input",
+      "select",
+      "textarea",
+      "a[href]",
+      "[role=button]",
+      ".joystick",
+    ].join(","))];
+    const selfHits = [];
+    const visuallyExposed = [];
+    for (const element of interactive) {
+      const rect = element.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      if (getComputedStyle(element).visibility !== "hidden") {
+        visuallyExposed.push(element.id || element.className || element.tagName.toLowerCase());
+      }
+      if (centerX < 0 || centerX >= innerWidth || centerY < 0 || centerY >= innerHeight) continue;
+      const hit = document.elementFromPoint(centerX, centerY);
+      if (hit === element || element.contains(hit)) {
+        selfHits.push(element.id || element.className || element.tagName.toLowerCase());
+      }
+    }
+
+    const overlayRect = overlay.getBoundingClientRect();
+    const probeX = Math.min(innerWidth - 1, Math.max(0, overlayRect.left + overlayRect.width / 2));
+    const probeY = Math.min(innerHeight - 1, Math.max(0, overlayRect.top + overlayRect.height / 2));
+    const probeHit = document.elementFromPoint(probeX, probeY);
+    const overlayOwnsProbe = probeHit === overlay || Boolean(probeHit && overlay.contains(probeHit));
+    const state = document.querySelector("#app")?.getAttribute("data-modal");
+    const backgroundStyle = getComputedStyle(background);
+    const pass = background.inert
+      && background.getAttribute("aria-hidden") === "true"
+      && backgroundStyle.visibility === "hidden"
+      && canvas.inert
+      && canvas.getAttribute("aria-hidden") === "true"
+      && state === expectedState
+      && selfHits.length === 0
+      && visuallyExposed.length === 0
+      && overlayOwnsProbe;
+    return {
+      pass,
+      state,
+      backgroundInert: background.inert,
+      backgroundAriaHidden: background.getAttribute("aria-hidden"),
+      backgroundVisibility: backgroundStyle.visibility,
+      canvasInert: canvas.inert,
+      canvasAriaHidden: canvas.getAttribute("aria-hidden"),
+      interactiveCount: interactive.length,
+      selfHits,
+      visuallyExposed,
+      overlayOwnsProbe,
+      probeHit: probeHit ? [probeHit.tagName.toLowerCase(), probeHit.id, probeHit.className].filter(Boolean).join("#") : null,
+    };
+  }, { overlaySelector, expectedState });
+}
+
+async function checkR14ModalMutualExclusion(browser) {
+  const captureR14 = async (page, viewport, state) => {
+    if (!r14EvidenceDir) return;
+    const directory = resolve(root, r14EvidenceDir);
+    await mkdir(directory, { recursive: true });
+    const session = await page.context().newCDPSession(page);
+    try {
+      const screenshot = await session.send("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
+      await writeFile(resolve(directory, `after-${viewport.width}x${viewport.height}-${state}.png`), Buffer.from(screenshot.data, "base64"));
+    } finally {
+      await session.detach();
+    }
+  };
+  const viewports = [
+    { width: 1366, height: 600, touch: false, label: "R14 desktop 1366×600" },
+    { width: 390, height: 844, touch: true, label: "R14 mobile 390×844" },
+  ].filter((viewport) => !r14ViewportFilter || `${viewport.width}x${viewport.height}` === r14ViewportFilter);
+  const modalUrl = new URL(url);
+  modalUrl.searchParams.set("ui-only", "1");
+  for (const viewport of viewports) {
+    const contextOptions = {
+      viewport: { width: viewport.width, height: viewport.height },
+      hasTouch: viewport.touch,
+      isMobile: false,
+      deviceScaleFactor: 1,
+      userAgent: viewport.touch
+        ? "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36"
+        : undefined,
+    };
+
+    const savedContext = await browser.newContext(contextOptions);
+    await savedContext.addInitScript(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: saveKey, value: fixture() });
+    const savedPage = await savedContext.newPage();
+    try {
+      await savedPage.goto(modalUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
+      await savedPage.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
+      const intro = await inspectR14ModalMutex(savedPage, "#intro:not(.intro--selection)", "intro");
+      record(viewport.label, "intro modal makes background HUD inert and visually hidden", intro.pass, JSON.stringify(intro));
+      await captureR14(savedPage, viewport, "intro");
+
+      const introClosed = await savedPage.evaluate(() => {
+        window.__stormEnterGame?.();
+        return !document.querySelector("#intro") && document.querySelector("#app")?.getAttribute("data-modal") === "none";
+      });
+      assert(introClosed, "R14 smoke hook did not synchronously close intro");
+
+      if (viewport.touch) {
+        const restored = await savedPage.evaluate(() => {
+          const weapon = document.querySelector("#weapon-button");
+          const background = document.querySelector("#game-ui");
+          if (!weapon || !background) return { pass: false, reason: "restored controls missing" };
+          const rect = weapon.getBoundingClientRect();
+          const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          const style = getComputedStyle(weapon);
+          const pass = !document.querySelector("#start-button")
+            && !background.inert
+            && background.getAttribute("aria-hidden") === "false"
+            && style.visibility !== "hidden"
+            && (hit === weapon || weapon.contains(hit));
+          return { pass, startExists: Boolean(document.querySelector("#start-button")), backgroundInert: background.inert, visibility: style.visibility, hit: hit?.id || hit?.className || hit?.tagName };
+        });
+        record(viewport.label, "mobile intro close removes start CTA and restores weapon hit target", restored.pass, JSON.stringify(restored));
+      }
+
+      await savedPage.evaluate(() => document.querySelector("#settings-button")?.click());
+      const system = await inspectR14ModalMutex(savedPage, "#system-menu", "system");
+      record(viewport.label, "settings modal makes background HUD inert and visually hidden", system.pass, JSON.stringify(system));
+      await captureR14(savedPage, viewport, "settings");
+      await savedPage.evaluate(() => document.querySelector("#system-menu-close")?.click());
+
+      await savedPage.evaluate(() => window.__stormShowResult?.());
+      const result = await inspectR14ModalMutex(savedPage, "#result", "result");
+      record(viewport.label, "result modal makes background HUD inert and visually hidden", result.pass, JSON.stringify(result));
+      await captureR14(savedPage, viewport, "result");
+    } finally {
+      await savedContext.close();
+    }
+
+    const selectionContext = await browser.newContext(contextOptions);
+    const selectionPage = await selectionContext.newPage();
+    try {
+      await selectionPage.goto(modalUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
+      await selectionPage.locator("#intro.intro--selection").waitFor({ state: "visible", timeout: loadTimeout });
+      const selection = await inspectR14ModalMutex(selectionPage, "#intro.intro--selection", "intro");
+      record(viewport.label, "selection modal makes background HUD inert and visually hidden", selection.pass, JSON.stringify(selection));
+      await captureR14(selectionPage, viewport, "selection");
+    } finally {
+      await selectionContext.close();
+    }
+  }
+}
+
 async function measureR11Controls(page, config, consoleErrors) {
   const selectors = [
     { name: "tower-ballista", selector: '[data-tower-dock="ballista"]' },
@@ -798,8 +961,8 @@ async function checkInputHints(browser, config) {
   try {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: loadTimeout });
     await page.locator("#start-button").waitFor({ state: "visible", timeout: loadTimeout });
-    const startHint = await page.locator("#start-button small").innerText();
-    const contextHint = await page.locator("#context-prompt").innerText();
+    const startHint = await page.locator("#start-button small").textContent() ?? "";
+    const contextHint = await page.locator("#context-prompt").textContent() ?? "";
     if (config.touch) {
       record(label, "CTA uses touch hint without WASD", !startHint.includes("WASD") && startHint.includes("虛擬搖桿"), startHint);
       record(label, "game prompt uses touch hint without WASD", !contextHint.includes("WASD") && contextHint.includes("虛擬搖桿"), contextHint);
@@ -1036,6 +1199,37 @@ async function checkTouchLayout(page, label) {
   await page.addStyleTag({ content: ".quest-panel,.command-panel{transition:none!important}" });
   await page.waitForTimeout(50);
 
+  const prepMutex = await page.evaluate(() => {
+    const selectors = ["#settings-button", "#quest-toggle", "#shop-toggle", ".joystick", ".tower-dock", "#wave-button", "#weapon-button", "#attack-button"];
+    const failures = [];
+    for (const selector of selectors) {
+      const element = document.querySelector(selector);
+      if (!element) {
+        failures.push(`${selector}:missing`);
+        continue;
+      }
+      const rect = element.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      const inert = Boolean(element.closest("[inert]"));
+      const hidden = getComputedStyle(element).visibility === "hidden";
+      const selfHit = hit === element || element.contains(hit);
+      if (!inert || !hidden || selfHit) failures.push(`${selector}:inert=${inert},hidden=${hidden},selfHit=${selfHit}`);
+    }
+    const canvas = document.querySelector("#game-canvas");
+    const panel = document.querySelector("#command-panel");
+    const panelRect = panel?.getBoundingClientRect();
+    const panelHit = panelRect ? document.elementFromPoint(panelRect.left + panelRect.width / 2, panelRect.top + panelRect.height / 2) : null;
+    const panelOwnsCenter = Boolean(panel && (panelHit === panel || panel.contains(panelHit)));
+    return {
+      failures,
+      canvasInert: Boolean(canvas?.inert),
+      canvasAriaHidden: canvas?.getAttribute("aria-hidden"),
+      prepModal: document.querySelector("#app")?.getAttribute("data-prep-modal"),
+      panelOwnsCenter,
+    };
+  });
+  record(label, "open prep modal makes background HUD inert, hidden and un-hittable", prepMutex.failures.length === 0 && prepMutex.canvasInert && prepMutex.canvasAriaHidden === "true" && prepMutex.prepModal === "true" && prepMutex.panelOwnsCenter, JSON.stringify(prepMutex));
+
   const panelBox = await page.locator("#command-panel").boundingBox();
   const joystickBox = await page.locator(".joystick").boundingBox();
   const attackBox = await page.locator("#attack-button").boundingBox();
@@ -1078,19 +1272,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R12.1 UI version marker", uiVersion === "R12.1", `ui=${uiVersion}`);
-
-  const towerButtons = page.locator("[data-tower-dock]");
-  const towerButtonCount = await towerButtons.count();
-  const towerButtonsVisible = towerButtonCount === 3 && await towerButtons.evaluateAll((buttons) => buttons.every((button) => {
-    const box = button.getBoundingClientRect();
-    return box.width >= 44 && box.height >= 44;
-  }));
-  record(label, "bottom tower dock exposes three fixed tower actions", towerButtonsVisible, `buttons=${towerButtonCount}`);
-
-  const weaponVisible = await page.locator("#weapon-button").isVisible();
-  const weaponEnabled = await page.locator("#weapon-button").isEnabled();
-  record(label, "weapon cycle button sits beside attack", weaponVisible && weaponEnabled, `visible=${weaponVisible}, enabled=${weaponEnabled}`);
+  record(label, "R14 UI version marker", uiVersion === "R14", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));
@@ -1104,6 +1286,18 @@ async function checkR9UX(page, label, touch) {
   }
 
   if (touch) await page.locator("#shop-close").click();
+
+  const towerButtons = page.locator("[data-tower-dock]");
+  const towerButtonCount = await towerButtons.count();
+  const towerButtonsVisible = towerButtonCount === 3 && await towerButtons.evaluateAll((buttons) => buttons.every((button) => {
+    const box = button.getBoundingClientRect();
+    return box.width >= 44 && box.height >= 44 && getComputedStyle(button).visibility !== "hidden";
+  }));
+  record(label, "bottom tower dock exposes three fixed tower actions after prep closes", towerButtonsVisible, `buttons=${towerButtonCount}`);
+
+  const weaponVisible = await page.locator("#weapon-button").isVisible();
+  const weaponEnabled = await page.locator("#weapon-button").isEnabled();
+  record(label, "weapon cycle button restores beside attack after prep closes", weaponVisible && weaponEnabled, `visible=${weaponVisible}, enabled=${weaponEnabled}`);
 
   const point = await page.evaluate(() => window.__stormWorldPoint?.("tower", "ballista") ?? null);
   const pointValid = point && Number.isFinite(point.x) && Number.isFinite(point.y);
@@ -1220,7 +1414,7 @@ async function runCombat(browser, config) {
       const savedHealth = (await readSave(page))?.baseHealth;
       await page.reload({ waitUntil: "domcontentloaded", timeout: loadTimeout });
       await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
-      const reloadedHealth = Number((await page.locator("#base-health").innerText()).replace("%", ""));
+      const reloadedHealth = Number(((await page.locator("#base-health").textContent()) ?? "").replace("%", ""));
       record(label, "base health survives reload after wave repair or enemy impact", Number.isFinite(savedHealth) && reloadedHealth === savedHealth, `saved=${savedHealth}, reloaded=${reloadedHealth}`);
     }
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
@@ -1263,19 +1457,21 @@ try {
   await ensureServer();
   const launchBrowser = () => chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }
-    : { headless: true, args: [`--use-angle=${angleBackend}`] });
+    : { headless: true, executablePath: browserExecutable, args: [`--use-angle=${angleBackend}`] });
   let browser = await launchBrowser();
   try {
     if (headedOnly) {
       await checkHeadedWebGl(browser);
     } else {
-      if ((!scenarioFilter || heroOnly) && !captureOnly) {
+      if ((!scenarioFilter || heroOnly || modalOnly) && !captureOnly) {
         if (heroOnly) {
           try {
             await checkProtagonistSelectionAndAnimations(browser);
           } catch (error) {
             record("hero/coverage", "protagonist animation coverage completes", false, error instanceof Error ? error.message : String(error));
           }
+        } else if (modalOnly) {
+          await checkR14ModalMutualExclusion(browser);
         } else {
           await browser.close();
           browser = await launchBrowser();
@@ -1297,6 +1493,7 @@ try {
           await checkInputHints(browser, { viewport: { width: 390, height: 844 }, touch: true });
           // 觸控筆電：有觸控能力但主指標是滑鼠、寬視口 → 必須維持桌機 WASD 介面
           await checkInputHints(browser, { viewport: { width: 1440, height: 900 }, touch: false, touchscreenDesktop: true });
+          await checkR14ModalMutualExclusion(browser);
           await browser.close();
           browser = await launchBrowser();
         }
@@ -1306,12 +1503,22 @@ try {
         ["390×844", () => runCombat(browser, { viewport: { width: 390, height: 844 }, touch: true })],
         ["844×390", () => runLayout(browser, { width: 844, height: 390 })],
       ]) {
-        if (heroOnly) continue;
+        if (heroOnly || modalOnly) continue;
         if (scenarioFilter && scenario[0] !== scenarioFilter) continue;
-        try {
-          await runWithRetry(() => scenario[1]());
-        } catch (error) {
-          record(scenario[0], "scenario completes", false, error instanceof Error ? error.message : String(error));
+        let scenarioError;
+        for (let browserAttempt = 0; browserAttempt < 2; browserAttempt += 1) {
+          if (!browser.isConnected()) browser = await launchBrowser();
+          try {
+            await runWithRetry(() => scenario[1]());
+            scenarioError = undefined;
+            break;
+          } catch (error) {
+            scenarioError = error;
+            if (browser.isConnected()) break;
+          }
+        }
+        if (scenarioError) {
+          record(scenario[0], "scenario completes", false, scenarioError instanceof Error ? scenarioError.message : String(scenarioError));
         }
         if (!scenarioFilter) {
           await browser.close();
