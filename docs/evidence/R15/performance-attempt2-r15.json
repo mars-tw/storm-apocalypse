@@ -1,0 +1,132 @@
+{
+  "measuredAt": "2026-07-17T11:44:14.196Z",
+  "profiles": [
+    {
+      "profile": "desktop-1440x900",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "conditions": {
+        "renderer": "Chromium ANGLE d3d11",
+        "processPriority": "high",
+        "browserScheduling": "high/p-threads-0x0f",
+        "warmupMs": 8000,
+        "sampleMs": 6000,
+        "wave": 25,
+        "runs": 3
+      },
+      "runs": [
+        {
+          "run": 1,
+          "p95FrameMs": 16.8,
+          "medianFrameMs": 16.7,
+          "fps": 60,
+          "drawCalls": 194,
+          "activeMeshes": 414,
+          "activeZombies": 13,
+          "quality": "高",
+          "renderScale": 0.55,
+          "errors": []
+        },
+        {
+          "run": 2,
+          "p95FrameMs": 16.8,
+          "medianFrameMs": 16.7,
+          "fps": 60,
+          "drawCalls": 190,
+          "activeMeshes": 414,
+          "activeZombies": 13,
+          "quality": "高",
+          "renderScale": 0.55,
+          "errors": []
+        },
+        {
+          "run": 3,
+          "p95FrameMs": 33.3,
+          "medianFrameMs": 16.7,
+          "fps": 56,
+          "drawCalls": 195,
+          "activeMeshes": 424,
+          "activeZombies": 14,
+          "quality": "高",
+          "renderScale": 0.55,
+          "errors": []
+        }
+      ],
+      "median": {
+        "p95FrameMs": 16.8,
+        "fps": 60,
+        "drawCalls": 194,
+        "activeMeshes": 414
+      },
+      "pass": false
+    },
+    {
+      "profile": "mobile-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "conditions": {
+        "renderer": "Chromium ANGLE d3d11",
+        "processPriority": "high",
+        "browserScheduling": "high/p-threads-0x0f",
+        "warmupMs": 8000,
+        "sampleMs": 6000,
+        "wave": 25,
+        "runs": 3
+      },
+      "runs": [
+        {
+          "run": 1,
+          "p95FrameMs": 16.8,
+          "medianFrameMs": 16.7,
+          "fps": 58,
+          "drawCalls": 141,
+          "activeMeshes": 232,
+          "activeZombies": 14,
+          "quality": "低",
+          "renderScale": 1,
+          "errors": []
+        },
+        {
+          "run": 2,
+          "p95FrameMs": 16.7,
+          "medianFrameMs": 16.7,
+          "fps": 60,
+          "drawCalls": 141,
+          "activeMeshes": 232,
+          "activeZombies": 14,
+          "quality": "低",
+          "renderScale": 1,
+          "errors": []
+        },
+        {
+          "run": 3,
+          "p95FrameMs": 16.8,
+          "medianFrameMs": 16.7,
+          "fps": 61,
+          "drawCalls": 141,
+          "activeMeshes": 236,
+          "activeZombies": 14,
+          "quality": "低",
+          "renderScale": 1,
+          "errors": []
+        }
+      ],
+      "median": {
+        "p95FrameMs": 16.8,
+        "fps": 60,
+        "drawCalls": 141,
+        "activeMeshes": 232
+      },
+      "pass": true
+    }
+  ],
+  "gate": {
+    "p95FrameMs": 18,
+    "allRunsRequired": true
+  },
+  "allProfilesPass": false
+}

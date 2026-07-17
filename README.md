@@ -1,7 +1,7 @@
 # 暴風啟示錄 Storm Apocalypse
 
 [![Deploy Pages](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml/badge.svg)](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml)
-[![Version](https://img.shields.io/badge/version-0.2.7-c66b3d)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.8-c66b3d)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-79c3d2.svg)](LICENSE)
 
 在永夜暴雪中狩獵、經營最後一間肉舖，建立防線並在三十次鐘聲裡守住僅存的燈火。《暴風啟示錄》是一款可直接在瀏覽器遊玩的 3D 經營 × 動作 × 塔防遊戲。
@@ -21,6 +21,7 @@
 - **R12.1 手機 HUD 分區**：資源／整備、任務、提示、塔列與波次列各自佔位，390×844 與 844×390 具備可見 HUD 互斥 smoke 守門。
 - **R13 世界一致性與命中 VFX**：12 個 R8 語言 low-poly GLB 取代舊牛隻、松樹、岩石、柵欄與雪屋外殼；8 張透明戰鬥 VFX 在實際傷害 frame 提供雪爆、木屑、血量警示與地面 decal。
 - **R14 modal 互斥**：開場、選角、手機整備、暫停設定與結算開啟時，背景 HUD 同步 `inert`、隱藏且不可命中；1366×600、390×844 與 844×390 納入真實 `elementFromPoint` smoke 守門。
+- **R15 暴雪視覺**：gpt-image-2／C2PA 主選單 key art 與程序性 low/medium/high 風雪分級；低畫質只降低天候粒子密度，不改強度行為。
 - **事件波導演**：白幕突襲與精英壓境會改變敵人組成、血量、速度及出生節奏，不再只有固定數量公式。
 - **品質分檔**：依裝置能力自動套用低／中／高畫質，也可在設定中手動選擇自動／高／中／低；動態降級仍會保護幀率。
 
@@ -45,7 +46,7 @@
 - Playwright（桌機、觸控、動畫契約與戰鬥 smoke 測試）
 - GitHub Actions + GitHub Pages
 
-目前版本為 **0.2.7**，與 [`package.json`](package.json) 及 lockfile 一致。
+目前版本為 **0.2.8**，與 [`package.json`](package.json) 及 lockfile 一致。
 
 ## 本地開發
 

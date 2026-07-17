@@ -1,0 +1,460 @@
+{
+  "release": "storm R15 Wave 2",
+  "scenario": "all",
+  "measuredAt": "2026-07-17T12:32:24.883Z",
+  "conditions": {
+    "browser": "Playwright Chromium, single in-process browser; pages run sequentially",
+    "firstScreen": "production preview, Fast 3G 150ms/1.6Mbps, 4x CPU",
+    "gameplay": "Vite dev, ANGLE D3D11, dev-only deterministic weather and quality overrides",
+    "host": "concurrent shared machine; p95 shipping verdict must be repeated on the clean audit machine"
+  },
+  "evidenceSha256": "39eb82c46c0982e04bf8c6c6f0b0441fa8ab7ef442f6ff9cfd3ceaacf5488801",
+  "passed": 19,
+  "total": 19,
+  "failed": 0,
+  "allPass": true,
+  "results": [
+    {
+      "group": "resource",
+      "check": "physical memory before browser batch is at least 2 GiB",
+      "pass": true,
+      "detail": "9.57 GiB"
+    },
+    {
+      "group": "memory",
+      "check": "desktop decoded texture budget is at most 64 MiB",
+      "pass": true,
+      "detail": {
+        "keyArtBytes": 9446400,
+        "weatherProceduralBytes": 266240,
+        "totalBytes": 9712640
+      }
+    },
+    {
+      "group": "memory",
+      "check": "mobile decoded texture budget is at most 32 MiB",
+      "pass": true,
+      "detail": {
+        "keyArtBytes": 1152000,
+        "weatherProceduralBytes": 266240,
+        "totalBytes": 1418240
+      }
+    },
+    {
+      "group": "first-screen",
+      "check": "Fast 3G + 4x CPU key-art performance mark is at most 3000 ms",
+      "pass": true,
+      "detail": {
+        "focusMs": 287.4,
+        "navigation": {
+          "responseStart": 78.10000038146973,
+          "responseEnd": 265,
+          "domInteractive": 384.80000019073486
+        },
+        "element": null,
+        "gateMs": 3000
+      }
+    },
+    {
+      "group": "first-screen",
+      "check": "first interaction does not regress more than 10% from the >240000 ms before lower bound",
+      "pass": true,
+      "detail": {
+        "beforeLowerBoundMs": 240000,
+        "afterMs": 14564.1,
+        "regressionCeilingMs": 264000
+      }
+    },
+    {
+      "group": "key-art/RWD",
+      "check": "1366x600 focal bbox stays inside the viewport safe area",
+      "pass": true,
+      "detail": {
+        "mode": "contain",
+        "focus": {
+          "left": 398.73334418402777,
+          "top": 95.32800781249999,
+          "right": 1092.343984375,
+          "bottom": 530.2559912109375
+        },
+        "viewport": {
+          "width": 1366,
+          "height": 600
+        }
+      }
+    },
+    {
+      "group": "key-art/contrast/1366x600",
+      "check": "visible text contrast is at least 4.5:1 against the rendered scene",
+      "pass": true,
+      "detail": [
+        {
+          "selector": ".intro__overline",
+          "ratio": 12.97,
+          "foreground": "rgb(158, 219, 234)",
+          "background": [
+            3,
+            12,
+            17
+          ]
+        },
+        {
+          "selector": ".intro__content h1",
+          "ratio": 13.67,
+          "foreground": "rgb(244, 247, 247)",
+          "background": [
+            32,
+            41,
+            47
+          ]
+        },
+        {
+          "selector": ".intro__content > p",
+          "ratio": 7.63,
+          "foreground": "rgb(183, 198, 201)",
+          "background": [
+            40,
+            48,
+            53
+          ]
+        },
+        {
+          "selector": ".intro__features span",
+          "ratio": 6.89,
+          "foreground": "rgb(136, 155, 160)",
+          "background": [
+            2,
+            10,
+            14
+          ]
+        }
+      ]
+    },
+    {
+      "group": "key-art/RWD",
+      "check": "390x844 focal bbox stays inside the viewport safe area",
+      "pass": true,
+      "detail": {
+        "mode": "contain",
+        "focus": {
+          "left": 91.06660461425781,
+          "top": 347.16795532226564,
+          "right": 344.6640893554687,
+          "bottom": 506.1860502624512
+        },
+        "viewport": {
+          "width": 390,
+          "height": 844
+        }
+      }
+    },
+    {
+      "group": "key-art/contrast/390x844",
+      "check": "visible text contrast is at least 4.5:1 against the rendered scene",
+      "pass": true,
+      "detail": [
+        {
+          "selector": ".intro__overline",
+          "ratio": 12.9,
+          "foreground": "rgb(158, 219, 234)",
+          "background": [
+            4,
+            12,
+            17
+          ]
+        },
+        {
+          "selector": ".intro__content h1",
+          "ratio": 17.11,
+          "foreground": "rgb(244, 247, 247)",
+          "background": [
+            8,
+            21,
+            31
+          ]
+        },
+        {
+          "selector": ".intro__content > p",
+          "ratio": 7.24,
+          "foreground": "rgb(183, 198, 201)",
+          "background": [
+            48,
+            51,
+            53
+          ]
+        },
+        {
+          "selector": ".intro__features span",
+          "ratio": 6.61,
+          "foreground": "rgb(136, 155, 160)",
+          "background": [
+            8,
+            16,
+            21
+          ]
+        }
+      ]
+    },
+    {
+      "group": "key-art/RWD",
+      "check": "844x390 focal bbox stays inside the viewport safe area",
+      "pass": true,
+      "detail": {
+        "mode": "contain",
+        "focus": {
+          "left": 237.22951931423614,
+          "top": 61.96525390625001,
+          "right": 688.0694921874999,
+          "bottom": 344.6640893554687
+        },
+        "viewport": {
+          "width": 844,
+          "height": 390
+        }
+      }
+    },
+    {
+      "group": "key-art/contrast/844x390",
+      "check": "visible text contrast is at least 4.5:1 against the rendered scene",
+      "pass": true,
+      "detail": [
+        {
+          "selector": ".intro__overline",
+          "ratio": 13.05,
+          "foreground": "rgb(158, 219, 234)",
+          "background": [
+            3,
+            10,
+            16
+          ]
+        },
+        {
+          "selector": ".intro__content h1",
+          "ratio": 15.12,
+          "foreground": "rgb(244, 247, 247)",
+          "background": [
+            18,
+            34,
+            45
+          ]
+        },
+        {
+          "selector": ".intro__content > p",
+          "ratio": 7.34,
+          "foreground": "rgb(183, 198, 201)",
+          "background": [
+            42,
+            51,
+            56
+          ]
+        },
+        {
+          "selector": ".intro__features span",
+          "ratio": 6.89,
+          "foreground": "rgb(136, 155, 160)",
+          "background": [
+            2,
+            10,
+            14
+          ]
+        }
+      ]
+    },
+    {
+      "group": "weather/intensity",
+      "check": "low profile exposes the declared particle and post-process state",
+      "pass": true,
+      "detail": {
+        "intensity": "low",
+        "quality": "高",
+        "farRate": 90,
+        "nearRate": 10,
+        "density": 1,
+        "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}",
+        "post": "{\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}",
+        "performanceTier": 0,
+        "activeZombies": 3
+      }
+    },
+    {
+      "group": "weather/intensity",
+      "check": "medium profile exposes the declared particle and post-process state",
+      "pass": true,
+      "detail": {
+        "intensity": "medium",
+        "quality": "高",
+        "farRate": 220,
+        "nearRate": 26,
+        "density": 1,
+        "behavior": "{\"minSize\":0.035,\"maxSize\":0.15,\"nearMinSize\":0.1,\"nearMaxSize\":0.25,\"minLifeTime\":2.15,\"maxLifeTime\":4,\"gravity\":[1.55,-2.45,0.42],\"direction1\":[2.8,-1.45,-0.35],\"direction2\":[5.1,-3,0.8],\"color1\":[0.92,0.99,1,0.8],\"color2\":[0.65,0.83,0.91,0.44],\"fogDayAdd\":0.0015,\"fogNightAdd\":0.001,\"contrast\":1.14,\"exposure\":1.1,\"veilAlpha\":0.1,\"vignetteWeight\":1.48,\"bloomWeight\":0.2}",
+        "post": "{\"contrast\":1.14,\"exposure\":1.1,\"veilAlpha\":0.1,\"vignetteWeight\":1.48,\"bloomWeight\":0.2}",
+        "performanceTier": 0,
+        "activeZombies": 3
+      }
+    },
+    {
+      "group": "weather/intensity",
+      "check": "high profile exposes the declared particle and post-process state",
+      "pass": true,
+      "detail": {
+        "intensity": "high",
+        "quality": "高",
+        "farRate": 300,
+        "nearRate": 36,
+        "density": 1,
+        "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+        "post": "{\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+        "performanceTier": 0,
+        "activeZombies": 3
+      }
+    },
+    {
+      "group": "weather/intensity",
+      "check": "low/medium/high rates rise monotonically",
+      "pass": true,
+      "detail": {
+        "low": 90,
+        "medium": 220,
+        "high": 300
+      }
+    },
+    {
+      "group": "weather/quality",
+      "check": "low/medium/high keep identical weather behavior and post parameters while only density changes",
+      "pass": true,
+      "detail": {
+        "low": {
+          "intensity": "high",
+          "quality": "低",
+          "farRate": 96,
+          "nearRate": 12,
+          "density": 0.32,
+          "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+          "post": "{\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+          "performanceTier": 0,
+          "activeZombies": 3
+        },
+        "medium": {
+          "intensity": "high",
+          "quality": "中",
+          "farRate": 204,
+          "nearRate": 24,
+          "density": 0.68,
+          "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+          "post": "{\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+          "performanceTier": 0,
+          "activeZombies": 3
+        },
+        "high": {
+          "intensity": "high",
+          "quality": "高",
+          "farRate": 300,
+          "nearRate": 36,
+          "density": 1,
+          "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+          "post": "{\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}",
+          "performanceTier": 0,
+          "activeZombies": 3
+        }
+      }
+    },
+    {
+      "group": "weather/readability",
+      "check": "highest intensity keeps an enemy silhouette locally distinguishable",
+      "pass": true,
+      "detail": {
+        "enemyPoint": {
+          "x": 965.2359631846696,
+          "y": 267.32779541005385
+        },
+        "enemyReadability": {
+          "localContrast": 1.97,
+          "vividShare": 0.045,
+          "innerColor": [
+            106,
+            127,
+            147
+          ],
+          "outerColor": [
+            63,
+            81,
+            100
+          ]
+        }
+      }
+    },
+    {
+      "group": "weather/readability",
+      "check": "active ice-white hit feedback remains locally distinguishable at highest intensity",
+      "pass": true,
+      "detail": {
+        "impactPoint": {
+          "x": 964.329597662607,
+          "y": 274.59043729453
+        },
+        "impactReadability": {
+          "localContrast": 1.8,
+          "vividShare": 0.047,
+          "innerColor": [
+            101,
+            122,
+            142
+          ],
+          "outerColor": [
+            64,
+            82,
+            100
+          ]
+        },
+        "vfxEvents": "20"
+      }
+    },
+    {
+      "group": "weather/HUD-high",
+      "check": "visible text contrast is at least 4.5:1 against the rendered scene",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#hud-wave",
+          "ratio": 17.11,
+          "foreground": "rgb(244, 247, 247)",
+          "background": [
+            19,
+            20,
+            18
+          ]
+        },
+        {
+          "selector": "#hud-money",
+          "ratio": 10.33,
+          "foreground": "rgb(240, 183, 104)",
+          "background": [
+            18,
+            20,
+            17
+          ]
+        },
+        {
+          "selector": "#base-health",
+          "ratio": 16.3,
+          "foreground": "rgb(232, 239, 240)",
+          "background": [
+            15,
+            17,
+            16
+          ]
+        },
+        {
+          "selector": "#performance-chip",
+          "ratio": 5.8,
+          "foreground": "rgb(121, 144, 151)",
+          "background": [
+            12,
+            13,
+            11
+          ]
+        }
+      ]
+    }
+  ]
+}

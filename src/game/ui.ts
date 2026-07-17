@@ -138,7 +138,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R14";
+    root.dataset.uiVersion = "R15";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -251,7 +251,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R14 · 程序化 WebAudio · 本機存檔</p>
+              <p class="system-note">R15 · 程序化天候／WebAudio · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
@@ -326,6 +326,7 @@ export class UiController {
     this.muteButton = get("mute-toggle");
     this.shakeButton = get("shake-toggle");
     this.resetConfirm = get("reset-confirm");
+    this.observeKeyArt();
 
     const clearPressed = (): void => {
       for (const button of root.querySelectorAll("button.is-pressed")) button.classList.remove("is-pressed");
@@ -464,11 +465,11 @@ export class UiController {
     this.syncSettingsControls();
     this.setModalState("intro");
 
-    if (import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke")) {
+    if ((import.meta.env.DEV || import.meta.env.MODE === "smoke") && new URLSearchParams(window.location.search).has("smoke")) {
       const smokeWindow = window as Window & { __stormEnterGame?: () => void; __stormShowResult?: () => void };
       smokeWindow.__stormEnterGame = () => this.finishIntroTransition();
       smokeWindow.__stormShowResult = () => {
-        this.showResult(true, "R14 modal mutual-exclusion gate", [["gate", "R14"]]);
+        this.showResult(true, "R15 modal mutual-exclusion gate", [["gate", "R15"]]);
       };
     }
   }
@@ -482,6 +483,36 @@ export class UiController {
     this.setLoading(1, "風雪已就緒");
     this.startButton.disabled = false;
     this.startButton.classList.add("is-ready");
+    this.intro.classList.add("is-ready");
+  }
+
+  markInteractive(): void {
+    this.startButton.disabled = false;
+    this.startButton.classList.add("is-ready");
+    if (performance.getEntriesByName("storm-first-interactive", "mark").length === 0) {
+      performance.mark("storm-first-interactive");
+    }
+    this.root.dataset.firstInteractiveMs = performance.now().toFixed(1);
+  }
+
+  private observeKeyArt(): void {
+    const image = new Image();
+    image.decoding = "async";
+    image.fetchPriority = "high";
+    image.src = `${import.meta.env.BASE_URL}images/ui/background/menu-background-low.png?v=b6fc1241`;
+    const markRendered = (): void => {
+      if (performance.getEntriesByName("storm-key-art-rendered", "mark").length === 0) {
+        performance.mark("storm-key-art-rendered");
+      }
+      this.root.dataset.keyArtRendered = "true";
+      const mark = performance.getEntriesByName("storm-key-art-rendered", "mark")[0];
+      this.root.dataset.keyArtRenderedMs = (mark?.startTime ?? performance.now()).toFixed(1);
+      this.root.dataset.keyArtSource = "menu-background-low.png?v=b6fc1241";
+      document.getElementById("key-art-prerender")?.remove();
+    };
+    void image.decode().then(markRendered, () => {
+      this.root.dataset.keyArtRendered = "false";
+    });
   }
 
   enterGame(): void {

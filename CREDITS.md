@@ -2,6 +2,13 @@
 
 本文件記錄《暴風啟示錄》目前版本實際載入或仍保留在 repository 內的第三方素材，以及直接使用的框架、字型與建置工具。除下列第三方項目外，本專案程式碼、`tools/blender/` 程序產線及其原創輸出依根目錄 [MIT License](LICENSE) 發布；第三方素材仍依各自授權條款使用。
 
+## R15 Wave 2 主選單／宣傳 key art
+
+- 原始 master：OpenAI 內建 imagegen（model slug `gpt-image-2`）；嵌入 C2PA `softwareAgent = gpt-image 2.0`。
+- Master：`docs/evidence/R15/masters/storm-r15-key-art-gpt-image-2.png`，SHA-256 `4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab`。
+- Runtime／宣傳 derivatives：`public/images/ui/background/menu-background*`、`public/images/cover.png`、`assets/cover.png`；使用 `tools/process_r15_key_art.py` 做中心安全裁切、Lanczos 重採樣與固定 palette 量化，沒有手工或生成式後製。
+- 完整 prompt、reference hash、C2PA JSON、runtime hashes 與步驟：`docs/evidence/R15/prompt-template.md`、`docs/evidence/R15/c2pa-verification.json`、`docs/evidence/R15/source-manifest-r15.json`。
+
 ## 3D 模型與貼圖
 
 | 來源 | 授權 | 目前用途與檔案 | 稽核狀態 |

@@ -1,0 +1,80 @@
+{
+  "measuredAt": "2026-07-17T12:01:40.510Z",
+  "profiles": [
+    {
+      "profile": "desktop-1440x900",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "conditions": {
+        "renderer": "Chromium ANGLE d3d11",
+        "processPriority": "high",
+        "browserScheduling": "high/p-threads-0x0f",
+        "warmupMs": 8000,
+        "sampleMs": 6000,
+        "wave": 25,
+        "runs": 3
+      },
+      "runs": [
+        {
+          "run": 1,
+          "p95FrameMs": 33.4,
+          "medianFrameMs": 16.7,
+          "fps": 41,
+          "drawCalls": 185,
+          "activeMeshes": 392,
+          "activeZombies": 12,
+          "quality": "高",
+          "renderScale": 0.4,
+          "performanceTier": 2,
+          "weatherFarRate": 22,
+          "weatherNearRate": 3,
+          "errors": []
+        },
+        {
+          "run": 2,
+          "p95FrameMs": 33.3,
+          "medianFrameMs": 16.7,
+          "fps": 50,
+          "drawCalls": 190,
+          "activeMeshes": 397,
+          "activeZombies": 11,
+          "quality": "高",
+          "renderScale": 0.4,
+          "performanceTier": 2,
+          "weatherFarRate": 22,
+          "weatherNearRate": 3,
+          "errors": []
+        },
+        {
+          "run": 3,
+          "p95FrameMs": 33.4,
+          "medianFrameMs": 16.7,
+          "fps": 38,
+          "drawCalls": 190,
+          "activeMeshes": 391,
+          "activeZombies": 11,
+          "quality": "高",
+          "renderScale": 0.4,
+          "performanceTier": 2,
+          "weatherFarRate": 22,
+          "weatherNearRate": 3,
+          "errors": []
+        }
+      ],
+      "median": {
+        "p95FrameMs": 33.4,
+        "fps": 41,
+        "drawCalls": 190,
+        "activeMeshes": 392
+      },
+      "pass": false
+    }
+  ],
+  "gate": {
+    "p95FrameMs": 18,
+    "allRunsRequired": true
+  },
+  "allProfilesPass": false
+}

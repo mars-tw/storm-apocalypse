@@ -1,0 +1,922 @@
+{
+  "measuredAt": "2026-07-17T12:30:13.845Z",
+  "angleBackend": "d3d11",
+  "passed": 152,
+  "total": 152,
+  "failures": 0,
+  "allPass": true,
+  "results": [
+    {
+      "viewport": "assets/R8.1",
+      "check": "portraits and menu background pass the luminance gate",
+      "pass": true,
+      "detail": "protagonist-butcher-matron.png=0.562/0.0%, protagonist-butcher-matron-medium.png=0.562/0.0%, protagonist-butcher-matron-low.png=0.562/0.0%, protagonist-vet-sniper.png=0.567/0.0%, protagonist-vet-sniper-medium.png=0.567/0.0%, protagonist-vet-sniper-low.png=0.567/0.0%, protagonist-mech-youth.png=0.619/0.0%, protagonist-mech-youth-medium.png=0.619/0.0%, protagonist-mech-youth-low.png=0.619/0.0%, menu-background.png=0.221/11.4%, menu-background-medium.png=0.222/16.6%, menu-background-low.png=0.222/16.6%"
+    },
+    {
+      "viewport": "assets/R8",
+      "check": "R8 character art, palettes and animation assets satisfy the shipping contract",
+      "pass": true,
+      "detail": "ui-atlas-low.png=512x384/183779B, ui-atlas-medium.png=768x576/386854B, ui-atlas-high.png=1024x768/632311B, menu-background.png=1920x1080/2224985B, panel-9s.png=192x192/30299B, button-9s.png=192x192/32112B, protagonist-butcher-matron.png=512x768/377867B, protagonist-vet-sniper.png=512x768/294489B, protagonist-mech-youth.png=512x768/302586B, preset=R8/palettes:3, butcher=3204tris/18bones/4clips, sniper=3724tris/18bones/4clips, mechanic=3376tris/18bones/4clips, zombie-ash=1216tris/5clips, zombie-frost=1360tris/5clips, zombie-rust=1324tris/5clips, npc-lao-zhou.glb=18bones/Idle+Walk/LaoZhouConicalHat+LaoZhouPipeStem, npc-nurse-lin.glb=18bones/Idle+Walk/NurseLinMedicalBag, npc-kid-bao.glb=18bones/Idle+Walk/KidBaoOversizeBackpack, npc-scout-he.glb=18bones/Idle+Walk/ScoutHeBinocularL"
+    },
+    {
+      "viewport": "animation/R8",
+      "check": "Boss stays within budget and has walk, attack, hurt and death clips",
+      "pass": true,
+      "detail": "tris=4296, clips=Idle,Walk,Idle_Attack,HitReact,Death"
+    },
+    {
+      "viewport": "assets/R10",
+      "check": "staff, customer variants and articulated dog meet the R10 geometry, clip and forward contract",
+      "pass": true,
+      "detail": "hunter=3224tris/18bones/idle+walk+run+attack/root180=true, cashier=3096tris/18bones/idle+walk+run/root180=true, customer-traveler=3212tris/18bones/idle+walk+run/root180=true, customer-forager=3156tris/18bones/idle+walk+run/root180=true, customer-refugee=3136tris/18bones/idle+walk+run/root180=true, shepherd-dog=3092tris/19bones/idle+walk+run/root180=true"
+    },
+    {
+      "viewport": "assets/R10→R13",
+      "check": "strong-cow horns and emissive collar are integrated into the articulated cow GLB",
+      "pass": true,
+      "detail": "tris=2352, bones=19, clips=idle+Eating+Walk+Idle_HitReact1+Death, parts=CowStrongHornL+CowStrongHornR+CowStrongEmberCollar"
+    },
+    {
+      "viewport": "wiring/R10→R13",
+      "check": "runtime uses authored R10 staff and dog plus the integrated R13 strong cow",
+      "pass": true,
+      "detail": "legacy=none"
+    },
+    {
+      "viewport": "assets/R13",
+      "check": "12 Blender-MCP world GLBs pass count, hash, budget, AgX, material and cow animation gates",
+      "pass": true,
+      "detail": "counts={\"total\":12,\"cow\":2,\"pine\":3,\"rock\":2,\"fence\":2,\"snowhouse\":3}, tris=7930, cows19bones=true"
+    },
+    {
+      "viewport": "assets/R13",
+      "check": "8 gpt-image-2 combat VFX pass RGBA, dimension, alpha-corner, hash and uniqueness gates",
+      "pass": true,
+      "detail": "assets=8, runtime=1024² RGBA, manual=0m, alphaQA=10m"
+    },
+    {
+      "viewport": "wiring/R13",
+      "check": "new world GLBs replace legacy references and VFX fire only on applied combat impacts",
+      "pass": true,
+      "detail": "models=12, vfx=8, legacy=none, impactOrder=true"
+    },
+    {
+      "viewport": "audio/R12",
+      "check": "eight procedural WebAudio cues are registered and wired to runtime events",
+      "pass": true,
+      "detail": "cues=hit,swing,build,sale,wave,boss,towerAlarm,ui, wired=true"
+    },
+    {
+      "viewport": "director/R12",
+      "check": "whiteout and elite event waves change spawn rhythm and composition",
+      "pass": true,
+      "detail": "whiteout=fast runner surge, elite_surge=brute/high-HP formation"
+    },
+    {
+      "viewport": "save/R12",
+      "check": "base health is versioned and saved on impact",
+      "pass": true,
+      "detail": "SaveState.baseHealth + impact-frame saveState wiring"
+    },
+    {
+      "viewport": "quality/4-core desktop",
+      "check": "automatic quality",
+      "pass": true,
+      "detail": "quality=中, shadow=realtime, cores=4, memory=4"
+    },
+    {
+      "viewport": "quality/missing desktop metrics",
+      "check": "automatic quality",
+      "pass": true,
+      "detail": "quality=中, shadow=realtime, cores=undefined, memory=undefined"
+    },
+    {
+      "viewport": "quality/compact constrained touch",
+      "check": "automatic quality",
+      "pass": true,
+      "detail": "quality=低, shadow=blob, cores=4, memory=4"
+    },
+    {
+      "viewport": "quality/mobile",
+      "check": "automatic quality",
+      "pass": true,
+      "detail": "quality=低, shadow=blob, cores=8, memory=8"
+    },
+    {
+      "viewport": "hints/desktop 1440×900",
+      "check": "CTA keeps desktop WASD hint",
+      "pass": true,
+      "detail": "WASD 移動 · 空白鍵攻擊"
+    },
+    {
+      "viewport": "hints/desktop 1440×900",
+      "check": "game prompt keeps desktop WASD hint",
+      "pass": true,
+      "detail": "WASD穿越雪地 · 空白鍵揮砍"
+    },
+    {
+      "viewport": "hints/mobile 390×844",
+      "check": "CTA uses touch hint without WASD",
+      "pass": true,
+      "detail": "虛擬搖桿移動 · 揮砍鈕攻擊"
+    },
+    {
+      "viewport": "hints/mobile 390×844",
+      "check": "game prompt uses touch hint without WASD",
+      "pass": true,
+      "detail": "搖桿虛擬搖桿移動 · 揮砍鈕攻擊"
+    },
+    {
+      "viewport": "hints/touchscreen-desktop 1440×900",
+      "check": "CTA keeps desktop WASD hint",
+      "pass": true,
+      "detail": "WASD 移動 · 空白鍵攻擊"
+    },
+    {
+      "viewport": "hints/touchscreen-desktop 1440×900",
+      "check": "game prompt keeps desktop WASD hint",
+      "pass": true,
+      "detail": "WASD穿越雪地 · 空白鍵揮砍"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "intro modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"p\"}"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "settings modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"system\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#quality-options\"}"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "result modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"result\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#result-stats#result-stats\"}"
+    },
+    {
+      "viewport": "R14 desktop 1366×600",
+      "check": "selection modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"img\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "intro modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"p\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "mobile intro close removes start CTA and restores weapon hit target",
+      "pass": true,
+      "detail": "{\"pass\":true,\"startExists\":false,\"backgroundInert\":false,\"visibility\":\"visible\",\"hit\":\"weapon-cycle-icon\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "settings modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"system\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#quality-options\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "result modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"result\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"div#result-stats#result-stats\"}"
+    },
+    {
+      "viewport": "R14 mobile 390×844",
+      "check": "selection modal makes background HUD inert and visually hidden",
+      "pass": true,
+      "detail": "{\"pass\":true,\"state\":\"intro\",\"backgroundInert\":true,\"backgroundAriaHidden\":\"true\",\"backgroundVisibility\":\"hidden\",\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"interactiveCount\":24,\"selfHits\":[],\"visuallyExposed\":[],\"overlayOwnsProbe\":true,\"probeHit\":\"span#character-card__copy\"}"
+    },
+    {
+      "viewport": "R11 controls 1920x1080",
+      "check": "bottom control centers stay in viewport and hit themselves",
+      "pass": true,
+      "detail": "{\"failures\":[],\"overlaps\":[],\"viewport\":{\"width\":1920,\"height\":1080}}"
+    },
+    {
+      "viewport": "R11 controls 1920x1080",
+      "check": "desktop does not expose virtual joystick",
+      "pass": true,
+      "detail": "joystickVisible=false"
+    },
+    {
+      "viewport": "R11 controls 1920x1080",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    },
+    {
+      "viewport": "R11 controls 1440x780",
+      "check": "bottom control centers stay in viewport and hit themselves",
+      "pass": true,
+      "detail": "{\"failures\":[],\"overlaps\":[],\"viewport\":{\"width\":1440,\"height\":780}}"
+    },
+    {
+      "viewport": "R11 controls 1440x780",
+      "check": "desktop does not expose virtual joystick",
+      "pass": true,
+      "detail": "joystickVisible=false"
+    },
+    {
+      "viewport": "R11 controls 1440x780",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    },
+    {
+      "viewport": "R11 controls 1366x600",
+      "check": "bottom control centers stay in viewport and hit themselves",
+      "pass": true,
+      "detail": "{\"failures\":[],\"overlaps\":[],\"viewport\":{\"width\":1366,\"height\":600}}"
+    },
+    {
+      "viewport": "R11 controls 1366x600",
+      "check": "desktop does not expose virtual joystick",
+      "pass": true,
+      "detail": "joystickVisible=false"
+    },
+    {
+      "viewport": "R11 controls 1366x600",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "pause menu freezes simulation input",
+      "pass": true,
+      "detail": "paused=true, player={\"x\":-0.5,\"z\":-1.5}→{\"x\":-0.5,\"z\":-1.5}"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "game settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":190,\"panelScrollHeight\":170}}"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "manual quality override applies and auto mode restores detection",
+      "pass": true,
+      "detail": "high→auto/low"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "favicon is explicitly linked and returns SVG 200",
+      "pass": true,
+      "detail": "{\"href\":\"http://127.0.0.1:4173/storm-apocalypse/favicon.svg\",\"ok\":true,\"type\":\"image/svg+xml\"}"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "audio settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":264,\"panelScrollHeight\":244}}"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "volume and mute persist while all eight audio cues remain available",
+      "pass": true,
+      "detail": "{\"saved\":{\"version\":1,\"masterVolume\":0.25,\"sfxVolume\":0.9,\"muted\":true,\"quality\":\"auto\",\"screenShake\":true},\"cues\":[\"boss\",\"build\",\"hit\",\"sale\",\"swing\",\"towerAlarm\",\"ui\",\"wave\"]}"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "system settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":112,\"panelScrollHeight\":92}}"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "reset save requires confirmation and cancel preserves progress",
+      "pass": true,
+      "detail": "wave=5, health=63"
+    },
+    {
+      "viewport": "R12 menu 1366x600",
+      "check": "Escape closes the modal and resumes simulation",
+      "pass": true,
+      "detail": "modal hidden, paused=false"
+    },
+    {
+      "viewport": "R11 controls 1280x640",
+      "check": "bottom control centers stay in viewport and hit themselves",
+      "pass": true,
+      "detail": "{\"failures\":[],\"overlaps\":[],\"viewport\":{\"width\":1280,\"height\":640}}"
+    },
+    {
+      "viewport": "R11 controls 1280x640",
+      "check": "desktop does not expose virtual joystick",
+      "pass": true,
+      "detail": "joystickVisible=false"
+    },
+    {
+      "viewport": "R11 controls 1280x640",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    },
+    {
+      "viewport": "R12 menu 1280x640",
+      "check": "pause menu freezes simulation input",
+      "pass": true,
+      "detail": "paused=true, player={\"x\":-0.5,\"z\":-1.5}→{\"x\":-0.5,\"z\":-1.5}"
+    },
+    {
+      "viewport": "R12 menu 1280x640",
+      "check": "game settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":190,\"panelScrollHeight\":170}}"
+    },
+    {
+      "viewport": "R12 menu 1280x640",
+      "check": "audio settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":264,\"panelScrollHeight\":244}}"
+    },
+    {
+      "viewport": "R12 menu 1280x640",
+      "check": "system settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":112,\"panelScrollHeight\":92}}"
+    },
+    {
+      "viewport": "R12 menu 1280x640",
+      "check": "reset save requires confirmation and cancel preserves progress",
+      "pass": true,
+      "detail": "wave=5, health=63"
+    },
+    {
+      "viewport": "R12 menu 1280x640",
+      "check": "Escape closes the modal and resumes simulation",
+      "pass": true,
+      "detail": "modal hidden, paused=false"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "saved base health loads without refilling",
+      "pass": true,
+      "detail": "63%"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "visible buttons do not overlap and keep 8px spacing",
+      "pass": true,
+      "detail": "#settings-button/.tower-dock=871.5px, #settings-button/#wave-button=937.6px, #settings-button/#weapon-button=768.7px, #settings-button/#attack-button=743.0px, .tower-dock/#wave-button=8.0px, .tower-dock/#weapon-button=402.0px, .tower-dock/#attack-button=468.0px, #wave-button/#weapon-button=423.0px, #wave-button/#attack-button=489.0px, #weapon-button/#attack-button=8.0px"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "R15 UI version marker",
+      "pass": true,
+      "detail": "ui=R15"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "command panel uses four tabs and removes tower section",
+      "pass": true,
+      "detail": "tabs=4, visible=weapon, towerButtons=0"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "tab employee shows one section",
+      "pass": true,
+      "detail": "visible=employee"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "tab regular shows one section",
+      "pass": true,
+      "detail": "visible=regular"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "tab expansion shows one section",
+      "pass": true,
+      "detail": "visible=expansion"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "tab weapon shows one section",
+      "pass": true,
+      "detail": "visible=weapon"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "bottom tower dock exposes three fixed tower actions after prep closes",
+      "pass": true,
+      "detail": "buttons=3"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "weapon cycle button restores beside attack after prep closes",
+      "pass": true,
+      "detail": "visible=true, enabled=true"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "clicking a 3D build pad opens local tower action",
+      "pass": true,
+      "detail": "{\"point\":{\"x\":872.8471702439289,\"y\":353.1192183086658},\"popoverState\":{\"hidden\":false,\"type\":\"tower\",\"id\":\"ballista\",\"text\":\"\\n        \\n          \\n          獵風弩塔快速單體箭矢\\n          建造 ✦ 60\\n        \\n      \"}}"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "Ch14 save unlocks SMG",
+      "pass": true,
+      "detail": "enabled=true"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "buy and equip SMG",
+      "pass": true,
+      "detail": "weapon=smg, money=9639"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "keyboard SMG responds immediately",
+      "pass": true,
+      "detail": "attacks 0→4"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "SMG switches to ranged clip",
+      "pass": true,
+      "detail": "animation=attack_ranged"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "keyboard SMG damages cow",
+      "pass": true,
+      "detail": "cowsKilled 1→2"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "R13 combat VFX are preloaded and spawn on the cow damage frame",
+      "pass": true,
+      "detail": "{\"assets\":8,\"events\":1,\"lastAt\":8.873}"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "swing and hit cues follow attack and impact",
+      "pass": true,
+      "detail": "{\"hit\":1,\"swing\":4,\"build\":0,\"sale\":0,\"wave\":0,\"boss\":0,\"towerAlarm\":0,\"ui\":10}"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "keyboard reaches firing position",
+      "pass": true,
+      "detail": "playerZ=7.42"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "wave starts",
+      "pass": true,
+      "detail": "夜襲 · 6 / 30 · 15 敵"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "event wave announces whiteout and plays wave cue",
+      "pass": true,
+      "detail": "event=whiteout, waveCue=1"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "tower fire triggers authored clip",
+      "pass": true,
+      "detail": "animations=ballista:stopped,frost:attack,cannon:stopped"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "keyboard SMG hold repeats",
+      "pass": true,
+      "detail": "attacks 4→15"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "keyboard SMG damages zombie",
+      "pass": true,
+      "detail": "playerKills 0→9"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "distant tower animation LOD pauses",
+      "pass": true,
+      "detail": "lod=ballista:active,frost:paused,cannon:active"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "base health survives reload after wave repair or enemy impact",
+      "pass": true,
+      "detail": "saved=65, reloaded=65"
+    },
+    {
+      "viewport": "1440×900",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    },
+    {
+      "viewport": "HUD mutex 390×844",
+      "check": "mobile HUD mutex rejects visible overlaps over 8px",
+      "pass": true,
+      "detail": "{\"count\":16,\"collisions\":[],\"viewport\":\"390×844\"}"
+    },
+    {
+      "viewport": "R11 controls 390x844",
+      "check": "bottom control centers stay in viewport and hit themselves",
+      "pass": true,
+      "detail": "{\"failures\":[],\"overlaps\":[],\"viewport\":{\"width\":390,\"height\":844}}"
+    },
+    {
+      "viewport": "R11 controls 390x844",
+      "check": "desktop does not expose virtual joystick",
+      "pass": true,
+      "detail": "joystickVisible=true"
+    },
+    {
+      "viewport": "R11 controls 390x844",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    },
+    {
+      "viewport": "R12 menu 390x844",
+      "check": "pause menu freezes simulation input",
+      "pass": true,
+      "detail": "paused=true, player={\"x\":-0.5,\"z\":-1.5}→{\"x\":-0.5,\"z\":-1.5}"
+    },
+    {
+      "viewport": "R12 menu 390x844",
+      "check": "game settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":188,\"panelScrollHeight\":168}}"
+    },
+    {
+      "viewport": "R12 menu 390x844",
+      "check": "audio settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":264,\"panelScrollHeight\":244}}"
+    },
+    {
+      "viewport": "R12 menu 390x844",
+      "check": "system settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":112,\"panelScrollHeight\":92}}"
+    },
+    {
+      "viewport": "R12 menu 390x844",
+      "check": "reset save requires confirmation and cancel preserves progress",
+      "pass": true,
+      "detail": "wave=5, health=63"
+    },
+    {
+      "viewport": "R12 menu 390x844",
+      "check": "Escape closes the modal and resumes simulation",
+      "pass": true,
+      "detail": "modal hidden, paused=false"
+    },
+    {
+      "viewport": "390×844",
+      "check": "saved base health loads without refilling",
+      "pass": true,
+      "detail": "63%"
+    },
+    {
+      "viewport": "390×844",
+      "check": "visible buttons do not overlap and keep 8px spacing",
+      "pass": true,
+      "detail": "#settings-button/#quest-toggle=219.6px, #settings-button/#shop-toggle=14.0px, #settings-button/.joystick=697.4px, #settings-button/.tower-dock=535.7px, #settings-button/#wave-button=600.3px, #settings-button/#weapon-button=728.2px, #settings-button/#attack-button=701.0px, #quest-toggle/#shop-toggle=163.9px, #quest-toggle/.joystick=549.0px, #quest-toggle/.tower-dock=419.0px, #quest-toggle/#wave-button=482.0px, #quest-toggle/#weapon-button=622.1px, #quest-toggle/#attack-button=610.5px, #shop-toggle/.joystick=625.2px, #shop-toggle/.tower-dock=473.0px, #shop-toggle/#wave-button=536.0px, #shop-toggle/#weapon-button=665.0px, #shop-toggle/#attack-button=639.0px, .joystick/.tower-dock=78.0px, .joystick/#wave-button=8.0px, .joystick/#weapon-button=118.0px, .joystick/#attack-button=176.0px, .tower-dock/#wave-button=11.0px, .tower-dock/#weapon-button=140.0px, .tower-dock/#attack-button=114.0px, #wave-button/#weapon-button=70.0px, #wave-button/#attack-button=47.5px, #weapon-button/#attack-button=8.0px"
+    },
+    {
+      "viewport": "390×844",
+      "check": "panel responds on pointerdown",
+      "pass": true,
+      "detail": "open-before-pointerup=true"
+    },
+    {
+      "viewport": "390×844",
+      "check": "open prep modal makes background HUD inert, hidden and un-hittable",
+      "pass": true,
+      "detail": "{\"failures\":[],\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"prepModal\":\"true\",\"panelOwnsCenter\":true}"
+    },
+    {
+      "viewport": "390×844",
+      "check": "open panel avoids control hot zones",
+      "pass": true,
+      "detail": "{\"panelBox\":{\"x\":75,\"y\":166,\"width\":304,\"height\":384},\"joystickBox\":{\"x\":13,\"y\":717,\"width\":112,\"height\":112},\"attackBox\":{\"x\":301,\"y\":753,\"width\":76,\"height\":76}}"
+    },
+    {
+      "viewport": "390×844",
+      "check": "open panel blocks gameplay",
+      "pass": true,
+      "detail": "canvas-pointerdown=0"
+    },
+    {
+      "viewport": "390×844",
+      "check": "closed panel restores gameplay",
+      "pass": true,
+      "detail": "canvas-pointerdown=1"
+    },
+    {
+      "viewport": "390×844",
+      "check": "closed control hit targets",
+      "pass": true,
+      "detail": "{\"joystick\":true,\"attack\":true}"
+    },
+    {
+      "viewport": "390×844",
+      "check": "R15 UI version marker",
+      "pass": true,
+      "detail": "ui=R15"
+    },
+    {
+      "viewport": "390×844",
+      "check": "command panel uses four tabs and removes tower section",
+      "pass": true,
+      "detail": "tabs=4, visible=weapon, towerButtons=0"
+    },
+    {
+      "viewport": "390×844",
+      "check": "tab employee shows one section",
+      "pass": true,
+      "detail": "visible=employee"
+    },
+    {
+      "viewport": "390×844",
+      "check": "tab regular shows one section",
+      "pass": true,
+      "detail": "visible=regular"
+    },
+    {
+      "viewport": "390×844",
+      "check": "tab expansion shows one section",
+      "pass": true,
+      "detail": "visible=expansion"
+    },
+    {
+      "viewport": "390×844",
+      "check": "tab weapon shows one section",
+      "pass": true,
+      "detail": "visible=weapon"
+    },
+    {
+      "viewport": "390×844",
+      "check": "bottom tower dock exposes three fixed tower actions after prep closes",
+      "pass": true,
+      "detail": "buttons=3"
+    },
+    {
+      "viewport": "390×844",
+      "check": "weapon cycle button restores beside attack after prep closes",
+      "pass": true,
+      "detail": "visible=true, enabled=true"
+    },
+    {
+      "viewport": "390×844",
+      "check": "clicking a 3D build pad opens local tower action",
+      "pass": true,
+      "detail": "{\"point\":{\"x\":338.33669175519475,\"y\":331.1473413522236},\"popoverState\":{\"hidden\":false,\"type\":\"tower\",\"id\":\"ballista\",\"text\":\"\\n        \\n          \\n          獵風弩塔快速單體箭矢\\n          建造 ✦ 60\\n        \\n      \"}}"
+    },
+    {
+      "viewport": "390×844",
+      "check": "Ch14 save unlocks SMG",
+      "pass": true,
+      "detail": "enabled=true"
+    },
+    {
+      "viewport": "390×844",
+      "check": "buy and equip SMG",
+      "pass": true,
+      "detail": "weapon=smg, money=9639"
+    },
+    {
+      "viewport": "390×844",
+      "check": "attack pressed state",
+      "pass": true,
+      "detail": "is-pressed=true"
+    },
+    {
+      "viewport": "390×844",
+      "check": "touch SMG responds immediately",
+      "pass": true,
+      "detail": "attacks 0→5"
+    },
+    {
+      "viewport": "390×844",
+      "check": "SMG switches to ranged clip",
+      "pass": true,
+      "detail": "animation=attack_ranged"
+    },
+    {
+      "viewport": "390×844",
+      "check": "touch SMG damages cow",
+      "pass": true,
+      "detail": "cowsKilled 1→2"
+    },
+    {
+      "viewport": "390×844",
+      "check": "R13 combat VFX are preloaded and spawn on the cow damage frame",
+      "pass": true,
+      "detail": "{\"assets\":8,\"events\":1,\"lastAt\":5.516}"
+    },
+    {
+      "viewport": "390×844",
+      "check": "swing and hit cues follow attack and impact",
+      "pass": true,
+      "detail": "{\"hit\":1,\"swing\":5,\"build\":0,\"sale\":0,\"wave\":0,\"boss\":0,\"towerAlarm\":0,\"ui\":7}"
+    },
+    {
+      "viewport": "390×844",
+      "check": "joystick reaches firing position",
+      "pass": true,
+      "detail": "playerZ=7.22"
+    },
+    {
+      "viewport": "390×844",
+      "check": "wave starts",
+      "pass": true,
+      "detail": "夜襲 · 6 / 30 · 15 敵"
+    },
+    {
+      "viewport": "390×844",
+      "check": "event wave announces whiteout and plays wave cue",
+      "pass": true,
+      "detail": "event=whiteout, waveCue=1"
+    },
+    {
+      "viewport": "390×844",
+      "check": "tower fire triggers authored clip",
+      "pass": true,
+      "detail": "animations=ballista:stopped,frost:attack,cannon:stopped"
+    },
+    {
+      "viewport": "390×844",
+      "check": "attack pressed state",
+      "pass": true,
+      "detail": "is-pressed=true"
+    },
+    {
+      "viewport": "390×844",
+      "check": "touch SMG hold repeats",
+      "pass": true,
+      "detail": "attacks 5→16"
+    },
+    {
+      "viewport": "390×844",
+      "check": "touch SMG damages zombie",
+      "pass": true,
+      "detail": "playerKills 0→10"
+    },
+    {
+      "viewport": "390×844",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    },
+    {
+      "viewport": "HUD mutex 844×390",
+      "check": "mobile HUD mutex rejects visible overlaps over 8px",
+      "pass": true,
+      "detail": "{\"count\":16,\"collisions\":[],\"viewport\":\"844×390\"}"
+    },
+    {
+      "viewport": "844×390",
+      "check": "visible buttons do not overlap and keep 8px spacing",
+      "pass": true,
+      "detail": "#settings-button/#quest-toggle=657.0px, #settings-button/#shop-toggle=173.1px, #settings-button/.joystick=687.2px, #settings-button/.tower-dock=330.8px, #settings-button/#wave-button=392.9px, #settings-button/#weapon-button=272.9px, #settings-button/#attack-button=247.0px, #quest-toggle/#shop-toggle=391.3px, #quest-toggle/.joystick=144.0px, #quest-toggle/.tower-dock=217.7px, #quest-toggle/#wave-button=280.9px, #quest-toggle/#weapon-button=592.3px, #quest-toggle/#attack-button=644.4px, #shop-toggle/.joystick=437.4px, #shop-toggle/.tower-dock=197.0px, #shop-toggle/#wave-button=260.8px, #shop-toggle/#weapon-button=269.1px, #shop-toggle/#attack-button=272.8px, .joystick/.tower-dock=164.0px, .joystick/#wave-button=191.4px, .joystick/#weapon-button=554.0px, .joystick/#attack-button=616.0px, .tower-dock/#wave-button=11.0px, .tower-dock/#weapon-button=158.3px, .tower-dock/#attack-button=220.0px, #wave-button/#weapon-button=185.4px, #wave-button/#attack-button=247.4px, #weapon-button/#attack-button=8.0px"
+    },
+    {
+      "viewport": "844×390",
+      "check": "panel responds on pointerdown",
+      "pass": true,
+      "detail": "open-before-pointerup=true"
+    },
+    {
+      "viewport": "844×390",
+      "check": "open prep modal makes background HUD inert, hidden and un-hittable",
+      "pass": true,
+      "detail": "{\"failures\":[],\"canvasInert\":true,\"canvasAriaHidden\":\"true\",\"prepModal\":\"true\",\"panelOwnsCenter\":true}"
+    },
+    {
+      "viewport": "844×390",
+      "check": "open panel avoids control hot zones",
+      "pass": true,
+      "detail": "{\"panelBox\":{\"x\":510,\"y\":64,\"width\":320,\"height\":186},\"joystickBox\":{\"x\":20,\"y\":263,\"width\":112,\"height\":112},\"attackBox\":{\"x\":748,\"y\":299,\"width\":76,\"height\":76}}"
+    },
+    {
+      "viewport": "844×390",
+      "check": "open panel blocks gameplay",
+      "pass": true,
+      "detail": "canvas-pointerdown=0"
+    },
+    {
+      "viewport": "844×390",
+      "check": "closed panel restores gameplay",
+      "pass": true,
+      "detail": "canvas-pointerdown=1"
+    },
+    {
+      "viewport": "844×390",
+      "check": "closed control hit targets",
+      "pass": true,
+      "detail": "{\"joystick\":true,\"attack\":true}"
+    },
+    {
+      "viewport": "844×390",
+      "check": "R15 UI version marker",
+      "pass": true,
+      "detail": "ui=R15"
+    },
+    {
+      "viewport": "844×390",
+      "check": "command panel uses four tabs and removes tower section",
+      "pass": true,
+      "detail": "tabs=4, visible=weapon, towerButtons=0"
+    },
+    {
+      "viewport": "844×390",
+      "check": "tab employee shows one section",
+      "pass": true,
+      "detail": "visible=employee"
+    },
+    {
+      "viewport": "844×390",
+      "check": "tab regular shows one section",
+      "pass": true,
+      "detail": "visible=regular"
+    },
+    {
+      "viewport": "844×390",
+      "check": "tab expansion shows one section",
+      "pass": true,
+      "detail": "visible=expansion"
+    },
+    {
+      "viewport": "844×390",
+      "check": "tab weapon shows one section",
+      "pass": true,
+      "detail": "visible=weapon"
+    },
+    {
+      "viewport": "844×390",
+      "check": "bottom tower dock exposes three fixed tower actions after prep closes",
+      "pass": true,
+      "detail": "buttons=3"
+    },
+    {
+      "viewport": "844×390",
+      "check": "weapon cycle button restores beside attack after prep closes",
+      "pass": true,
+      "detail": "visible=true, enabled=true"
+    },
+    {
+      "viewport": "844×390",
+      "check": "clicking a 3D build pad opens local tower action",
+      "pass": true,
+      "detail": "{\"point\":{\"x\":488.1078855328804,\"y\":153.01831726220888},\"popoverState\":{\"hidden\":false,\"type\":\"tower\",\"id\":\"ballista\",\"text\":\"\\n        \\n          \\n          獵風弩塔快速單體箭矢\\n          建造 ✦ 60\\n        \\n      \"}}"
+    },
+    {
+      "viewport": "R12 menu 844x390",
+      "check": "pause menu freezes simulation input",
+      "pass": true,
+      "detail": "paused=true, player={\"x\":-0.5,\"z\":-1.5}→{\"x\":-0.5,\"z\":-1.5}"
+    },
+    {
+      "viewport": "R12 menu 844x390",
+      "check": "game settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":137,\"panelScrollHeight\":125}}"
+    },
+    {
+      "viewport": "R12 menu 844x390",
+      "check": "audio settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":195,\"panelScrollHeight\":183}}"
+    },
+    {
+      "viewport": "R12 menu 844x390",
+      "check": "system settings panel stays reachable without long scrolling",
+      "pass": true,
+      "detail": "{\"failures\":[],\"body\":{\"clientHeight\":84,\"panelScrollHeight\":72}}"
+    },
+    {
+      "viewport": "R12 menu 844x390",
+      "check": "reset save requires confirmation and cancel preserves progress",
+      "pass": true,
+      "detail": "wave=5, health=63"
+    },
+    {
+      "viewport": "R12 menu 844x390",
+      "check": "Escape closes the modal and resumes simulation",
+      "pass": true,
+      "detail": "modal hidden, paused=false"
+    },
+    {
+      "viewport": "844×390",
+      "check": "console errors",
+      "pass": true,
+      "detail": "0 errors"
+    }
+  ]
+}

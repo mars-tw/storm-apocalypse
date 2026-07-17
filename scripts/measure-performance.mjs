@@ -15,6 +15,7 @@ const sampleMs = Number(process.env.PERF_SAMPLE_MS ?? 6_000);
 const angleBackend = process.env.PERF_ANGLE ?? "d3d11";
 const p95GateMs = Number(process.env.PERF_P95_GATE_MS ?? 18);
 const profileFilter = process.env.PERF_PROFILE;
+const meshAudit = process.env.PERF_MESH_AUDIT === "1";
 const saveKey = "storm-apocalypse-save-v1";
 let server;
 let processPriority = "normal";
@@ -120,10 +121,10 @@ async function measureProfile(browser, profile) {
     await page.locator("#start-button").waitFor({ state: "visible", timeout: 180_000 });
     await page.waitForFunction(() => document.querySelector("#start-button")?.hasAttribute("disabled") === false, undefined, { timeout: 180_000 });
     await page.locator("#start-button").click({ force: true, timeout: 180_000 });
-    await page.locator("#intro").waitFor({ state: "detached", timeout: 15_000 });
+    await page.locator("#intro").waitFor({ state: "detached", timeout: 180_000 });
     if (profile.touch) await page.locator("#wave-button").click();
     else await page.keyboard.press("n");
-    await page.waitForFunction(() => document.querySelector("#hud-wave")?.textContent?.includes("夜襲"), undefined, { timeout: 15_000 });
+    await page.waitForFunction(() => document.querySelector("#hud-wave")?.textContent?.includes("夜襲"), undefined, { timeout: 30_000 });
     await page.waitForTimeout(warmupMs);
     const frameTimes = await page.evaluate((duration) => new Promise((resolvePromise) => {
       const samples = [];
@@ -144,6 +145,9 @@ async function measureProfile(browser, profile) {
     frameTimes.sort((a, b) => a - b);
     const p95 = frameTimes[Math.min(frameTimes.length - 1, Math.floor(frameTimes.length * 0.95))];
     const canvas = page.locator("#game-canvas");
+    const activeMeshNames = meshAudit
+      ? await page.evaluate(() => window.__stormR15ActiveMeshNames?.() ?? [])
+      : undefined;
     const sample = {
       run,
       p95FrameMs: Number(p95.toFixed(2)),
@@ -154,6 +158,10 @@ async function measureProfile(browser, profile) {
       activeZombies: Number(await canvas.getAttribute("data-active-zombies")),
       quality: await canvas.getAttribute("data-quality"),
       renderScale: Number(await canvas.getAttribute("data-render-scale")),
+      performanceTier: Number(await canvas.getAttribute("data-performance-tier")),
+      weatherFarRate: Number(await canvas.getAttribute("data-weather-far-rate")),
+      weatherNearRate: Number(await canvas.getAttribute("data-weather-near-rate")),
+      ...(activeMeshNames ? { activeMeshNames } : {}),
       errors,
     };
     samples.push(sample);

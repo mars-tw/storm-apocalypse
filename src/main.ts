@@ -14,7 +14,8 @@ async function bootstrap(): Promise<void> {
   const settings = loadSettings();
   const audio = new ProceduralAudio(settings);
   const ui = new UiController(root, state, settings);
-  const uiOnlySmoke = import.meta.env.DEV
+  const testBuild = import.meta.env.DEV || import.meta.env.MODE === "smoke";
+  const uiOnlySmoke = testBuild
     && new URLSearchParams(window.location.search).has("smoke")
     && new URLSearchParams(window.location.search).has("ui-only");
   if (uiOnlySmoke) {
@@ -22,8 +23,16 @@ async function bootstrap(): Promise<void> {
     return;
   }
   const game = new StormGame(canvas, ui, state, settings, audio);
+  let gameReady = false;
+  let startRequested = false;
   ui.onProtagonistSelect = (id) => game.selectProtagonist(id);
-  ui.onStart = () => game.start();
+  ui.onStart = () => {
+    if (gameReady) game.start();
+    else {
+      startRequested = true;
+      ui.setLoading(0.02, "守燈人已就位，正在展開北境");
+    }
+  };
   ui.onAttackStart = () => game.startAttack();
   ui.onAttackEnd = () => game.stopAttack();
   ui.onWave = () => game.startWave();
@@ -41,10 +50,14 @@ async function bootstrap(): Promise<void> {
   ui.onUiSound = () => audio.play("ui");
   window.addEventListener("pointerdown", () => void audio.unlock(), { capture: true, once: true });
   window.addEventListener("keydown", () => void audio.unlock(), { capture: true, once: true });
+  const smokeMode = testBuild && new URLSearchParams(window.location.search).has("smoke");
+  if (!smokeMode) ui.markInteractive();
 
   try {
     await game.initialize();
+    gameReady = true;
     ui.markReady();
+    if (startRequested) game.start();
   } catch (error) {
     console.error(error);
     ui.setLoading(0.12, "北境資產載入失敗，請重新整理頁面");

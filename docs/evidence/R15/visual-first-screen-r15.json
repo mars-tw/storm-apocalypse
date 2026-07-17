@@ -1,0 +1,69 @@
+{
+  "release": "storm R15 Wave 2",
+  "scenario": "first-screen",
+  "measuredAt": "2026-07-17T10:04:23.239Z",
+  "conditions": {
+    "browser": "Playwright Chromium, single in-process browser; pages run sequentially",
+    "firstScreen": "production preview, Fast 3G 150ms/1.6Mbps, 4x CPU",
+    "gameplay": "Vite dev, ANGLE D3D11, dev-only deterministic weather and quality overrides",
+    "host": "concurrent shared machine; p95 shipping verdict must be repeated on the clean audit machine"
+  },
+  "evidenceSha256": "0af1d5a6296bd1dea8a9561b00f63cf555b32636ab21005a2956cfae4821d15c",
+  "passed": 4,
+  "total": 5,
+  "failed": 1,
+  "allPass": false,
+  "results": [
+    {
+      "group": "resource",
+      "check": "physical memory before browser batch is at least 2 GiB",
+      "pass": true,
+      "detail": "6.50 GiB"
+    },
+    {
+      "group": "memory",
+      "check": "desktop decoded texture budget is at most 64 MiB",
+      "pass": true,
+      "detail": {
+        "keyArtBytes": 9446400,
+        "weatherProceduralBytes": 266240,
+        "totalBytes": 9712640
+      }
+    },
+    {
+      "group": "memory",
+      "check": "mobile decoded texture budget is at most 32 MiB",
+      "pass": true,
+      "detail": {
+        "keyArtBytes": 1152000,
+        "weatherProceduralBytes": 266240,
+        "totalBytes": 1418240
+      }
+    },
+    {
+      "group": "first-screen",
+      "check": "Fast 3G + 4x CPU key-art performance mark is at most 3000 ms",
+      "pass": false,
+      "detail": {
+        "focusMs": 4851.3,
+        "navigation": {
+          "responseStart": 152.09999990463257,
+          "responseEnd": 318.19999980926514,
+          "domInteractive": 0
+        },
+        "element": null,
+        "gateMs": 3000
+      }
+    },
+    {
+      "group": "first-screen",
+      "check": "first interaction does not regress more than 10% from the >240000 ms before lower bound",
+      "pass": true,
+      "detail": {
+        "beforeLowerBoundMs": 240000,
+        "afterMs": 12473.8,
+        "regressionCeilingMs": 264000
+      }
+    }
+  ]
+}

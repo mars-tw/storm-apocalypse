@@ -1,0 +1,17 @@
+{
+  "path": "docs/evidence/R15/masters/storm-r15-key-art-gpt-image-2.png",
+  "sha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+  "bytes": 1883344,
+  "c2pa": {
+    "pngChunk": "caBX",
+    "chunkCount": 1,
+    "allPngChunkCrcsValid": true,
+    "softwareAgent": {
+      "name": "gpt-image",
+      "version": "2.0"
+    },
+    "summary": "gpt-image 2.0"
+  },
+  "expected": "softwareAgent = gpt-image 2.x",
+  "pass": true
+}

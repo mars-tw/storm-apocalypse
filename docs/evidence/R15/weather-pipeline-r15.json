@@ -1,0 +1,201 @@
+{
+  "release": "storm R15 Wave 2",
+  "pipeline": "Babylon.js CPU particle systems + image-processing post effects",
+  "qualityDensity": {
+    "低": 0.32,
+    "中": 0.68,
+    "高": 1
+  },
+  "adaptiveDensity": {
+    "0": 1,
+    "1": 0.25,
+    "2": 0.1
+  },
+  "intensities": {
+    "low": {
+      "farRate": 90,
+      "nearRate": 10,
+      "minSize": 0.03,
+      "maxSize": 0.12,
+      "nearMinSize": 0.08,
+      "nearMaxSize": 0.2,
+      "minLifeTime": 2.4,
+      "maxLifeTime": 4.4,
+      "gravity": [
+        0.9,
+        -2.2,
+        0.24
+      ],
+      "direction1": [
+        1.5,
+        -1.1,
+        -0.2
+      ],
+      "direction2": [
+        3.1,
+        -2.5,
+        0.5
+      ],
+      "color1": [
+        0.91,
+        0.98,
+        1,
+        0.72
+      ],
+      "color2": [
+        0.67,
+        0.84,
+        0.91,
+        0.38
+      ],
+      "fogDayAdd": 0,
+      "fogNightAdd": 0,
+      "contrast": 1.1,
+      "exposure": 1.08,
+      "veilAlpha": 0.05,
+      "vignetteWeight": 1.35,
+      "bloomWeight": 0.18
+    },
+    "medium": {
+      "farRate": 220,
+      "nearRate": 26,
+      "minSize": 0.035,
+      "maxSize": 0.15,
+      "nearMinSize": 0.1,
+      "nearMaxSize": 0.25,
+      "minLifeTime": 2.15,
+      "maxLifeTime": 4,
+      "gravity": [
+        1.55,
+        -2.45,
+        0.42
+      ],
+      "direction1": [
+        2.8,
+        -1.45,
+        -0.35
+      ],
+      "direction2": [
+        5.1,
+        -3,
+        0.8
+      ],
+      "color1": [
+        0.92,
+        0.99,
+        1,
+        0.8
+      ],
+      "color2": [
+        0.65,
+        0.83,
+        0.91,
+        0.44
+      ],
+      "fogDayAdd": 0.0015,
+      "fogNightAdd": 0.001,
+      "contrast": 1.14,
+      "exposure": 1.1,
+      "veilAlpha": 0.1,
+      "vignetteWeight": 1.48,
+      "bloomWeight": 0.2
+    },
+    "high": {
+      "farRate": 300,
+      "nearRate": 36,
+      "minSize": 0.04,
+      "maxSize": 0.17,
+      "nearMinSize": 0.12,
+      "nearMaxSize": 0.3,
+      "minLifeTime": 1.9,
+      "maxLifeTime": 3.6,
+      "gravity": [
+        2.4,
+        -2.7,
+        0.62
+      ],
+      "direction1": [
+        4.6,
+        -1.8,
+        -0.5
+      ],
+      "direction2": [
+        7.8,
+        -3.5,
+        1.1
+      ],
+      "color1": [
+        0.94,
+        0.99,
+        1,
+        0.84
+      ],
+      "color2": [
+        0.61,
+        0.81,
+        0.9,
+        0.48
+      ],
+      "fogDayAdd": 0.003,
+      "fogNightAdd": 0.002,
+      "contrast": 1.2,
+      "exposure": 1.12,
+      "veilAlpha": 0.16,
+      "vignetteWeight": 1.62,
+      "bloomWeight": 0.22
+    }
+  },
+  "qualityInvariantParameters": [
+    "minSize",
+    "maxSize",
+    "nearMinSize",
+    "nearMaxSize",
+    "minLifeTime",
+    "maxLifeTime",
+    "gravity",
+    "direction1",
+    "direction2",
+    "color1",
+    "color2",
+    "fogDayAdd",
+    "fogNightAdd",
+    "contrast",
+    "exposure",
+    "veilAlpha",
+    "vignetteWeight",
+    "bloomWeight"
+  ],
+  "productionMapping": {
+    "daylightOrPreparation": "low",
+    "activeStandardOrEliteWave": "medium",
+    "activeWhiteoutOrBossWave": "high"
+  },
+  "gameplayMutation": "none",
+  "generator": "tools/build-r15-weather-manifest.mjs",
+  "procedural": true,
+  "c2paRequired": false,
+  "c2paReason": "particle systems and image-processing parameters are code-native procedural output",
+  "sources": [
+    {
+      "path": "src/game/weatherProfiles.json",
+      "sha256": "b5fe6c410a4cadf6395f663a13657b84fd3cc0e04b79503d0316cd2f51f70174"
+    },
+    {
+      "path": "src/game/weather.ts",
+      "sha256": "d3a0f997ea1be696a2e7cf2eea6cc5f5a3ab7565298ff083dfc55294b8790b0f"
+    },
+    {
+      "path": "src/game/StormGame.ts",
+      "sha256": "594dc23018361bc72a030fb9f4f7d1ff27783f4642d74c7a3165e07dfbb51116"
+    }
+  ],
+  "gates": {
+    "intensities": true,
+    "qualityDensityOnly": true,
+    "lowDensityLessThanMedium": true,
+    "mediumDensityLessThanHigh": true,
+    "gameplayMutation": true,
+    "proceduralTextureDecodedBytes": 266240,
+    "allPass": true
+  }
+}

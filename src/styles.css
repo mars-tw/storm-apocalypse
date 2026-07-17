@@ -243,8 +243,9 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .intro::before { content:""; position:absolute; z-index:-1; inset:0; background:linear-gradient(90deg,rgba(1,7,10,.96),rgba(4,11,14,.7) 45%,rgba(7,10,11,.18) 74%),linear-gradient(0deg,rgba(2,7,9,.82),transparent 52%),repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 1px),rgba(255,255,255,.025) 25%); }
 .intro__render { position:absolute; z-index:-2; inset:0; overflow:hidden; }
 .intro__render-scene,.intro__render-dust { position:absolute; inset:-2%; background-position:center; background-repeat:no-repeat; background-size:cover; }
-.intro__render-scene { background-image:url("/storm-apocalypse/images/ui/background/menu-background-medium.png"); transform:scale(1.025); }
-.intro__render-dust { background-image:url("/storm-apocalypse/images/ui/background/menu-dust-medium.png"); opacity:.28; mix-blend-mode:screen; animation:storm-dust 12s ease-in-out infinite alternate; }
+.intro__render-scene { background-image:url("/storm-apocalypse/images/ui/background/menu-background-low.png?v=b6fc1241"); transform:scale(1.025); }
+.intro__render-dust { background-image:radial-gradient(circle at 58% 46%,rgba(190,239,247,.16),transparent 32%),repeating-linear-gradient(112deg,transparent 0 27px,rgba(205,243,248,.12) 28px,transparent 31px 58px); background-size:100% 100%,180% 180%; opacity:.24; mix-blend-mode:screen; filter:blur(.7px); animation:storm-dust 12s ease-in-out infinite alternate; }
+.intro.is-ready .intro__render-scene { background-image:url("/storm-apocalypse/images/ui/background/menu-background-medium.png?v=c0af4d6e"); }
 @keyframes storm-dust { from { transform:translate3d(-1.5%,.5%,0) scale(1.04); } to { transform:translate3d(1.5%,-.5%,0) scale(1.08); } }
 .intro.is-leaving { opacity:0; filter:blur(8px); }
 .intro__content { position:relative; width:min(88vw,1100px); padding-left:min(5vw,58px); }
@@ -394,13 +395,16 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 
 @media (min-width:1200px) {
   :root { --ui-atlas:url("/storm-apocalypse/images/ui/atlas/ui-atlas-high.png"); }
-  .intro__render-scene { background-image:url("/storm-apocalypse/images/ui/background/menu-background.png"); }
-  .intro__render-dust { background-image:url("/storm-apocalypse/images/ui/background/menu-dust.png"); }
+  .intro.is-ready .intro__render-scene { background-image:url("/storm-apocalypse/images/ui/background/menu-background.png?v=a24f01ac"); }
+}
+
+@media (min-aspect-ratio:16/9) {
+  .intro__render-scene { background-size:contain; background-color:#07131f; }
 }
 
 @media (max-width:540px) {
-  .intro__render-scene { background-image:url("/storm-apocalypse/images/ui/background/menu-background-low.png"); }
-  .intro__render-dust { background-image:url("/storm-apocalypse/images/ui/background/menu-dust-low.png"); }
+  .intro.is-ready .intro__render-scene { background-image:url("/storm-apocalypse/images/ui/background/menu-background-low.png?v=b6fc1241"); }
+  .intro__render-scene { background-size:contain; background-color:#07131f; }
   .brand-mark small { display:none; }
   .brand-mark { gap:7px; }
   .brand-mark b { font-size:12px; letter-spacing:.1em; }

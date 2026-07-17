@@ -23,7 +23,7 @@ const r14ViewportFilter = process.env.R14_VIEWPORT;
 const outputPath = process.env.SMOKE_OUTPUT ? resolve(root, process.env.SMOKE_OUTPUT) : undefined;
 const captureOnly = process.env.SMOKE_CAPTURE_ONLY === "1";
 const headedOnly = process.argv.includes("--headed") || process.env.SMOKE_HEADED === "1";
-const angleBackend = process.env.SMOKE_ANGLE ?? "swiftshader";
+const angleBackend = process.env.SMOKE_ANGLE ?? "d3d11";
 const browserExecutable = process.env.SMOKE_EXECUTABLE;
 const results = [];
 let server;
@@ -72,7 +72,11 @@ async function reachable() {
     const response = await fetch(url);
     if (!response.ok) return false;
     const html = await response.text();
-    return html.includes('id="game-canvas"') && html.includes('src="/src/main.ts"');
+    const entryPoint = /src="\/(?:storm-apocalypse\/)?src\/main\.ts"/u.test(html)
+      || /import\(["']\/(?:storm-apocalypse\/)?src\/main\.ts["']\)/u.test(html)
+      || /src="\/(?:storm-apocalypse\/)?index\.html\?html-proxy&index=\d+\.js"/u.test(html)
+      || /src="\/(?:storm-apocalypse\/)?assets\/index-[^"']+\.js"/u.test(html);
+    return html.includes('id="game-canvas"') && entryPoint;
   } catch {
     return false;
   }
@@ -80,7 +84,14 @@ async function reachable() {
 
 async function ensureServer() {
   if (await reachable()) return;
-  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4173", "--strictPort"], {
+  const build = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "build", "--mode", "smoke", "--outDir", ".smoke-dist", "--emptyOutDir"], {
+    cwd: root,
+    stdio: "inherit",
+    windowsHide: true,
+  });
+  const buildExit = await new Promise((resolveExit) => build.once("exit", resolveExit));
+  if (buildExit !== 0) throw new Error(`Vite smoke bundle failed with exit code ${buildExit}`);
+  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort", "--outDir", ".smoke-dist"], {
     cwd: root,
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
@@ -90,7 +101,7 @@ async function ensureServer() {
     if (await reachable()) return;
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
-  throw new Error("Vite smoke server did not become ready.");
+  throw new Error("Vite smoke preview server did not become ready.");
 }
 
 function record(viewport, check, pass, detail) {
@@ -114,11 +125,17 @@ function edgeGap(a, b) {
 async function runWithRetry(action, attempts = 2) {
   let lastError;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const resultStart = results.length;
     try {
       return await action();
     } catch (error) {
       lastError = error;
-      if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, 1200));
+      if (attempt < attempts) {
+        // A retried scenario is transactional: discard partial assertions from
+        // the failed attempt so CI totals remain the canonical 152 checks.
+        results.splice(resultStart);
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+      }
     }
   }
   throw lastError;
@@ -1272,7 +1289,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R14 UI version marker", uiVersion === "R14", `ui=${uiVersion}`);
+  record(label, "R15 UI version marker", uiVersion === "R15", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));
@@ -1413,7 +1430,10 @@ async function runCombat(browser, config) {
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.paused === "true", undefined, { timeout: 5_000 });
       const savedHealth = (await readSave(page))?.baseHealth;
       await page.reload({ waitUntil: "domcontentloaded", timeout: loadTimeout });
-      await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: loadTimeout });
+      await page.waitForFunction(() => {
+        const button = document.querySelector("#start-button");
+        return button instanceof HTMLButtonElement && !button.disabled && button.classList.contains("is-ready");
+      }, undefined, { timeout: loadTimeout });
       const reloadedHealth = Number(((await page.locator("#base-health").textContent()) ?? "").replace("%", ""));
       record(label, "base health survives reload after wave repair or enemy impact", Number.isFinite(savedHealth) && reloadedHealth === savedHealth, `saved=${savedHealth}, reloaded=${reloadedHealth}`);
     }
@@ -1457,7 +1477,7 @@ try {
   await ensureServer();
   const launchBrowser = () => chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }
-    : { headless: true, executablePath: browserExecutable, args: [`--use-angle=${angleBackend}`] });
+    : { headless: true, executablePath: browserExecutable, args: [`--use-angle=${angleBackend}`, "--mute-audio"] });
   let browser = await launchBrowser();
   try {
     if (headedOnly) {

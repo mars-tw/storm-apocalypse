@@ -43,6 +43,7 @@ import type { PlayerSettings } from "./settings";
 import { creditIncome, saveState, type EmployeeId, type NamedCustomerId, type ProtagonistId, type RuntimeState, type TowerId, type WeaponId } from "./state";
 import type { UiController } from "./ui";
 import { enemyTypeForWave, getWavePlan, type DirectorZombieType, type WavePlan } from "./waveDirector";
+import { parseWeatherIntensity, productionWeatherIntensity, WEATHER_ADAPTIVE_DENSITY, WEATHER_PROFILES, WEATHER_QUALITY_DENSITY, weatherBehaviorSignature, type WeatherIntensity, type WeatherProfile } from "./weather";
 
 interface Actor {
   root: TransformNode;
@@ -246,6 +247,8 @@ export class StormGame {
   private readonly snowEmitter: TransformNode;
   private readonly shopLight: PointLight;
   private snowParticles?: ParticleSystem;
+  private nearSnowParticles?: ParticleSystem;
+  private weatherVeil?: Layer;
   private readonly ambientParticles: ParticleSystem[] = [];
   private readonly combatVfxTextures = new Map<string, Texture>();
   private readonly combatVfxMaterials = new Map<string, StandardMaterial>();
@@ -276,6 +279,8 @@ export class StormGame {
   private pendingPlayerAttack?: PendingPlayerAttack;
   private damageEventCount = 0;
   private lastDamageAt = 0;
+  private lastEvidenceImpactPosition?: Vector3;
+  private lastEvidenceEnemyPosition?: Vector3;
   private vfxEventCount = 0;
   private lastVfxAt = -10;
   private vfxVariant = 0;
@@ -308,8 +313,14 @@ export class StormGame {
   private cameraShake = 0;
   private lastTowerAlarmAt = -10;
   private currentWavePlan?: WavePlan;
-  private readonly smokeMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("smoke");
-  private readonly showcaseMode = import.meta.env.DEV && new URLSearchParams(window.location.search).has("showcase");
+  private weatherIntensity: WeatherIntensity = "low";
+  private readonly testBuild = import.meta.env.DEV || import.meta.env.MODE === "smoke";
+  private readonly smokeMode = this.testBuild && new URLSearchParams(window.location.search).has("smoke");
+  private readonly showcaseMode = this.testBuild && new URLSearchParams(window.location.search).has("showcase");
+  private readonly visualEvidenceMode = this.testBuild && new URLSearchParams(window.location.search).has("visual-evidence");
+  private readonly weatherOverride = this.testBuild
+    ? parseWeatherIntensity(new URLSearchParams(window.location.search).get("weather"))
+    : undefined;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -413,6 +424,19 @@ export class StormGame {
       canvas.dataset.shadowMode = this.blobShadowsActive || !this.shadows ? "blob" : "realtime";
       canvas.dataset.postEffects = this.glow || this.cinematicPipeline ? "on" : "off";
       canvas.dataset.fogDensity = this.scene.fogDensity.toFixed(4);
+      const weatherProfile = WEATHER_PROFILES[this.weatherIntensity];
+      canvas.dataset.weatherIntensity = this.weatherIntensity;
+      canvas.dataset.weatherFarRate = Math.round(this.snowParticles?.emitRate ?? 0).toString();
+      canvas.dataset.weatherNearRate = Math.round(this.nearSnowParticles?.emitRate ?? 0).toString();
+      canvas.dataset.weatherDensity = this.weatherDensityMultiplier().toFixed(3);
+      canvas.dataset.weatherBehavior = weatherBehaviorSignature(weatherProfile);
+      canvas.dataset.weatherPost = JSON.stringify({
+        contrast: weatherProfile.contrast,
+        exposure: weatherProfile.exposure,
+        veilAlpha: weatherProfile.veilAlpha,
+        vignetteWeight: weatherProfile.vignetteWeight,
+        bloomWeight: weatherProfile.bloomWeight,
+      });
       canvas.dataset.saveVersion = this.state.version.toString();
       canvas.dataset.debugProtagonist = this.state.protagonistId;
       canvas.dataset.paused = String(this.paused);
@@ -462,10 +486,27 @@ export class StormGame {
     });
     this.input = new InputController(ui.joystick);
     this.bindWorldActions();
+    if (this.testBuild) {
+      (window as Window & { __stormR15ActiveMeshNames?: () => string[] }).__stormR15ActiveMeshNames = () => {
+        const activeMeshes = this.scene.getActiveMeshes();
+        return activeMeshes.data.slice(0, activeMeshes.length).map((mesh) => mesh.name).sort();
+      };
+    }
     if (this.smokeMode) {
       (window as Window & { __stormSelectProtagonist?: (id: ProtagonistId) => void }).__stormSelectProtagonist = (id) => this.selectProtagonist(id);
       (window as Window & { __stormStartWave?: () => void }).__stormStartWave = () => this.startWave();
       (window as Window & { __stormWorldPoint?: (type: WorldPickAction["type"], id: string) => { x: number; y: number } | null }).__stormWorldPoint = (type, id) => this.worldActionScreenPoint(type, id);
+      if (this.visualEvidenceMode) {
+        (window as Window & { __stormR15EnemyPoint?: () => { x: number; y: number } | null }).__stormR15EnemyPoint = () => this.lastEvidenceEnemyPosition
+          ? this.worldPositionScreenPoint(this.lastEvidenceEnemyPosition)
+          : this.nearestEnemyScreenPoint();
+        (window as Window & { __stormR15ImpactPoint?: () => { x: number; y: number } | null }).__stormR15ImpactPoint = () => this.lastEvidenceImpactPosition
+          ? this.worldPositionScreenPoint(this.lastEvidenceImpactPosition)
+          : null;
+        (window as Window & { __stormR15FreezeFrame?: () => void }).__stormR15FreezeFrame = () => {
+          this.paused = true;
+        };
+      }
     }
     this.createTerrain();
     this.createSnow();
@@ -652,6 +693,27 @@ export class StormGame {
     };
   }
 
+  private nearestEnemyScreenPoint(): { x: number; y: number } | null {
+    const enemy = this.zombies
+      .filter((zombie) => zombie.alive)
+      .sort((left, right) => Vector3.DistanceSquared(left.root.position, this.player.root.position)
+        - Vector3.DistanceSquared(right.root.position, this.player.root.position))[0];
+    if (!enemy) return null;
+    return this.worldPositionScreenPoint(enemy.root.position.add(new Vector3(0, 1.15, 0)));
+  }
+
+  private worldPositionScreenPoint(position: Vector3): { x: number; y: number } | null {
+    const canvas = this.engine.getRenderingCanvas();
+    if (!canvas) return null;
+    const viewport = this.camera.viewport.toGlobal(this.engine.getRenderWidth(), this.engine.getRenderHeight());
+    const projected = Vector3.Project(position, Matrix.Identity(), this.scene.getTransformMatrix(), viewport);
+    const bounds = canvas.getBoundingClientRect();
+    return {
+      x: bounds.left + projected.x * bounds.width / this.engine.getRenderWidth(),
+      y: bounds.top + projected.y * bounds.height / this.engine.getRenderHeight(),
+    };
+  }
+
   private createTerrain(): void {
     const ground = MeshBuilder.CreateGround("wind-carved-snow", { width: 56, height: 48, subdivisions: 72, updatable: true }, this.scene);
     const positions = ground.getVerticesData(VertexBuffer.PositionKind)!;
@@ -767,27 +829,95 @@ export class StormGame {
     flake.hasAlpha = true;
     flake.update(false);
 
-    const snowCapacity = this.state.quality === "低" ? 160 : this.state.quality === "中" ? 640 : 1200;
-    const snow = new ParticleSystem("blizzard-snow", snowCapacity, this.scene);
+    const veilTexture = new DynamicTexture("storm-weather-veil-texture", 256, this.scene, false);
+    const veilContext = veilTexture.getContext() as unknown as CanvasRenderingContext2D;
+    const veilGradient = veilContext.createRadialGradient(128, 128, 46, 128, 128, 184);
+    veilGradient.addColorStop(0, "rgba(4,20,31,0)");
+    veilGradient.addColorStop(0.58, "rgba(5,24,36,0.04)");
+    veilGradient.addColorStop(1, "rgba(3,18,30,0.94)");
+    veilContext.fillStyle = veilGradient;
+    veilContext.fillRect(0, 0, 256, 256);
+    veilTexture.hasAlpha = true;
+    veilTexture.update(false);
+    this.weatherVeil = new Layer("storm-weather-veil", null, this.scene, false, new Color4(1, 1, 1, 0));
+    this.weatherVeil.texture = veilTexture;
+    this.weatherVeil.alphaTest = false;
+
+    // Capacity stays fixed across quality levels so switching quality changes
+    // density only; wind motion, lifetime, size and intensity behavior remain
+    // the same R15 weather profile.
+    const snow = new ParticleSystem("blizzard-snow-far", 1200, this.scene);
     this.snowParticles = snow;
     snow.particleTexture = flake;
     snow.emitter = this.snowEmitter.position;
     snow.minEmitBox = new Vector3(-20, 0, -16);
     snow.maxEmitBox = new Vector3(20, 9, 16);
-    snow.color1 = new Color4(0.9, 0.98, 1, 0.9);
-    snow.color2 = new Color4(0.65, 0.83, 0.9, 0.45);
-    snow.minSize = 0.035;
-    snow.maxSize = 0.16;
-    snow.minLifeTime = 2.1;
-    snow.maxLifeTime = 4.2;
-    snow.emitRate = this.state.quality === "低" ? 36 : this.state.quality === "中" ? 150 : 340;
     snow.blendMode = ParticleSystem.BLENDMODE_STANDARD;
-    snow.gravity = new Vector3(1.3, -2.4, 0.5);
-    snow.direction1 = new Vector3(1.8, -1.2, -0.2);
-    snow.direction2 = new Vector3(3.6, -2.8, 0.6);
     snow.minAngularSpeed = -2;
     snow.maxAngularSpeed = 2;
+
+    const nearSnow = new ParticleSystem("blizzard-snow-near", 320, this.scene);
+    this.nearSnowParticles = nearSnow;
+    nearSnow.particleTexture = flake;
+    nearSnow.emitter = this.snowEmitter.position;
+    nearSnow.minEmitBox = new Vector3(-14, -5, -10);
+    nearSnow.maxEmitBox = new Vector3(14, 6, 10);
+    nearSnow.blendMode = ParticleSystem.BLENDMODE_STANDARD;
+    nearSnow.minAngularSpeed = -1.2;
+    nearSnow.maxAngularSpeed = 1.2;
+    this.applyWeatherVisualProfile(true);
     snow.start();
+    nearSnow.start();
+  }
+
+  private weatherDensityMultiplier(): number {
+    const qualityDensity = WEATHER_QUALITY_DENSITY[this.state.quality];
+    const adaptiveDensity = WEATHER_ADAPTIVE_DENSITY[String(Math.min(2, this.performanceTier)) as "0" | "1" | "2"];
+    return qualityDensity * adaptiveDensity;
+  }
+
+  private applyParticleWeatherProfile(particles: ParticleSystem, profile: WeatherProfile, near: boolean): void {
+    particles.color1 = new Color4(...profile.color1);
+    particles.color2 = new Color4(...profile.color2);
+    particles.minSize = near ? profile.nearMinSize : profile.minSize;
+    particles.maxSize = near ? profile.nearMaxSize : profile.maxSize;
+    particles.minLifeTime = profile.minLifeTime;
+    particles.maxLifeTime = profile.maxLifeTime;
+    particles.gravity = new Vector3(...profile.gravity);
+    particles.direction1 = new Vector3(...profile.direction1);
+    particles.direction2 = new Vector3(...profile.direction2);
+  }
+
+  private applyWeatherVisualProfile(force = false): void {
+    const nextIntensity = this.weatherOverride
+      ?? productionWeatherIntensity(this.state.waveActive, this.currentWavePlan?.event);
+    if (!force && nextIntensity === this.weatherIntensity) return;
+    this.weatherIntensity = nextIntensity;
+    const profile = WEATHER_PROFILES[nextIntensity];
+    const density = this.weatherDensityMultiplier();
+    if (this.snowParticles) {
+      this.applyParticleWeatherProfile(this.snowParticles, profile, false);
+      this.snowParticles.emitRate = Math.round(profile.farRate * density);
+    }
+    if (this.nearSnowParticles) {
+      this.applyParticleWeatherProfile(this.nearSnowParticles, profile, true);
+      this.nearSnowParticles.emitRate = Math.round(profile.nearRate * density);
+    }
+    if (this.weatherVeil) this.weatherVeil.color.a = profile.veilAlpha;
+    this.applyWeatherPostProcessing(profile);
+  }
+
+  private applyWeatherPostProcessing(profile: WeatherProfile): void {
+    this.scene.imageProcessingConfiguration.contrast = profile.contrast;
+    this.scene.imageProcessingConfiguration.exposure = profile.exposure;
+    if (!this.cinematicPipeline) return;
+    this.cinematicPipeline.bloomWeight = profile.bloomWeight;
+    this.cinematicPipeline.imageProcessing.contrast = profile.contrast;
+    this.cinematicPipeline.imageProcessing.exposure = profile.exposure;
+    this.cinematicPipeline.imageProcessing.vignetteEnabled = true;
+    this.cinematicPipeline.imageProcessing.vignetteWeight = profile.vignetteWeight;
+    this.cinematicPipeline.imageProcessing.vignetteStretch = 0.18;
+    this.cinematicPipeline.imageProcessing.vignetteColor = new Color4(0.015, 0.055, 0.09, 1);
   }
 
   private createDistantStorm(): void {
@@ -844,6 +974,10 @@ export class StormGame {
     material.specularColor = Color3.Black();
     material.backFaceCulling = false;
     material.disableLighting = true;
+    if (/^(snow-burst|wood-splinter)-/u.test(file)) {
+      material.disableDepthWrite = true;
+      material.depthFunction = Constants.ALWAYS;
+    }
     material.freeze();
     this.combatVfxMaterials.set(file, material);
     return material;
@@ -894,6 +1028,9 @@ export class StormGame {
     this.vfxVariant += 1;
     this.vfxEventCount += 1;
     this.lastVfxAt = this.elapsed;
+    if (this.visualEvidenceMode) {
+      this.lastEvidenceImpactPosition = new Vector3(position.x, this.heightAt(position.x, position.z) + 2.8 * 0.32, position.z);
+    }
     this.spawnBillboardVfx(file, position, 2.8, 0.34);
     this.spawnGroundDecal(position);
   }
@@ -1251,6 +1388,13 @@ export class StormGame {
         performanceTier: this.performanceTier,
         shadowMode: this.shadows ? "realtime" : "blob",
         fogDensity: this.scene.fogDensity,
+        weather: {
+          intensity: this.weatherIntensity,
+          farRate: Math.round(this.snowParticles?.emitRate ?? 0),
+          nearRate: Math.round(this.nearSnowParticles?.emitRate ?? 0),
+          density: this.weatherDensityMultiplier(),
+          behavior: weatherBehaviorSignature(WEATHER_PROFILES[this.weatherIntensity]),
+        },
         wave: this.state.wave,
         enemies: this.state.enemiesRemaining,
         playerPosition: { x: Number(this.player.root.position.x.toFixed(2)), z: Number(this.player.root.position.z.toFixed(2)) },
@@ -2098,7 +2242,11 @@ export class StormGame {
     this.damageEventCount += 1;
     this.lastDamageAt = this.elapsed;
     this.state.stats.damageDealt += damage;
+    const vfxEventsBefore = this.vfxEventCount;
     this.triggerGroundImpactVfx(zombie.root.position);
+    if (this.visualEvidenceMode && this.vfxEventCount > vfxEventsBefore) {
+      this.lastEvidenceEnemyPosition = zombie.root.position.add(new Vector3(0, 1.15, 0));
+    }
     this.playAnimation(zombie, "HitReact", false);
     if (zombie.hp <= 0) this.killZombie(zombie, source);
   }
@@ -2172,6 +2320,8 @@ export class StormGame {
   }
 
   private updateAtmosphere(dt: number): void {
+    this.applyWeatherVisualProfile();
+    const weather = WEATHER_PROFILES[this.weatherIntensity];
     const targetNight = this.state.waveActive ? 1 : 0;
     this.nightBlend += (targetNight - this.nightBlend) * Math.min(1, dt * 1.15);
     const microCycle = Math.sin(this.elapsed * 0.045) * 0.08;
@@ -2183,9 +2333,10 @@ export class StormGame {
       ? 0.7 - this.nightBlend * 0.27
       : 1.05 - this.nightBlend * 0.57;
     this.shopLight.intensity = (lowQuality ? 11 : 14) + this.nightBlend * (lowQuality ? 9 : 12);
-    this.scene.fogDensity = lowQuality
+    this.scene.fogDensity = (lowQuality
       ? 0.0045 + this.nightBlend * 0.003
-      : 0.012 + this.nightBlend * 0.008;
+      : 0.012 + this.nightBlend * 0.008)
+      + weather.fogDayAdd + weather.fogNightAdd * this.nightBlend;
     const dayFog = lowQuality ? new Color3(0.065, 0.13, 0.19) : new Color3(0.58, 0.68, 0.72);
     const nightFog = lowQuality ? new Color3(0.025, 0.065, 0.115) : new Color3(0.11, 0.2, 0.29);
     this.scene.fogColor.copyFrom(Color3.Lerp(dayFog, nightFog, this.nightBlend));
@@ -2629,7 +2780,7 @@ export class StormGame {
     if (!material) {
       material = new PBRMaterial(`${zombie.type}-shared-tint-material`, this.scene);
       material.albedoColor = colors[zombie.type];
-      material.emissiveColor = colors[zombie.type].scale(zombie.type === "walker" ? 0.2 : 0.65);
+      material.emissiveColor = colors[zombie.type].scale(zombie.type === "walker" ? 0.55 : 0.75);
       material.emissiveIntensity = 1;
       material.freeze();
       this.zombieTypeMaterials.set(zombie.type, material);
@@ -2693,7 +2844,11 @@ export class StormGame {
   }
 
   private monitorPerformance(): void {
-    if (!this.started || document.hidden || this.performanceTier >= 2) return;
+    if (!this.started || document.hidden || this.visualEvidenceMode) return;
+    if (this.performanceTier >= 2) {
+      this.dropTierTwoDecorativeLayers();
+      return;
+    }
     const fps = this.engine.getFps();
     if (!Number.isFinite(fps) || fps <= 0) return;
     // R6 ships against a <=18 ms p95 gate, so the adaptive renderer must react
@@ -2703,17 +2858,22 @@ export class StormGame {
       return;
     }
     this.lowFpsSamples += 1;
-    if (this.lowFpsSamples < 3) return;
+    if (this.lowFpsSamples < 2) return;
 
     this.lowFpsSamples = 0;
     this.performanceTier += 1;
     if (this.performanceTier === 1) this.dropExpensiveRenderingFeatures();
+    if (this.performanceTier === 2) this.dropTierTwoDecorativeLayers();
     // The first fallback must already satisfy the p95 frame-time gate; average
     // FPS can hide regular 33 ms frames behind enough 16 ms frames.
     this.renderPixelRatio = this.performanceTier === 1 ? 0.55 : 0.4;
     this.engine.setHardwareScalingLevel(1 / this.renderPixelRatio);
     this.engine.resize();
-    if (this.snowParticles) this.snowParticles.emitRate = this.performanceTier === 1 ? 24 : 12;
+    this.applyWeatherVisualProfile(true);
+    // Honor the lower R15 density immediately instead of carrying several
+    // seconds of already-emitted high-density flakes into the fallback tier.
+    this.snowParticles?.reset();
+    this.nearSnowParticles?.reset();
     for (const particles of this.ambientParticles) {
       particles.emitRate = this.performanceTier === 1 ? 12 : 6;
     }
@@ -2765,16 +2925,35 @@ export class StormGame {
     for (const actor of actors) this.addActorShadows(actor);
   }
 
+  private dropTierTwoDecorativeLayers(): void {
+    // Preserve the gameplay silhouettes and all animated actors while removing
+    // material-layer detail that multiplies draw calls across the wide desktop
+    // view. Physics and interaction roots are separate from these render meshes.
+    const tierTwoVisualCull = /(?:WorldFence(?:Rail|Gate)R13_R13 Shared Fence (?:Snow|Cut Wood)_Batch|stall-meat-\d+-(?:BoneRim|FatCap|MarblingA|MarblingB|SteakEdge)|ballista-custom-tower-(?:SplayedLeg[02]|StockNose|String-1|String1)|cannon-custom-tower-(?:BrazierCoals|BreechBand|CannonStep|CradleCrossbeam|CradleLeg-1|CradleLeg1|FlameTongue0|LitFuse|MidBand|MuzzleBand)|frost-custom-tower-(?:OrbitShard[024]|RuneDisc)|snow-pine-\d+-.+Shared Pine (?:Snow|Cut)_Batch|shop-custom\/world\/snowhouse-(?:door|window)\.glb-.+Snowhouse (?:Door (?:Brass|Iron|Snow)|Window (?:Iron|Snow))_Batch|shop-custom\/world\/snowhouse-shell\.glb-.+Snowhouse (?:Foundation|Roof Snow)_Batch|shop-custom\/butcher-stall\.glb-.+-material-batch-[1356]|butcher-checkout-material-batch-[123]|shepherd-doghouse-material-batch-[123]|player-weapon-smg-(?:SmgMagazine|SmgSight|SmgTriggerGuard))/u;
+    for (const mesh of this.scene.meshes) {
+      if (!tierTwoVisualCull.test(mesh.name) || !mesh.isEnabled()) continue;
+      mesh.metadata = { ...(mesh.metadata ?? {}), r15AdaptiveCulled: true };
+      mesh.setEnabled(false);
+    }
+    const repeatedFenceRoots = this.scene.meshes
+      .filter((mesh) => /^(?:pasture|pasture-2)-fence-.+-__root__$/u.test(mesh.name))
+      .sort((left, right) => left.name.localeCompare(right.name));
+    for (const [index, mesh] of repeatedFenceRoots.entries()) {
+      if (index % 2 === 0 || !mesh.isEnabled()) continue;
+      mesh.metadata = { ...(mesh.metadata ?? {}), r15AdaptiveCulled: true };
+      mesh.setEnabled(false);
+    }
+  }
+
   private applyQualityLevel(level: QualityLevel): void {
     const devicePixelRatio = Math.max(1, window.devicePixelRatio || 1);
     this.renderPixelRatio = level === "高" ? Math.min(1.25, devicePixelRatio) : Math.min(1, devicePixelRatio);
     this.engine.setHardwareScalingLevel(1 / this.renderPixelRatio);
     this.engine.resize();
-    if (this.snowParticles) this.snowParticles.emitRate = level === "低" ? 36 : level === "中" ? 150 : 340;
+    this.applyWeatherVisualProfile(true);
     if (level === "低") {
       this.dropExpensiveRenderingFeatures();
-      this.scene.imageProcessingConfiguration.contrast = 1.12;
-      this.scene.imageProcessingConfiguration.exposure = 1.05;
+      this.applyWeatherVisualProfile(true);
       return;
     }
     this.restoreRealtimeRendering(level);
@@ -2832,6 +3011,7 @@ export class StormGame {
       this.cinematicPipeline.imageProcessing.exposure = 1.15;
     }
     this.cinematicPipeline.samples = level === "高" ? 2 : 1;
+    this.applyWeatherVisualProfile(true);
   }
 
   private refreshFrozenMaterialEffects(): void {
