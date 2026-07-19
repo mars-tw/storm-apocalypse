@@ -293,7 +293,8 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .character-card__skill em { display:inline-block; padding:4px 8px; color:#1a1110; background:var(--gold); font-size:9px; font-style:normal; font-weight:900; letter-spacing:.08em; }
 .character-card__skill span > i { display:block; margin-top:5px; color:#9eb0b4; font-size:8px; font-style:normal; }
 .character-select .loader { width:min(460px,82vw); margin:16px auto 0; text-align:center; }
-.start-button--confirm { display:block; min-height:52px; margin:12px auto 0; }
+/* R16：矮視口選角確認鈕曾需捲動才可見（老闆零捲動指示）——sticky 釘在捲動容器底、永在畫面內 */
+.start-button--confirm { display:block; min-height:52px; margin:12px auto 0; position:sticky; bottom:max(10px, env(safe-area-inset-bottom)); z-index:6; background:linear-gradient(90deg,rgba(37,87,101,.94),rgba(14,42,54,.92)); box-shadow:0 6px 22px rgba(2,10,14,.65); }
 
 .result { position:absolute; inset:0; z-index:120; display:grid; place-items:center; pointer-events:auto; opacity:0; background:rgba(2,9,14,.78); backdrop-filter:blur(10px); transition:opacity .4s; }
 .result[hidden] { display:none; }
