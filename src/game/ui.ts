@@ -113,6 +113,7 @@ export class UiController {
   private promptTimer: number | undefined;
   private settings: PlayerSettings;
   private modalState: "intro" | "system" | "result" | null = "intro";
+  private setOpenPanelPublic: (panel: "quest" | "shop" | null) => void = () => {};
   private prepModalOpen = false;
 
   onStart: () => void = () => undefined;
@@ -267,6 +268,7 @@ export class UiController {
       <section class="result" id="result" hidden><div class="result__card">
         <span>暴風戰報</span><h2 id="result-title">黎明仍在</h2><p id="result-copy"></p><div class="result-stats" id="result-stats"></div>
         <button id="result-button">帶著進度重整</button><button class="text-button" id="reset-button">清除進度並重開</button>
+        <div class="reset-confirm" id="result-reset-confirm" hidden><strong>確定清除所有戰役進度？此動作不可復原。</strong><span><button id="result-reset-cancel" type="button">取消</button><button class="danger-button" id="result-reset-confirm-btn" type="button">確認清除</button></span></div>
       </div></section>`;
 
     const get = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
@@ -418,7 +420,18 @@ export class UiController {
     this.attackButton.addEventListener("contextmenu", (event) => event.preventDefault());
     bindImmediate(this.waveButton, () => this.onWave());
     get("result-button").addEventListener("click", () => location.reload());
-    get("reset-button").addEventListener("click", () => this.onReset());
+    // R17（辯論裁決 C-01／缺陷級）：結算清檔改二段確認——敗局情緒下誤觸不再直接毀檔
+    get("reset-button").addEventListener("click", () => {
+      const confirmBox = get("result-reset-confirm");
+      confirmBox.hidden = false;
+      get<HTMLButtonElement>("result-reset-cancel").focus();
+    });
+    get("result-reset-cancel").addEventListener("click", () => {
+      get("result-reset-confirm").hidden = true;
+      get<HTMLButtonElement>("reset-button").focus();
+    });
+    get("result-reset-confirm-btn").addEventListener("click", () => this.onReset());
+    this.setOpenPanelPublic = setOpenPanel;
     bindImmediate(shopToggle, () => setOpenPanel(this.commandPanel.classList.contains("is-open") ? null : "shop"));
     bindImmediate(get<HTMLButtonElement>("shop-close"), () => setOpenPanel(null));
     bindImmediate(this.questToggle, () => setOpenPanel(this.questPanel.classList.contains("is-open") ? null : "quest"));
@@ -589,6 +602,11 @@ export class UiController {
     if (event.code === "Escape") {
       if (this.modalState === "intro" || this.modalState === "result") return;
       event.preventDefault();
+      // R17（辯論裁決 C-02）：Esc 分層——先關整備商店/任務面板，再輪到系統選單
+      if (!this.systemMenuOpen && (this.commandPanel.classList.contains("is-open") || this.questPanel.classList.contains("is-open"))) {
+        this.setOpenPanelPublic(null);
+        return;
+      }
       this.setSystemMenuOpen(!this.systemMenuOpen);
       return;
     }
@@ -732,7 +750,8 @@ export class UiController {
     const current = WEAPONS.find((weapon) => weapon.id === state.weapon)!;
     const nextIndex = (unlocked.indexOf(state.weapon) + 1) % Math.max(1, unlocked.length);
     const next = WEAPONS.find((weapon) => weapon.id === unlocked[nextIndex]) ?? current;
-    this.weaponIcon.className = `asset-icon asset-icon--weapon-${state.weapon} weapon-button__icon`;
+    // R17（辯論裁決 C-03）：切換鈕顯示「下一把」，與攻擊鈕（當前）互補配對
+    this.weaponIcon.className = `asset-icon asset-icon--weapon-${next.id} weapon-button__icon`;
     this.weaponButton.disabled = unlocked.length <= 1;
     this.weaponButton.dataset.weapon = state.weapon;
     this.weaponButton.dataset.nextWeapon = next.id;

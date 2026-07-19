@@ -17,6 +17,9 @@ export interface ProtagonistDefinition {
   passiveDescription: string;
   runSummary: string;
   openingLine: string;
+  victoryLine: string;
+  defeatEarlyLine: string;
+  defeatLateLine: string;
   model: string;
   portrait: string;
 }
@@ -30,6 +33,9 @@ export const PROTAGONISTS: readonly ProtagonistDefinition[] = [
     passiveDescription: "每筆肉品交易收入提升 10%",
     runSummary: "這局：肉舖更快堆出第一座塔",
     openingLine: "秤要準。今天的肉，還有人等。",
+    victoryLine: "秤還是準的。第三十次鐘聲裡，我把刀擦乾淨掛回門後——明天，照常開店。",
+    defeatEarlyLine: "肉還溫著，燈就滅了。把攤子收好——我們從第一塊肉重新賒起。",
+    defeatLateLine: "撐到這麼晚才滅燈，不丟人。刀我磨好了，下一次，鐘聲數到底。",
     model: "custom/characters/protagonist-butcher-matron.glb",
     portrait: "images/characters/protagonist-butcher-matron.png",
   },
@@ -41,6 +47,9 @@ export const PROTAGONISTS: readonly ProtagonistDefinition[] = [
     passiveDescription: "你的武器每次命中額外 +1 傷害",
     runSummary: "這局：你的刀與槍更疼，守夜更像獵人",
     openingLine: "風向不對。先保住燈，再談子彈。",
+    victoryLine: "三十聲，一聲不差。槍管涼下來的時候，雪也停了。",
+    defeatEarlyLine: "太快了。這不是敗仗，是偵察——記下牠們的路線。",
+    defeatLateLine: "彈殼埋進雪裡，燈滅在第三十次鐘聲前。記下風向。下一次，我提前兩秒開火。",
     model: "custom/characters/protagonist-vet-sniper.glb",
     portrait: "images/characters/protagonist-vet-sniper.png",
   },
@@ -52,6 +61,9 @@ export const PROTAGONISTS: readonly ProtagonistDefinition[] = [
     passiveDescription: "建造與升級防禦塔費用九折",
     runSummary: "這局：三角防線比較不傷本",
     openingLine: "塔架歪了半指……我先焊，你們先撐。",
+    victoryLine: "塔架最後還是歪半指。可是它站著，我們也都站著。",
+    defeatEarlyLine: "圖紙沒錯，是料不夠。撿回零件——齒輪還轉得動。",
+    defeatLateLine: "焊點是撐到最後才裂的。這版圖紙留著，下一台會更硬。",
     model: "custom/characters/protagonist-mech-youth.glb",
     portrait: "images/characters/protagonist-mech-youth.png",
   },
@@ -63,6 +75,8 @@ export interface NamedCustomerDefinition {
   role: string;
   preference: string;
   arrivalLine: string;
+  arrivalLineMid: string;
+  arrivalLineHigh: string;
   affinityBonus: string;
   friendMark: string;
   friendMarkName: string;
@@ -71,10 +85,23 @@ export interface NamedCustomerDefinition {
 }
 
 export const NAMED_CUSTOMERS: readonly NamedCustomerDefinition[] = [
-  { id: "lao_zhou", name: "老周", role: "廢鐵收購", preference: "偏好：好肉／份量感", arrivalLine: "夠秤就行。封鎖線外面……更黑。", affinityBonus: "每筆肉品交易 +1 金", friendMark: "friend-lao-zhou", friendMarkName: "廢鐵之友", weight: 0.12, model: "custom/characters/npc-lao-zhou.glb" },
-  { id: "nurse_lin", name: "林護理", role: "醫務夜班", preference: "偏好：穩定供貨", arrivalLine: "帳篷裡還有人醒著。給我能下鍋的。", affinityBonus: "壁壘受擊時 8% 機率減免 1 傷", friendMark: "friend-nurse-lin", friendMarkName: "夜班燈火", weight: 0.12, model: "custom/characters/npc-nurse-lin.glb" },
-  { id: "kid_bao", name: "小包", role: "雪屋孩子", preference: "偏好：便宜／人情", arrivalLine: "我數過三次……這次夠不夠？", affinityBonus: "賣肉時 5% 機率多付 5 金", friendMark: "friend-kid-bao", friendMarkName: "雪屋守護", weight: 0.11, model: "custom/characters/npc-kid-bao.glb" },
-  { id: "scout_he", name: "何偵察", role: "北境巡邏", preference: "偏好：戰備充足", arrivalLine: "北面有動靜。你們的燈，別滅。", affinityBonus: "所有擊殺賞金 +1", friendMark: "friend-scout-he", friendMarkName: "北境眼線", weight: 0.10, model: "custom/characters/npc-scout-he.glb" },
+  { id: "lao_zhou", name: "老周", role: "廢鐵收購", preference: "偏好：好肉／份量感", arrivalLine: "夠秤就行。封鎖線外面……更黑。", arrivalLineMid: "你們的秤，比封鎖線裡任何一把都老實。今天多收一份。", arrivalLineHigh: "外頭誰問北邊還有沒有活人，我就說：有，他們的燈最亮。", affinityBonus: "每筆肉品交易 +1 金", friendMark: "friend-lao-zhou", friendMarkName: "廢鐵之友", weight: 0.12, model: "custom/characters/npc-lao-zhou.glb" },
+  { id: "nurse_lin", name: "林護理", role: "醫務夜班", preference: "偏好：穩定供貨", arrivalLine: "帳篷裡還有人醒著。給我能下鍋的。", arrivalLineMid: "昨晚的湯讓兩個傷員退了燒。同一份，再來一次。", arrivalLineHigh: "今晚換我守攤子前半夜。你們去睡——醫囑。", affinityBonus: "壁壘受擊時 8% 機率減免 1 傷", friendMark: "friend-nurse-lin", friendMarkName: "夜班燈火", weight: 0.12, model: "custom/characters/npc-nurse-lin.glb" },
+  { id: "kid_bao", name: "小包", role: "雪屋孩子", preference: "偏好：便宜／人情", arrivalLine: "我數過三次……這次夠不夠？", arrivalLineMid: "阿姨說你們的燈是全區最亮的。我帶了她縫的手套——換半份就好。", arrivalLineHigh: "今晚換我守攤子前面那段路。誰靠近，我就搖鈴。", affinityBonus: "賣肉時 5% 機率多付 5 金", friendMark: "friend-kid-bao", friendMarkName: "雪屋守護", weight: 0.11, model: "custom/characters/npc-kid-bao.glb" },
+  { id: "scout_he", name: "何偵察", role: "北境巡邏", preference: "偏好：戰備充足", arrivalLine: "北面有動靜。你們的燈，別滅。", arrivalLineMid: "巡邏圖上，我把你們標成了補給點。別讓我改回去。", arrivalLineHigh: "司令部問哪裡能當前哨。我報了這裡——連你們的鐘聲一起。", affinityBonus: "所有擊殺賞金 +1", friendMark: "friend-scout-he", friendMarkName: "北境眼線", weight: 0.10, model: "custom/characters/npc-scout-he.glb" },
+] as const;
+
+// R17（辯論裁決 B-01 縮幅）：北境電台——里程碑波間廣播（純文案，零數值）
+export const WAVE_DISPATCHES: ReadonlyArray<{ wave: number; line: string }> = [
+  { wave: 1, line: "電台載波剛穩下來：「聽得到的人，把燈點著。今晚起，我們一起數鐘聲。」" },
+  { wave: 5, line: "電台雜訊裡擠出半句人聲：「……燈還亮著就回覆。」你把發電機油門又推了一格。" },
+  { wave: 6, line: "廣播換了個更啞的嗓子：「白幕要來了。看不見的時候，聽你們自己的鐘。」" },
+  { wave: 10, line: "第十次鐘聲。老周說南邊有車燈閃了三下——三下，是活人的暗號。" },
+  { wave: 15, line: "電台唸了一串名字，都是撐過半程的據點。唸到你們時，訊號特別清楚。" },
+  { wave: 20, line: "「第二十波。」廣播頓了頓：「還在的，都已經是老兵了。」" },
+  { wave: 25, line: "遠處傳來別的鐘聲——不是你們的。原來這片雪原上，不止一盞燈。" },
+  { wave: 29, line: "第 1,276 日。這次無線電很清楚：「看得到你們的燈。撐過今晚。」" },
+  { wave: 30, line: "電台安靜了三秒，然後所有頻道一起響：「第三十聲。北境，天亮了。」" },
 ] as const;
 
 export const WEAPONS: readonly ShopItem<WeaponId>[] = [

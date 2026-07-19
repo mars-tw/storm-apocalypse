@@ -35,7 +35,7 @@ import {
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import type { ProceduralAudio } from "./audio";
-import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
+import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
 import { resolveQuality, type QualityLevel, type QualityPreference } from "./quality";
 import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
@@ -1659,7 +1659,13 @@ export class StormGame {
     this.customer.phase = "arriving";
     this.playAnimation(this.customer, "Walk", true);
     const named = this.customer.identity ? NAMED_CUSTOMERS.find((entry) => entry.id === this.customer.identity) : undefined;
-    this.ui.toast(named ? `${named.name} · ${named.role}：「${named.arrivalLine}」` : "遠方的旅人正朝肉舖走來。", "ice");
+    // R17（辯論裁決 B-03）：好感三段對白（0-2 低／3-5 中／6+ 高），資料源既有 customerAffinity
+    let arrival = named ? named.arrivalLine : "";
+    if (named) {
+      const affinity = this.state.customerAffinity[named.id] ?? 0;
+      arrival = affinity >= 6 ? named.arrivalLineHigh : affinity >= 3 ? named.arrivalLineMid : named.arrivalLine;
+    }
+    this.ui.toast(named ? `${named.name} · ${named.role}：「${arrival}」` : "遠方的旅人正朝肉舖走來。", "ice");
   }
 
   private meatSaleIncome(): number {
@@ -2283,6 +2289,10 @@ export class StormGame {
     creditIncome(this.state, reward);
     saveState(this.state);
     this.ui.toast(`第 ${this.state.wave} 波已清除 · 防守獎金 ✦ ${reward}`, "warm");
+    { // R17（辯論裁決 B-01）：北境電台里程碑廣播
+      const dispatch = WAVE_DISPATCHES.find((entry) => entry.wave === this.state.wave);
+      if (dispatch) window.setTimeout(() => this.ui.toast(dispatch.line, "ice"), 1600);
+    }
     this.processQuests();
     const cleared = this.zombies.filter((zombie) => !zombie.alive);
     const recycleDelay = Math.max(0, ...cleared.map((zombie) => zombie.deathEndsAt - this.elapsed)) * 1000 + 80;
@@ -2307,9 +2317,15 @@ export class StormGame {
     this.state.waveActive = false;
     if (won) saveState(this.state);
     const minutes = Math.max(1, Math.round((performance.now() - this.campaignStartTime) / 60000));
-    this.ui.showResult(won, won
+    // R17（辯論裁決 B-02）：結語依主角分歧（敗北依波數分早/晚兩檔）
+    const protagonistDef = PROTAGONISTS.find((entry) => entry.id === this.state.protagonistId);
+    const epilogue = protagonistDef
+      ? (won ? protagonistDef.victoryLine : (this.state.wave < 10 ? protagonistDef.defeatEarlyLine : protagonistDef.defeatLateLine))
+      : "";
+    this.ui.showResult(won, (won
       ? `第三十次鐘聲穿過風牆，北境肉舖仍在營業。你成為「北境守望者」。`
-      : `肉舖壁壘遭到突破。永久資金、任務、武器、員工與建設都已保留，重新集結後再戰。`, [
+      : `肉舖壁壘遭到突破。永久資金、任務、武器、員工與建設都已保留，重新集結後再戰。`) + (epilogue ? `
+${epilogue}` : ""), [
       ["守過波次", `${this.state.wave} / 30`],
       ["累計擊殺", `${this.state.stats.zombiesKilled}`],
       ["獵物", `${this.state.stats.cowsKilled}`],
