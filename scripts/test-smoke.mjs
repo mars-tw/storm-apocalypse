@@ -439,6 +439,155 @@ async function checkR12Systems() {
   }
 }
 
+async function checkR18StaticContracts() {
+  try {
+    const [content, game, indexHtml, ui] = await Promise.all([
+      readFile(resolve(root, "src/game/content.ts"), "utf8"),
+      readFile(resolve(root, "src/game/StormGame.ts"), "utf8"),
+      readFile(resolve(root, "index.html"), "utf8"),
+      readFile(resolve(root, "src/game/ui.ts"), "utf8"),
+    ]);
+    const eveBlock = content.match(/WAVE_EVE_DISPATCHES[\s\S]*?\] as const;/u)?.[0] ?? "";
+    const eveWaves = [...eveBlock.matchAll(/wave:\s*(\d+),\s*line:\s*"([^"]+)"/gu)].map((match) => [Number(match[1]), match[2]]);
+    const expectedEve = [5, 10, 15, 20, 25, 29, 30];
+    const evePass = eveWaves.length === expectedEve.length
+      && expectedEve.every((wave, index) => eveWaves[index][0] === wave && eveWaves[index][1].length >= 8)
+      && game.includes("WAVE_EVE_DISPATCHES.find((entry) => entry.wave === waveNumber)");
+    record("content/R18", "wave-eve dispatches cover milestone waves and are wired at wave start", evePass, `waves=${eveWaves.map((entry) => entry[0]).join(",")}`);
+    const affinityFeedback = /if \(!thresholdCrossed\) this\.ui\.toast\(`\$\{customer\.name\} 好感 \+\$\{gain\}/u.test(game);
+    record("content/R18", "customer affinity gain shows lightweight feedback outside threshold events", affinityFeedback, "addCustomerAffinity non-threshold toast");
+    const bootLoaderPass = indexHtml.includes('id="boot-loader"')
+      && indexHtml.includes("#boot-loader{position:fixed")
+      && ui.includes('document.getElementById("boot-loader")?.remove()');
+    record("loading/R18", "static boot loader ships in index.html and is retired once the intro loader mounts", bootLoaderPass, "index.html #boot-loader + ui.ts removal");
+  } catch (error) {
+    record("systems/R18", "R18 static contracts load", false, error instanceof Error ? error.message : String(error));
+  }
+}
+
+// R18 L-01：JS 尚未執行的首屏窗口必須已有可見載入指示（延遲所有 JS 模擬慢網）
+async function checkR18BootLoader(browser) {
+  const viewport = { width: 844, height: 390 };
+  const context = await browser.newContext({ viewport, hasTouch: true, isMobile: false, deviceScaleFactor: 1 });
+  const page = await context.newPage();
+  try {
+    await context.route("**/*.js", async (route) => {
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 2200));
+      await route.continue();
+    });
+    const navigation = page.goto(url, { waitUntil: "commit", timeout: loadTimeout });
+    let bootVisibleWithinBudget = true;
+    let bootDetail = "";
+    try {
+      await page.waitForSelector("#boot-loader", { state: "visible", timeout: 1000 });
+      const box = await page.locator("#boot-loader").boundingBox();
+      const inViewport = Boolean(box) && box.x >= 0 && box.y >= 0 && box.x + box.width <= viewport.width && box.y + box.height <= viewport.height;
+      bootVisibleWithinBudget = inViewport;
+      bootDetail = box ? `box=${Math.round(box.x)},${Math.round(box.y)},${Math.round(box.width)}×${Math.round(box.height)}` : "no box";
+    } catch (error) {
+      bootVisibleWithinBudget = false;
+      bootDetail = error instanceof Error ? error.message : String(error);
+    }
+    record("844×390", "boot loading indicator is visible within 1s of first paint and inside the viewport", bootVisibleWithinBudget, bootDetail);
+    await navigation.catch(() => {});
+    await page.unroute("**/*.js");
+    await page.waitForSelector("#loading-text", { state: "attached", timeout: loadTimeout });
+    const bootRetired = await page.locator("#boot-loader").count() === 0;
+    record("844×390", "boot loader is removed once the intro loader takes over", bootRetired, `remaining=${bootRetired ? 0 : 1}`);
+  } finally {
+    await context.close();
+  }
+}
+
+// R18 M-01/L-02：橫向選角捲動暗示＋start 按下後的載入回饋（延遲模型資產模擬慢載）
+async function checkR18SelectionAndWaiting(browser) {
+  const viewport = { width: 844, height: 390 };
+  const context = await browser.newContext({
+    viewport,
+    hasTouch: true,
+    isMobile: false,
+    deviceScaleFactor: 1,
+    userAgent: "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36",
+  });
+  const page = await context.newPage();
+  const label = "844×390";
+  try {
+    await context.route("**/models/**", async (route) => {
+      await new Promise((resolveDelay) => setTimeout(resolveDelay, 3500));
+      await route.continue();
+    });
+    await page.goto(qualityUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
+    await page.waitForSelector("#select-scroll-hint", { state: "attached", timeout: loadTimeout });
+    await page.waitForFunction(() => document.querySelector("#intro")?.classList.contains("has-more-below"), undefined, { timeout: 15_000 });
+    const hintOpacity = await page.locator("#select-scroll-hint").evaluate((element) => Number(getComputedStyle(element).opacity));
+    record(label, "landscape selection shows a scroll hint while content remains below", hintOpacity > 0.5, `opacity=${hintOpacity}`);
+    const cardIds = await page.locator("[data-protagonist]").evaluateAll((cards) => cards.map((card) => card.dataset.protagonist));
+    let allSelectable = cardIds.length === 3;
+    for (const id of cardIds) {
+      const card = page.locator(`[data-protagonist="${id}"]`);
+      await card.scrollIntoViewIfNeeded();
+      await card.click();
+      allSelectable &&= await card.evaluate((element) => element.classList.contains("is-selected"));
+    }
+    record(label, "every protagonist card can be scrolled to and selected in landscape", allSelectable, `cards=${cardIds.join(",")}`);
+    const confirmBox = await page.locator("#start-button").boundingBox();
+    const confirmVisible = Boolean(confirmBox) && confirmBox.y >= 0 && confirmBox.y + confirmBox.height <= viewport.height;
+    record(label, "sticky confirm button stays inside the landscape viewport", confirmVisible, confirmBox ? `y=${Math.round(confirmBox.y)}, h=${Math.round(confirmBox.height)}` : "no box");
+    await page.locator("#intro").evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
+    await page.waitForFunction(() => !document.querySelector("#intro")?.classList.contains("has-more-below"), undefined, { timeout: 5_000 });
+    record(label, "scroll hint hides when the selection list is scrolled to the end", true, "has-more-below removed at bottom");
+    await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: 15_000 });
+    await page.locator("#start-button").click();
+    const waiting = await page.evaluate(() => {
+      const button = document.querySelector("#start-button");
+      const loading = document.querySelector("#loading-text");
+      const rect = loading?.getBoundingClientRect();
+      const ready = document.querySelector("#intro")?.classList.contains("is-ready") ?? false;
+      return {
+        ready,
+        detached: !document.querySelector("#intro"),
+        disabled: button?.disabled ?? false,
+        text: button?.querySelector("span")?.textContent ?? "",
+        loaderInViewport: Boolean(rect) && rect.top >= 0 && rect.bottom <= innerHeight && rect.width > 0,
+      };
+    });
+    const waitingPass = waiting.ready || waiting.detached
+      ? true
+      : waiting.disabled && waiting.text.includes("整") && waiting.loaderInViewport;
+    record(label, "pressing start before assets are ready locks the button and keeps the loader visible", waitingPass, JSON.stringify(waiting));
+    await page.unroute("**/models/**");
+    await page.locator("#intro").waitFor({ state: "detached", timeout: loadTimeout });
+    record(label, "delayed start auto-enters the game once assets finish", true, "intro detached after ready");
+  } finally {
+    await context.close();
+  }
+}
+
+// R18 M-02：橫向整備面板內容窗隨視口伸縮＋捲動暗示
+async function checkR18PrepPanel(page, label) {
+  const alreadyOpen = await page.locator("#command-panel").evaluate((panel) => panel.classList.contains("is-open"));
+  if (!alreadyOpen) await page.locator("#shop-toggle").click();
+  await page.waitForFunction(() => document.querySelector("#command-panel")?.classList.contains("is-open"), undefined, { timeout: 5_000 });
+  const metrics = await page.locator("#command-panel").evaluate((panel) => ({
+    clientHeight: panel.clientHeight,
+    scrollHeight: panel.scrollHeight,
+    top: Math.round(panel.getBoundingClientRect().top),
+    bottom: Math.round(panel.getBoundingClientRect().bottom),
+    hasMore: panel.classList.contains("has-more-below"),
+  }));
+  record(label, "prep panel content window stretches with the landscape viewport (≥280px)", metrics.clientHeight >= 280 && metrics.bottom <= 390, JSON.stringify(metrics));
+  const hintPass = metrics.scrollHeight - metrics.clientHeight > 24 ? metrics.hasMore : true;
+  record(label, "prep panel shows a scroll fade while content remains below", hintPass, `scrollable=${metrics.scrollHeight - metrics.clientHeight}px, hasMore=${metrics.hasMore}`);
+  const tabs = ["employee", "regular", "expansion", "weapon"];
+  let tabsPass = true;
+  for (const tab of tabs) {
+    await page.locator(`[data-shop-tab="${tab}"]`).click();
+    tabsPass &&= await page.locator(`[data-shop-section="${tab}"]`).evaluate((section) => !section.hidden);
+  }
+  record(label, "all four prep tabs stay reachable in the stretched panel", tabsPass, tabs.join(","));
+  await page.locator("#shop-close").click();
+}
+
 async function checkControlSpacing(page, label) {
   const selectors = ["#settings-button", "#quest-toggle", "#shop-toggle", ".joystick", ".tower-dock", "#wave-button", "#weapon-button", "#attack-button"];
   const controls = [];
@@ -1247,11 +1396,21 @@ async function checkTouchLayout(page, label) {
   });
   record(label, "open prep modal makes background HUD inert, hidden and un-hittable", prepMutex.failures.length === 0 && prepMutex.canvasInert && prepMutex.canvasAriaHidden === "true" && prepMutex.prepModal === "true" && prepMutex.panelOwnsCenter, JSON.stringify(prepMutex));
 
-  const panelBox = await page.locator("#command-panel").boundingBox();
-  const joystickBox = await page.locator(".joystick").boundingBox();
-  const attackBox = await page.locator("#attack-button").boundingBox();
-  const noOverlap = !overlaps(panelBox, joystickBox) && !overlaps(panelBox, attackBox);
-  record(label, "open panel avoids control hot zones", noOverlap, JSON.stringify({ panelBox, joystickBox, attackBox }));
+  // R18 M-02：prep-modal 開啟時底部控制已 visibility:hidden＋inert——隱藏控制不再擁有熱區，
+  // 伸長的整備面板允許覆蓋其幾何位置（前一斷言已驗證 inert/hidden/不可命中）。
+  const hotZones = await page.evaluate(() => {
+    const boxOf = (selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const style = getComputedStyle(element);
+      if (style.visibility === "hidden" || style.display === "none") return null;
+      const rect = element.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height, hidden: false };
+    };
+    return { panelBox: boxOf("#command-panel"), joystickBox: boxOf(".joystick"), attackBox: boxOf("#attack-button") };
+  });
+  const noOverlap = !overlaps(hotZones.panelBox, hotZones.joystickBox) && !overlaps(hotZones.panelBox, hotZones.attackBox);
+  record(label, "open panel avoids visible control hot zones", noOverlap, JSON.stringify(hotZones));
 
   const probe = label === "390×844" ? { x: 20, y: 400 } : { x: 400, y: 200 };
   await page.evaluate(() => {
@@ -1289,7 +1448,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R15 UI version marker", uiVersion === "R15", `ui=${uiVersion}`);
+  record(label, "R18 UI version marker", uiVersion === "R18", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));
@@ -1409,9 +1568,12 @@ async function runCombat(browser, config) {
       return;
     }
     await page.waitForFunction(() => Number(document.querySelector("#game-canvas")?.dataset.activeZombies) > 0, undefined, { timeout: 15_000 });
-    await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.towerAnimations?.includes("frost:attack"), undefined, { timeout: 15_000 });
-    const towerAnimations = await page.locator("#game-canvas").getAttribute("data-tower-animations");
-    record(label, "tower fire triggers authored clip", towerAnimations?.includes("frost:attack") === true, `animations=${towerAnimations}`);
+    // R18：修 TOCTOU——waitForFunction 命中後另行重讀屬性會錯過短促的開火窗口，改原子回傳命中值
+    const towerAnimations = await page.waitForFunction(() => {
+      const animations = document.querySelector("#game-canvas")?.dataset.towerAnimations;
+      return animations?.includes("frost:attack") ? animations : false;
+    }, undefined, { timeout: 15_000 }).then((handle) => handle.jsonValue());
+    record(label, "tower fire triggers authored clip", typeof towerAnimations === "string" && towerAnimations.includes("frost:attack"), `animations=${towerAnimations}`);
     const attacksBeforeZombie = await attackCount(page);
     await holdAttack(page, config.touch, 8_000);
     await page.waitForTimeout(150);
@@ -1460,6 +1622,7 @@ async function runLayout(browser, viewport) {
     await checkControlSpacing(page, label);
     await checkTouchLayout(page, label);
     await checkR9UX(page, label, true);
+    await checkR18PrepPanel(page, label);
     await checkR12SystemMenu(page, "R12 menu 844x390");
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {
@@ -1474,6 +1637,7 @@ try {
   await checkR10Assets();
   await checkR13Assets();
   await checkR12Systems();
+  await checkR18StaticContracts();
   await ensureServer();
   const launchBrowser = () => chromium.launch(headedOnly
     ? { headless: false, channel: "chrome" }
@@ -1514,6 +1678,8 @@ try {
           // 觸控筆電：有觸控能力但主指標是滑鼠、寬視口 → 必須維持桌機 WASD 介面
           await checkInputHints(browser, { viewport: { width: 1440, height: 900 }, touch: false, touchscreenDesktop: true });
           await checkR14ModalMutualExclusion(browser);
+          await runWithRetry(() => checkR18BootLoader(browser));
+          await runWithRetry(() => checkR18SelectionAndWaiting(browser));
           await browser.close();
           browser = await launchBrowser();
         }

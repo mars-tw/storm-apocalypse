@@ -35,6 +35,12 @@
       #key-art-prerender img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
       #key-art-prerender::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(1,7,10,.94),rgba(4,11,14,.58) 46%,rgba(7,10,11,.12) 75%),linear-gradient(0deg,rgba(2,7,9,.78),transparent 52%)}
       @media(max-width:540px),(min-aspect-ratio:16/9){#key-art-prerender img{object-fit:contain}}
+      /* R18 L-01：首繪即現的靜態載入指示（純 HTML/CSS，不依賴 JS/字型/資產），UI 掛載後由 intro loader 接手移除 */
+      #boot-loader{position:fixed;z-index:5;left:50%;bottom:max(30px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(320px,78vw);color:#a9cdd6;font:11px/1.6 "Microsoft JhengHei","PingFang TC",sans-serif;letter-spacing:.22em;text-align:center;text-shadow:0 2px 10px #04101a}
+      #boot-loader i{position:relative;display:block;height:3px;margin-top:8px;overflow:hidden;background:rgba(255,255,255,.13)}
+      #boot-loader i::after{content:"";position:absolute;top:0;left:-42%;width:42%;height:100%;background:linear-gradient(90deg,transparent,#8ed3e2,#c8eef4);box-shadow:0 0 8px #73baca;animation:boot-sweep 1.15s linear infinite}
+      @keyframes boot-sweep{to{left:100%}}
+      @media (prefers-reduced-motion:reduce){#boot-loader i::after{animation-duration:2.6s}}
     </style>
     <script>
       (()=>{if(!globalThis.PerformanceObserver)return;const commit=entry=>{if(performance.getEntriesByName("storm-key-art-rendered","mark").length)return;performance.mark("storm-key-art-rendered",{startTime:entry.renderTime||entry.loadTime||entry.startTime});document.documentElement.dataset.keyArtRendered="true";window.dispatchEvent(new Event("storm-key-art-rendered"))};for(const type of ["element","largest-contentful-paint"]){if(!PerformanceObserver.supportedEntryTypes.includes(type))continue;const observer=new PerformanceObserver(list=>{for(const entry of list.getEntries()){const match=type==="element"?entry.identifier==="storm-key-art":entry.element?.id==="key-art-prerender-image";if(!match)continue;commit(entry);observer.disconnect()}});observer.observe({type,buffered:true})}})()
@@ -47,8 +53,9 @@
     <script>
       (()=>{const image=document.getElementById("key-art-prerender-image");const mark=()=>{if(!performance.getEntriesByName("storm-key-art-rendered","mark").length)performance.mark("storm-key-art-rendered");document.documentElement.dataset.keyArtRendered="true";window.dispatchEvent(new Event("storm-key-art-rendered"))};if(image.complete)mark();else image.addEventListener("load",mark,{once:true});image.decode?.().then(mark,()=>{})})()
     </script>
+    <div id="boot-loader" role="status" aria-live="polite"><span id="boot-loader-text">喚 醒 風 雪 · 連 線 北 境</span><i></i></div>
     <canvas id="game-canvas" aria-label="暴風啟示錄 3D 遊戲畫面"></canvas>
     <div id="app"></div>
-    <script type="module">{const start=()=>void import("/src/main.ts");if(document.documentElement.dataset.keyArtRendered==="true")start();else window.addEventListener("storm-key-art-rendered",start,{once:true})}</script>
+    <script type="module">{const start=()=>{const text=document.getElementById("boot-loader-text");if(text)text.textContent="下 載 北 境 引 擎";void import("/src/main.ts")};if(document.documentElement.dataset.keyArtRendered==="true")start();else window.addEventListener("storm-key-art-rendered",start,{once:true})}</script>
   </body>
 </html>

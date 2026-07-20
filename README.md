@@ -1,7 +1,7 @@
 # 暴風啟示錄 Storm Apocalypse
 
 [![Deploy Pages](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml/badge.svg)](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml)
-[![Version](https://img.shields.io/badge/version-0.2.8-c66b3d)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.9-c66b3d)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-79c3d2.svg)](LICENSE)
 
 在永夜暴雪中狩獵、經營最後一間肉舖，建立防線並在三十次鐘聲裡守住僅存的燈火。《暴風啟示錄》是一款可直接在瀏覽器遊玩的 3D 經營 × 動作 × 塔防遊戲。
@@ -46,7 +46,7 @@
 - Playwright（桌機、觸控、動畫契約與戰鬥 smoke 測試）
 - GitHub Actions + GitHub Pages
 
-目前版本為 **0.2.8**，與 [`package.json`](package.json) 及 lockfile 一致。
+目前版本為 **0.2.9**，與 [`package.json`](package.json) 及 lockfile 一致。
 
 ## 本地開發
 

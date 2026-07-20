@@ -35,7 +35,7 @@ import {
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import type { ProceduralAudio } from "./audio";
-import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
+import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WAVE_EVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
 import { resolveQuality, type QualityLevel, type QualityPreference } from "./quality";
 import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
@@ -374,10 +374,14 @@ export class StormGame {
     this.skyLight.intensity = lowQuality ? 0.95 : 1.25;
     this.skyLight.diffuse = lowQuality ? new Color3(0.52, 0.68, 0.78) : new Color3(0.78, 0.88, 0.93);
     this.skyLight.groundColor = lowQuality ? new Color3(0.11, 0.16, 0.2) : new Color3(0.2, 0.27, 0.31);
+    // R18 A-01：半球光高光歸零——去除全場平面亮片感，讓層次交給主光與燈籠
+    this.skyLight.specular = new Color3(0, 0, 0);
     this.sun = new DirectionalLight("low-winter-sun", new Vector3(-0.52, -1, 0.38), this.scene);
     this.sun.position = new Vector3(24, 35, -20);
     this.sun.intensity = lowQuality ? 1.65 : 2.4;
     this.sun.diffuse = new Color3(1, 0.91, 0.79);
+    // R18 A-01：主光高光收暖降強——雪地爆白高光收斂、低角度冬陽更有方向感
+    this.sun.specular = new Color3(0.66, 0.58, 0.45);
     if (!lowQuality) {
       const shadowSize = this.state.quality === "中" ? 1024 : 2048;
       this.shadows = new ShadowGenerator(shadowSize, this.sun, true);
@@ -407,6 +411,8 @@ export class StormGame {
 
     this.shopLight = new PointLight("shop-lantern-light", new Vector3(-8, 3.4, -6.1), this.scene);
     this.shopLight.diffuse = new Color3(1, 0.55, 0.25);
+    // R18 A-01：燈籠高光同步暖化——近景金屬/雪面反光不再出現冷白點
+    this.shopLight.specular = new Color3(0.85, 0.5, 0.24);
     this.shopLight.intensity = 16;
     this.shopLight.range = 13;
     this.snowEmitter = new TransformNode("snow-emitter", this.scene);
@@ -1696,11 +1702,13 @@ export class StormGame {
     this.state.customerAffinity[id] += gain;
     this.state.customerAffinityGained[id] += gain;
     const customer = NAMED_CUSTOMERS.find((entry) => entry.id === id)!;
+    let thresholdCrossed = false;
     for (const threshold of [3, 6, 10] as const) {
       if (this.state.customerAffinity[id] < threshold) continue;
       const rewardId = `aff_${id}_${threshold}`;
       if (this.state.customerRewardsClaimed.includes(rewardId)) continue;
       this.state.customerRewardsClaimed.push(rewardId);
+      thresholdCrossed = true;
       if (threshold === 3) {
         creditIncome(this.state, 40);
         this.ui.toast(`${customer.name}開始認得這間店了 · ✦ 40`, "warm");
@@ -1712,6 +1720,8 @@ export class StormGame {
         this.ui.toast(`${customer.name}把命也算在這盞燈上 · ✦ 120 · ${customer.friendMarkName}`, "warm");
       }
     }
+    // R18 C-01：好感成長可視化——非門檻回合也給輕量回饋（每客每波 allowance ≤ 2 天然限流）
+    if (!thresholdCrossed) this.ui.toast(`${customer.name} 好感 +${gain}（${this.state.customerAffinity[id]} / 10）`, "ice");
   }
 
   private updateCow(dt: number): void {
@@ -2005,6 +2015,10 @@ export class StormGame {
     saveState(this.state);
     this.audio.play("wave");
     this.ui.toast(`警報：第 ${waveNumber} 波 · ${this.currentWavePlan.title}！${this.currentWavePlan.announcement}`, "danger");
+    { // R18 C-01：里程碑波前動員線——與完成廣播成對，強化波次間敘事節奏
+      const eve = WAVE_EVE_DISPATCHES.find((entry) => entry.wave === waveNumber);
+      if (eve) window.setTimeout(() => this.ui.toast(eve.line, "ice"), 1500);
+    }
   }
 
   private updateWave(dt: number): void {

@@ -115,6 +115,7 @@ export class UiController {
   private modalState: "intro" | "system" | "result" | null = "intro";
   private setOpenPanelPublic: (panel: "quest" | "shop" | null) => void = () => {};
   private prepModalOpen = false;
+  private readonly scrollHintUpdaters: Array<() => void> = [];
 
   onStart: () => void = () => undefined;
   onAttackStart: () => void = () => undefined;
@@ -139,7 +140,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R15";
+    root.dataset.uiVersion = "R18";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -157,6 +158,7 @@ export class UiController {
         <div class="character-grid" role="radiogroup" aria-label="選擇主角">${selectionCards}</div>
         <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
         <button class="start-button start-button--confirm" id="start-button" disabled><span>確認屠夫老闆娘</span><small>寫入存檔 · ${startHint}</small></button>
+        <div class="select-scroll-hint" id="select-scroll-hint" aria-hidden="true"><span>▼</span>捲動選擇守燈人</div>
       </div>` : `
       <div class="intro__content">
         <span class="intro__overline">北境封鎖區 · 第 1,247 日</span><h1><span>暴風</span>啟示錄</h1><h2>STORM APOCALYPSE</h2>
@@ -183,7 +185,7 @@ export class UiController {
       </header>
 
       <div class="panel-scrim" id="panel-scrim" aria-hidden="true"></div>
-      <aside class="quest-panel" id="quest-panel">
+      <aside class="quest-panel scroll-fade-host" id="quest-panel">
         <div class="quest-panel__line"><span id="quest-chapter">生存手冊 · 01 / 15</span><i></i><button id="quest-close" aria-label="收合生存手冊">×</button></div>
         <h2 id="quest-title">前往東側牧場</h2>
         <p class="quest-log" id="quest-log">封鎖線以東還有活物。今晚的湯，得靠自己的刀。</p>
@@ -196,7 +198,7 @@ export class UiController {
         </section>
       </aside>
 
-      <aside class="command-panel" id="command-panel">
+      <aside class="command-panel scroll-fade-host" id="command-panel">
         <div class="command-panel__head"><div><small>北境補給站</small><b>武裝與自動化</b></div><button id="shop-close" aria-label="關閉整備商店">×</button></div>
         <div class="command-tabs" role="tablist" aria-label="整備分類">${shopTabs}</div>
         <section id="shop-section-weapon" class="shop-section is-active" data-shop-section="weapon" role="tabpanel"><h3>武器鏈</h3><div class="shop-grid">${WEAPONS.map((item) => `<button class="shop-item" data-category="weapon" data-id="${item.id}">${icon(`weapon-${item.id}`, "shop-item__icon")}<span class="shop-item__copy"><b>${item.name}</b><small>${item.description}</small></span><em data-price="weapon-${item.id}"></em></button>`).join("")}</div></section>
@@ -252,7 +254,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R15 · 程序化天候／WebAudio · 本機存檔</p>
+              <p class="system-note">R18 · 程序化天候／WebAudio · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
@@ -265,7 +267,7 @@ export class UiController {
         <div class="intro__side"><span>THE LAST BUTCHER</span><i></i><small>TAIPEI / LOCAL SAVE</small></div>
       </section>
 
-      <section class="result" id="result" hidden><div class="result__card">
+      <section class="result" id="result" hidden><div class="result__card scroll-fade-host">
         <span>暴風戰報</span><h2 id="result-title">黎明仍在</h2><p id="result-copy"></p><div class="result-stats" id="result-stats"></div>
         <button id="result-button">帶著進度重整</button><button class="text-button" id="reset-button">清除進度並重開</button>
         <div class="reset-confirm" id="result-reset-confirm" hidden><strong>確定清除所有戰役進度？此動作不可復原。</strong><span><button id="result-reset-cancel" type="button">取消</button><button class="danger-button" id="result-reset-confirm-btn" type="button">確認清除</button></span></div>
@@ -328,7 +330,15 @@ export class UiController {
     this.muteButton = get("mute-toggle");
     this.shakeButton = get("shake-toggle");
     this.resetConfirm = get("reset-confirm");
+    // R18 L-01：intro loader 已掛載，靜態 boot loader 功成身退
+    document.getElementById("boot-loader")?.remove();
     this.observeKeyArt();
+    // R18 M-01：橫向選角溢出無捲動暗示——底部漸層＋浮動指示，捲到底自動隱藏
+    if (this.requiresProtagonistSelection) this.attachScrollHint(this.intro, this.intro);
+    // R18 M-03：手冊／整備／結算捲動暗示（sticky 漸層 ::after，僅在還有內容時顯示）
+    this.attachScrollHint(this.questPanel);
+    this.attachScrollHint(this.commandPanel);
+    this.attachScrollHint(this.result.querySelector<HTMLElement>(".result__card")!);
 
     const clearPressed = (): void => {
       for (const button of root.querySelectorAll("button.is-pressed")) button.classList.remove("is-pressed");
@@ -368,6 +378,7 @@ export class UiController {
       shopToggle.classList.toggle("is-panel-open", shopOpen);
       this.panelScrim.classList.toggle("is-active", this.touchMode && (questOpen || shopOpen));
       this.setPrepModalOpen(this.touchMode && shopOpen);
+      this.refreshScrollHints();
     };
 
     for (const tab of root.querySelectorAll<HTMLButtonElement>("[data-shop-tab]")) {
@@ -421,10 +432,13 @@ export class UiController {
     bindImmediate(this.waveButton, () => this.onWave());
     get("result-button").addEventListener("click", () => location.reload());
     // R17（辯論裁決 C-01／缺陷級）：結算清檔改二段確認——敗局情緒下誤觸不再直接毀檔
+    // R18 M-03：focus 不再自動捲底把標題捲出（preventScroll＋nearest）
     get("reset-button").addEventListener("click", () => {
       const confirmBox = get("result-reset-confirm");
       confirmBox.hidden = false;
-      get<HTMLButtonElement>("result-reset-cancel").focus();
+      get<HTMLButtonElement>("result-reset-cancel").focus({ preventScroll: true });
+      confirmBox.scrollIntoView({ block: "nearest" });
+      this.refreshScrollHints();
     });
     get("result-reset-cancel").addEventListener("click", () => {
       get("result-reset-confirm").hidden = true;
@@ -459,7 +473,8 @@ export class UiController {
     bindImmediate(this.shakeButton, () => this.updateSettings({ screenShake: !this.settings.screenShake }));
     bindImmediate(get<HTMLButtonElement>("reset-save-open"), () => {
       this.resetConfirm.hidden = false;
-      get<HTMLButtonElement>("reset-save-cancel").focus();
+      get<HTMLButtonElement>("reset-save-cancel").focus({ preventScroll: true });
+      this.resetConfirm.scrollIntoView({ block: "nearest" });
     });
     bindImmediate(get<HTMLButtonElement>("reset-save-cancel"), () => {
       this.resetConfirm.hidden = true;
@@ -497,6 +512,36 @@ export class UiController {
     this.startButton.disabled = false;
     this.startButton.classList.add("is-ready");
     this.intro.classList.add("is-ready");
+    this.intro.classList.remove("is-waiting");
+    this.refreshScrollHints();
+  }
+
+  // R18 L-02：start 按下但資產未就緒——鈕轉整備中並鎖定，loader 固定於視口內持續回報
+  markWaitingForReady(): void {
+    this.startButton.disabled = true;
+    this.startButton.classList.remove("is-ready");
+    const label = this.startButton.querySelector("span");
+    const hint = this.startButton.querySelector("small");
+    if (label) label.textContent = "整 備 中 …";
+    if (hint) hint.textContent = "北境資產載入中，就緒後自動進場";
+    this.intro.classList.add("is-waiting");
+  }
+
+  // R18 M-01/M-03：可捲容器的「下方還有內容」暗示
+  private attachScrollHint(scroller: HTMLElement, classTarget: HTMLElement = scroller): void {
+    const update = (): void => {
+      classTarget.classList.toggle("has-more-below", scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight > 24);
+    };
+    this.scrollHintUpdaters.push(update);
+    scroller.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    requestAnimationFrame(update);
+  }
+
+  private refreshScrollHints(): void {
+    requestAnimationFrame(() => {
+      for (const update of this.scrollHintUpdaters) update();
+    });
   }
 
   markInteractive(): void {
@@ -739,6 +784,7 @@ export class UiController {
       section.classList.toggle("is-active", active);
       section.hidden = !active;
     }
+    this.refreshScrollHints();
   }
 
   private unlockedWeapons(state: RuntimeState): WeaponId[] {
@@ -1011,6 +1057,7 @@ export class UiController {
       return item;
     }));
     requestAnimationFrame(() => this.result.classList.add("is-visible"));
+    this.refreshScrollHints();
   }
 
 }

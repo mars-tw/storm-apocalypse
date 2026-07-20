@@ -37,7 +37,9 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .asset-icon--skill-cashier { --icon-x:66.667%; --icon-y:0%; }
 .asset-icon--skill-dog { --icon-x:100%; --icon-y:0%; }
 #game-canvas { position: fixed; inset: 0; display: block; outline: none; }
-#app { position: fixed; inset: 0; pointer-events: none; }
+/* R18 L-01：#app 提到 key-art 預渲染（z1）與 boot loader（z5）之上——
+   慢機上背景圖 decode 完成前，intro 掛載後必須立即可見可互動（原 z-auto 會被 key-art 蓋住） */
+#app { position: fixed; inset: 0; z-index: 20; pointer-events: none; }
 .game-ui.is-modal-hidden { visibility:hidden; pointer-events:none; }
 .is-prep-modal .hud,
 .is-prep-modal .quest-panel,
@@ -63,7 +65,7 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .hud-status { display:grid; grid-template-columns:minmax(112px,auto) 44px; justify-self:end; gap:0 7px; text-align:right; }
 .wave-chip { min-width: 162px; padding: 9px 13px; border-right: 2px solid var(--ice); }
 .wave-chip b { display: block; margin-top: 3px; font-size: 12px; letter-spacing: .06em; }
-#performance-chip { grid-column:1; display:inline-block; justify-self:end; margin-top:4px; padding:2px 5px; color:#799097; font-size:7px; background:rgba(3,12,18,.55); }
+#performance-chip { grid-column:1; display:inline-block; justify-self:end; margin-top:4px; padding:2px 5px; color:#84999f; font-size:8px; background:rgba(3,12,18,.55); }
 .protagonist-status { grid-column:1; display:block; margin-top:4px; color:var(--gold); font-size:8px; letter-spacing:.07em; text-shadow:0 2px 10px #06101c; }
 .settings-button { grid-column:2; grid-row:1; display:grid; place-items:center; width:44px; min-width:44px; height:44px; padding:0; pointer-events:auto; cursor:pointer; color:var(--ice); border:7px solid transparent; border-image:var(--button-9s) 52 fill / 7px stretch; background:rgba(7,22,31,.88); box-shadow:0 8px 24px rgba(0,0,0,.28); }
 .settings-button span { font-size:18px; line-height:1; transition:transform .2s; }
@@ -126,15 +128,16 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .shop-item__icon { width:46px; height:46px; }
 .shop-item .shop-item__copy { min-width:0; flex:1 1 auto; }
 .shop-item b { display: block; font-size: 10px; }
-.shop-item small { display: block; overflow: hidden; margin-top: 2px; color: #81969c; font-size: 7px; text-overflow: ellipsis; white-space: nowrap; }
+/* R18 A-01/M-03：字級階收斂（7px 說明字全面升 8px）＋員工描述兩行不截斷 */
+.shop-item small { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; margin-top: 2px; color: #8ba0a6; font-size: 8px; line-height: 1.35; white-space: normal; }
 .shop-item em { flex: 0 0 auto; color: var(--gold); font-size: 8px; font-style: normal; }
 .regular-list { display:grid; gap:5px; }
 .regular-list article { display:grid; grid-template-columns:1fr 76px; align-items:center; gap:7px; padding:7px 8px; border:1px solid rgba(158,219,234,.12); background:rgba(15,34,43,.52); }
 .regular-list article > div b { display:block; font-size:9px; }
-.regular-list article > div small { display:block; margin-top:2px; color:#81969c; font-size:7px; }
+.regular-list article > div small { display:block; margin-top:2px; color:#8ba0a6; font-size:8px; }
 .regular-list article > span { position:relative; display:block; height:14px; overflow:hidden; border:1px solid rgba(240,183,104,.2); background:rgba(0,0,0,.22); }
 .regular-list article > span i { position:absolute; inset:0 auto 0 0; width:0; background:linear-gradient(90deg,rgba(165,103,42,.64),rgba(240,183,104,.7)); transition:width .25s; }
-.regular-list article > span em { position:relative; display:block; color:#d9c39d; text-align:center; font-size:7px; font-style:normal; line-height:12px; font-variant-numeric:tabular-nums; }
+.regular-list article > span em { position:relative; display:block; color:#d9c39d; text-align:center; font-size:8px; font-style:normal; line-height:12px; font-variant-numeric:tabular-nums; }
 .regular-list article.is-regular { border-color:rgba(240,183,104,.32); }
 
 .context-prompt { position: absolute; z-index: 11; left: 50%; bottom: 82px; display: flex; align-items: center; gap: 9px; padding: 7px 12px; opacity: 0; transform: translate(-50%,10px); border: 1px solid var(--line); background: rgba(4,13,20,.8); transition: .25s; }
@@ -152,7 +155,7 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .tower-dock__icon { width:34px; height:34px; }
 .tower-dock__button span { min-width:0; display:block; }
 .tower-dock__button b { display:block; overflow:hidden; color:#e8eff0; font-size:8px; text-overflow:ellipsis; white-space:nowrap; }
-.tower-dock__button small { display:block; overflow:hidden; margin-top:1px; color:var(--gold); font-size:7px; line-height:1.25; text-overflow:ellipsis; white-space:nowrap; }
+.tower-dock__button small { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; margin-top:1px; color:var(--gold); font-size:8px; line-height:1.25; white-space:normal; }
 .wave-button { min-width: 244px; padding: 4px 19px; pointer-events: auto; cursor: pointer; border: 8px solid transparent; border-image: var(--button-9s) 52 fill / 8px stretch; background: linear-gradient(180deg,rgba(21,47,60,.9),rgba(5,19,28,.86)); box-shadow: 0 10px 35px rgba(0,0,0,.36); }
 .wave-button:not(:disabled):hover { border-color: var(--gold); filter: brightness(1.15); }
 .wave-button:disabled { opacity: .48; }
@@ -164,11 +167,13 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .joystick.is-pressed .joystick__ring { border-color: rgba(196,227,233,.62); background: radial-gradient(circle,rgba(39,91,107,.22),rgba(8,22,31,.68)); }
 .joystick.is-pressed .joystick__knob { filter: brightness(1.2); box-shadow: 0 3px 11px rgba(0,0,0,.4), 0 0 16px rgba(126,210,227,.2); }
 .right-combat-controls { grid-column:3; justify-self:end; display:flex; align-items:end; gap:8px; pointer-events:auto; }
-.weapon-button { display:flex; flex-direction:column; align-items:center; justify-content:center; width:58px; height:58px; padding:0; cursor:pointer; border:7px solid transparent; border-image:var(--button-9s) 52 fill / 7px stretch; background:rgba(11,33,45,.82); box-shadow:0 8px 24px rgba(0,0,0,.32); }
+.weapon-button { display:flex; flex-direction:column; align-items:center; justify-content:center; width:58px; height:58px; padding:0; cursor:pointer; border:7px solid transparent; border-image:var(--button-9s) 52 fill / 7px stretch; background:radial-gradient(circle at 50% 42%,rgba(158,219,234,.15),transparent 68%),rgba(11,33,45,.82); box-shadow:0 8px 24px rgba(0,0,0,.32); }
 .weapon-button:disabled { opacity:.46; cursor:not-allowed; }
 .weapon-button__icon { width:36px; height:36px; margin:-4px 0 -5px; }
-.weapon-button small { color:var(--ice); font-size:7px; letter-spacing:.08em; }
-.attack-button { grid-column:3; justify-self: end; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 82px; height: 82px; padding:0; pointer-events: auto; cursor: pointer; border: 9px solid transparent; border-image: var(--danger-button-9s) 52 fill / 9px stretch; background: rgba(72,25,20,.76); box-shadow: 0 8px 30px rgba(32,5,5,.4); }
+/* R18 A-01：武器圖示可辨識度——飽和/對比微調＋冰光底盤，深底剪影更清楚 */
+.weapon-button__icon, .attack-button__icon { filter:drop-shadow(0 5px 8px rgba(0,0,0,.42)) saturate(1.18) contrast(1.07); }
+.weapon-button small { color:var(--ice); font-size:8px; letter-spacing:.08em; }
+.attack-button { grid-column:3; justify-self: end; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 82px; height: 82px; padding:0; pointer-events: auto; cursor: pointer; border: 9px solid transparent; border-image: var(--danger-button-9s) 52 fill / 9px stretch; background: radial-gradient(circle at 50% 44%,rgba(255,178,142,.16),transparent 70%), rgba(72,25,20,.76); box-shadow: 0 8px 30px rgba(32,5,5,.4); }
 .attack-button:active, .attack-button.is-pressed { transform: scale(.94); border-color: rgba(255,179,151,.72); box-shadow: 0 4px 16px rgba(32,5,5,.45), 0 0 22px rgba(210,85,60,.22); }
 .attack-button__icon { width:48px; height:48px; margin:-5px 0 -7px; }
 .attack-button small { font-size: 8px; letter-spacing: .1em; }
@@ -284,7 +289,7 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .character-card__portrait picture { width:100%; height:100%; }
 .character-card__portrait img { display:block; width:100%; height:100%; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 16px 12px rgba(0,0,0,.42)); }
 .character-card__copy { display:flex; min-width:0; flex-direction:column; padding:14px 16px 16px; }
-.character-card__copy > small { overflow:hidden; color:#8ea4aa; font-size:7px; letter-spacing:.06em; text-overflow:ellipsis; white-space:nowrap; }
+.character-card__copy > small { overflow:hidden; color:#8ea4aa; font-size:8px; letter-spacing:.06em; text-overflow:ellipsis; white-space:nowrap; }
 .character-card__copy > b { margin-top:5px; font:700 19px "Noto Serif TC",serif; letter-spacing:.1em; }
 .character-card__copy q { min-height:37px; margin-top:5px; color:#aebdc1; font:9px/1.75 "Noto Serif TC",serif; quotes:none; }
 .character-card__skill { display:flex; align-items:center; gap:8px; margin-top:auto; }
@@ -295,6 +300,18 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .character-select .loader { width:min(460px,82vw); margin:16px auto 0; text-align:center; }
 /* R16：矮視口選角確認鈕曾需捲動才可見（老闆零捲動指示）——sticky 釘在捲動容器底、永在畫面內 */
 .start-button--confirm { display:block; min-height:52px; margin:12px auto 0; position:sticky; bottom:max(10px, env(safe-area-inset-bottom)); z-index:6; background:linear-gradient(90deg,rgba(37,87,101,.94),rgba(14,42,54,.92)); box-shadow:0 6px 22px rgba(2,10,14,.65); }
+/* R18 M-01：選角溢出捲動暗示——底部漸層＋浮動指示，捲到底自動隱藏 */
+.intro--selection::after { content:""; position:fixed; z-index:4; left:0; right:0; bottom:0; height:88px; pointer-events:none; opacity:0; background:linear-gradient(180deg,transparent,rgba(2,8,11,.9)); transition:opacity .3s; }
+.intro--selection.has-more-below::after { opacity:1; }
+.select-scroll-hint { position:fixed; z-index:7; left:50%; bottom:max(78px,calc(env(safe-area-inset-bottom) + 68px)); display:flex; align-items:center; gap:7px; padding:7px 13px; pointer-events:none; opacity:0; transform:translateX(-50%); color:var(--ice); border:1px solid rgba(158,219,234,.34); background:rgba(4,14,20,.88); font-size:10px; letter-spacing:.18em; transition:opacity .3s; }
+.intro--selection.has-more-below .select-scroll-hint { opacity:1; }
+.select-scroll-hint span { font-size:9px; animation:hint-bob 1.4s ease-in-out infinite; }
+@keyframes hint-bob { 0%,100% { transform:translateY(-2px) } 50% { transform:translateY(2px) } }
+/* R18 L-02：整備中狀態——loader 發光強調、start 鈕鎖定 */
+.intro.is-waiting .loader i { background:rgba(158,219,234,.2); }
+.intro.is-waiting .loader em { box-shadow:0 0 14px #8fd3df; }
+.intro.is-waiting .loader span { color:#b8d3da; }
+.start-button:disabled { cursor:progress; }
 
 .result { position:absolute; inset:0; z-index:120; display:grid; place-items:center; pointer-events:auto; opacity:0; background:rgba(2,9,14,.78); backdrop-filter:blur(10px); transition:opacity .4s; }
 .result[hidden] { display:none; }
@@ -309,6 +326,11 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .result-stats b { display:block; margin-top:4px; color:var(--gold); font-size:13px; }
 .result button { width:100%; margin-top:8px; cursor:pointer; border:1px solid rgba(158,219,234,.3); background:#173744; }
 .result .text-button { color:#7f9399; border:0; background:transparent; font-size:9px; }
+
+/* R18 M-03：可捲容器「下方還有內容」暗示——sticky 漸層畫在內容層（不被 border-image fill 蓋住） */
+.scroll-fade-host::after { content:""; position:sticky; bottom:-1px; z-index:2; display:block; height:30px; margin-top:-30px; pointer-events:none; opacity:0; background:linear-gradient(180deg,transparent,rgba(3,11,17,.92)); transition:opacity .25s; }
+.scroll-fade-host.has-more-below::after { opacity:1; }
+.result__card.scroll-fade-host::after { margin-left:-32px; margin-right:-32px; }
 
 @media (pointer:coarse), (max-width:900px) {
   :root { --ui-atlas:url("/storm-apocalypse/images/ui/atlas/ui-atlas-low.png"); }
@@ -383,6 +405,10 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 
 @media (pointer:coarse) and (orientation:landscape) and (max-height:540px) {
   .quest-panel, .command-panel, #app.is-touch .quest-panel, #app.is-touch .command-panel { top:max(64px,calc(env(safe-area-inset-top) + 60px)); max-height:calc(100dvh - 204px - env(safe-area-inset-bottom)); }
+  /* R18 M-02：整備開啟時 prep-modal 已隱藏底部控制，內容窗改隨視口伸縮（166px→約 292px） */
+  .command-panel, #app.is-touch .command-panel { max-height:calc(100dvh - 78px - env(safe-area-inset-bottom)); }
+  /* R18 L-01/L-02：橫向矮視口 loader 固定於視口內——載入進度永遠看得見 */
+  .intro .loader { position:fixed; z-index:8; top:max(8px,env(safe-area-inset-top)); left:50%; width:min(300px,58vw); margin:0; padding:7px 11px; transform:translateX(-50%); text-align:center; background:rgba(3,12,18,.84); border:1px solid rgba(158,219,234,.2); }
   .bottom-controls { grid-template-columns:112px minmax(0,1fr) 132px; grid-template-rows:auto; align-items:end; }
   .combat-dock { grid-column:2; grid-row:1; grid-template-columns:1fr; grid-template-rows:auto auto; align-items:end; justify-content:center; }
   .tower-dock { grid-template-columns:repeat(3,74px); }

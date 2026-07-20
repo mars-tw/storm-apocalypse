@@ -104,6 +104,17 @@ export const WAVE_DISPATCHES: ReadonlyArray<{ wave: number; line: string }> = [
   { wave: 30, line: "電台安靜了三秒，然後所有頻道一起響：「第三十聲。北境，天亮了。」" },
 ] as const;
 
+// R18 C-01：波前動員線——與 WAVE_DISPATCHES 完成線成對（開波時播），維持里程碑節奏、不灌水安靜波
+export const WAVE_EVE_DISPATCHES: ReadonlyArray<{ wave: number; line: string }> = [
+  { wave: 5, line: "電台壓低聲音：「第五波是試金石。塔架要是會晃，現在就去焊。」" },
+  { wave: 10, line: "開波前，老周把鐵門拉了半掩：「第十波起，牠們開始懂得繞路了。」" },
+  { wave: 15, line: "林護理把繃帶捲塞進你口袋：「中場之後，別再逞英雄。」" },
+  { wave: 20, line: "電台：「第二十波。守到這裡的人，名字都會被記住。」" },
+  { wave: 25, line: "何偵察在雪裡比了個手勢：北面來的，比昨晚多一倍。" },
+  { wave: 29, line: "小包搖了搖鈴鐺：「再兩聲就好。阿姨說燈亮著，天就會亮。」" },
+  { wave: 30, line: "所有頻道靜默三秒——然後齊聲：「最後一波。北境在看著你們。」" },
+] as const;
+
 export const WEAPONS: readonly ShopItem<WeaponId>[] = [
   { id: "machete", name: "砍刀", description: "近距離單體揮砍 · 傷害 2", price: 0 },
   { id: "axe", name: "迴旋斧", description: "360° 橫掃 · 傷害 3", price: 120 },

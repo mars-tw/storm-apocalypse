@@ -29,8 +29,9 @@ async function bootstrap(): Promise<void> {
   ui.onStart = () => {
     if (gameReady) game.start();
     else {
+      // R18 L-02：不再把進度條倒退回 2%；鎖定按鈕並保留實際載入進度回報
       startRequested = true;
-      ui.setLoading(0.02, "守燈人已就位，正在展開北境");
+      ui.markWaitingForReady();
     }
   };
   ui.onAttackStart = () => game.startAttack();
