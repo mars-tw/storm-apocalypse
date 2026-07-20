@@ -460,6 +460,17 @@ async function checkR18StaticContracts() {
       && indexHtml.includes("#boot-loader{position:fixed")
       && ui.includes('document.getElementById("boot-loader")?.remove()');
     record("loading/R18", "static boot loader ships in index.html and is retired once the intro loader mounts", bootLoaderPass, "index.html #boot-loader + ui.ts removal");
+    const bootFailureRecoveryPass = indexHtml.includes('void import("/src/main.ts").catch(')
+      && indexHtml.includes("北境引擎載入失敗，請檢查連線後重試")
+      && indexHtml.includes('button.addEventListener("click",()=>location.reload())');
+    record("loading/R18.1", "entry import failure replaces the loading copy with a reload action", bootFailureRecoveryPass, "import catch + error copy + location.reload button");
+    const scrollHintA11yPass = ui.includes('id="select-scroll-hint" role="status" aria-live="polite"')
+      && !ui.includes('id="select-scroll-hint" aria-hidden="true"');
+    record("a11y/R18.1", "selection scroll hint is a polite live text status", scrollHintA11yPass, "role=status + aria-live=polite; no aria-hidden on hint");
+    const remountCleanupPass = ui.includes("scrollHintRemountCleanups.get(root)?.()")
+      && ui.includes("scrollHintRemountCleanups.set(root, () => this.detachAllScrollHints())")
+      && ui.includes('window.removeEventListener("resize", update)');
+    record("lifecycle/R18.1", "scroll-hint resize listeners are removed before UI remount", remountCleanupPass, "root remount cleanup + removeEventListener");
   } catch (error) {
     record("systems/R18", "R18 static contracts load", false, error instanceof Error ? error.message : String(error));
   }
@@ -468,7 +479,7 @@ async function checkR18StaticContracts() {
 // R18 L-01：JS 尚未執行的首屏窗口必須已有可見載入指示（延遲所有 JS 模擬慢網）
 async function checkR18BootLoader(browser) {
   const viewport = { width: 844, height: 390 };
-  const context = await browser.newContext({ viewport, hasTouch: true, isMobile: false, deviceScaleFactor: 1 });
+  const context = await browser.newContext({ viewport, hasTouch: true, isMobile: false, deviceScaleFactor: 1, reducedMotion: "reduce" });
   const page = await context.newPage();
   try {
     await context.route("**/*.js", async (route) => {
@@ -478,17 +489,20 @@ async function checkR18BootLoader(browser) {
     const navigation = page.goto(url, { waitUntil: "commit", timeout: loadTimeout });
     let bootVisibleWithinBudget = true;
     let bootDetail = "";
+    let bootSweepStopped = false;
     try {
       await page.waitForSelector("#boot-loader", { state: "visible", timeout: 1000 });
       const box = await page.locator("#boot-loader").boundingBox();
       const inViewport = Boolean(box) && box.x >= 0 && box.y >= 0 && box.x + box.width <= viewport.width && box.y + box.height <= viewport.height;
       bootVisibleWithinBudget = inViewport;
+      bootSweepStopped = await page.locator("#boot-loader i").evaluate((element) => getComputedStyle(element, "::after").animationName === "none");
       bootDetail = box ? `box=${Math.round(box.x)},${Math.round(box.y)},${Math.round(box.width)}×${Math.round(box.height)}` : "no box";
     } catch (error) {
       bootVisibleWithinBudget = false;
       bootDetail = error instanceof Error ? error.message : String(error);
     }
     record("844×390", "boot loading indicator is visible within 1s of first paint and inside the viewport", bootVisibleWithinBudget, bootDetail);
+    record("844×390", "boot sweep animation stops under reduced-motion preference", bootSweepStopped, `animation=${bootSweepStopped ? "none" : "active"}`);
     await navigation.catch(() => {});
     await page.unroute("**/*.js");
     await page.waitForSelector("#loading-text", { state: "attached", timeout: loadTimeout });
@@ -511,10 +525,28 @@ async function checkR18SelectionAndWaiting(browser) {
   });
   const page = await context.newPage();
   const label = "844×390";
+  let modelsReleased = false;
+  const parkedModelRoutes = [];
+  let resolveFirstParkedModel;
+  const firstParkedModel = new Promise((resolveParked) => {
+    resolveFirstParkedModel = resolveParked;
+  });
+  const releaseModels = async () => {
+    if (modelsReleased) return;
+    modelsReleased = true;
+    const routes = parkedModelRoutes.splice(0);
+    await Promise.allSettled(routes.map((route) => route.continue()));
+    await context.unroute("**/models/**");
+  };
   try {
+    // R18.1（Grok R18-03）：資產改「攔住直到明確放行」而非固定延遲——保證 waiting 分支必然被走到，消除競態短路
     await context.route("**/models/**", async (route) => {
-      await new Promise((resolveDelay) => setTimeout(resolveDelay, 3500));
-      await route.continue();
+      if (modelsReleased) {
+        await route.continue();
+        return;
+      }
+      parkedModelRoutes.push(route);
+      resolveFirstParkedModel?.();
     });
     await page.goto(qualityUrl.toString(), { waitUntil: "domcontentloaded", timeout: loadTimeout });
     await page.waitForSelector("#select-scroll-hint", { state: "attached", timeout: loadTimeout });
@@ -533,9 +565,28 @@ async function checkR18SelectionAndWaiting(browser) {
     const confirmBox = await page.locator("#start-button").boundingBox();
     const confirmVisible = Boolean(confirmBox) && confirmBox.y >= 0 && confirmBox.y + confirmBox.height <= viewport.height;
     record(label, "sticky confirm button stays inside the landscape viewport", confirmVisible, confirmBox ? `y=${Math.round(confirmBox.y)}, h=${Math.round(confirmBox.height)}` : "no box");
+    let parkedTimeout;
+    try {
+      await Promise.race([
+        firstParkedModel,
+        new Promise((_, rejectParked) => {
+          parkedTimeout = setTimeout(() => rejectParked(new Error("No model request was parked by the R18.1 route gate.")), 15_000);
+        }),
+      ]);
+    } finally {
+      clearTimeout(parkedTimeout);
+    }
     await page.locator("#intro").evaluate((element) => element.scrollTo({ top: element.scrollHeight }));
-    await page.waitForFunction(() => !document.querySelector("#intro")?.classList.contains("has-more-below"), undefined, { timeout: 5_000 });
-    record(label, "scroll hint hides when the selection list is scrolled to the end", true, "has-more-below removed at bottom");
+    // R18.1（Grok R18-02）：不只看 class 移除——量測 computed opacity 實際淡出（≤0.05）
+    let hiddenOpacity = Number.NaN;
+    try {
+      await page.waitForFunction(() => {
+        const hint = document.querySelector("#select-scroll-hint");
+        return hint ? Number(getComputedStyle(hint).opacity) <= 0.05 : false;
+      }, undefined, { timeout: 5_000 });
+      hiddenOpacity = Number(await page.locator("#select-scroll-hint").evaluate((element) => getComputedStyle(element).opacity));
+    } catch {}
+    record(label, "scroll hint visually fades out (computed opacity ≤0.05) at the end of the list", hiddenOpacity <= 0.05, `opacity=${hiddenOpacity}`);
     await page.waitForFunction(() => !document.querySelector("#start-button")?.hasAttribute("disabled"), undefined, { timeout: 15_000 });
     await page.locator("#start-button").click();
     const waiting = await page.evaluate(() => {
@@ -551,20 +602,23 @@ async function checkR18SelectionAndWaiting(browser) {
         loaderInViewport: Boolean(rect) && rect.top >= 0 && rect.bottom <= innerHeight && rect.width > 0,
       };
     });
-    const waitingPass = waiting.ready || waiting.detached
-      ? true
-      : waiting.disabled && waiting.text.includes("整") && waiting.loaderInViewport;
-    record(label, "pressing start before assets are ready locks the button and keeps the loader visible", waitingPass, JSON.stringify(waiting));
-    await page.unroute("**/models/**");
+    // R18.1（Grok R18-03）：資產被攔住，ready/detached 為 false 才算真的走進 waiting 分支——嚴格斷言
+    const parkedModels = parkedModelRoutes.length;
+    const waitingPass = parkedModels > 0 && !waiting.ready && !waiting.detached
+      && waiting.disabled && waiting.text.includes("整") && waiting.loaderInViewport;
+    record(label, "pressing start before assets are ready locks the button and keeps the loader visible", waitingPass, JSON.stringify({ ...waiting, parkedModels }));
+    await releaseModels();
     await page.locator("#intro").waitFor({ state: "detached", timeout: loadTimeout });
     record(label, "delayed start auto-enters the game once assets finish", true, "intro detached after ready");
   } finally {
+    await releaseModels();
     await context.close();
   }
 }
 
 // R18 M-02：橫向整備面板內容窗隨視口伸縮＋捲動暗示
-async function checkR18PrepPanel(page, label) {
+// R18.1（Grok R18-04）：bottom 上限吃實際 viewport 高度參數，不寫死 390
+async function checkR18PrepPanel(page, label, viewportHeight) {
   const alreadyOpen = await page.locator("#command-panel").evaluate((panel) => panel.classList.contains("is-open"));
   if (!alreadyOpen) await page.locator("#shop-toggle").click();
   await page.waitForFunction(() => document.querySelector("#command-panel")?.classList.contains("is-open"), undefined, { timeout: 5_000 });
@@ -575,7 +629,7 @@ async function checkR18PrepPanel(page, label) {
     bottom: Math.round(panel.getBoundingClientRect().bottom),
     hasMore: panel.classList.contains("has-more-below"),
   }));
-  record(label, "prep panel content window stretches with the landscape viewport (≥280px)", metrics.clientHeight >= 280 && metrics.bottom <= 390, JSON.stringify(metrics));
+  record(label, "prep panel content window stretches with the landscape viewport (≥280px)", metrics.clientHeight >= 280 && metrics.bottom <= viewportHeight, JSON.stringify({ ...metrics, viewportHeight }));
   const hintPass = metrics.scrollHeight - metrics.clientHeight > 24 ? metrics.hasMore : true;
   record(label, "prep panel shows a scroll fade while content remains below", hintPass, `scrollable=${metrics.scrollHeight - metrics.clientHeight}px, hasMore=${metrics.hasMore}`);
   const tabs = ["employee", "regular", "expansion", "weapon"];
@@ -585,6 +639,23 @@ async function checkR18PrepPanel(page, label) {
     tabsPass &&= await page.locator(`[data-shop-section="${tab}"]`).evaluate((section) => !section.hidden);
   }
   record(label, "all four prep tabs stay reachable in the stretched panel", tabsPass, tabs.join(","));
+  // R18.1（Grok R18-05）：內容非同步撐高（無任何 UI 呼叫）→ ResizeObserver 必須讓 has-more-below 重新出現
+  await page.locator("#command-panel").evaluate((panel) => panel.scrollTo({ top: panel.scrollHeight }));
+  await page.waitForFunction(() => !document.querySelector("#command-panel")?.classList.contains("has-more-below"), undefined, { timeout: 5_000 });
+  await page.evaluate(() => {
+    const filler = document.createElement("div");
+    filler.id = "r18-resize-filler";
+    filler.style.height = "480px";
+    document.querySelector("#shop-section-weapon")?.append(filler);
+  });
+  let resizeHintPass = true;
+  try {
+    await page.waitForFunction(() => document.querySelector("#command-panel")?.classList.contains("has-more-below"), undefined, { timeout: 5_000 });
+  } catch {
+    resizeHintPass = false;
+  }
+  record(label, "scroll hint reappears when panel content grows asynchronously (ResizeObserver)", resizeHintPass, `has-more-below=${resizeHintPass}`);
+  await page.evaluate(() => document.getElementById("r18-resize-filler")?.remove());
   await page.locator("#shop-close").click();
 }
 
@@ -1622,7 +1693,7 @@ async function runLayout(browser, viewport) {
     await checkControlSpacing(page, label);
     await checkTouchLayout(page, label);
     await checkR9UX(page, label, true);
-    await checkR18PrepPanel(page, label);
+    await checkR18PrepPanel(page, label, viewport.height);
     await checkR12SystemMenu(page, "R12 menu 844x390");
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {

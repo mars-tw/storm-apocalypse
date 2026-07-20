@@ -40,7 +40,10 @@
       #boot-loader i{position:relative;display:block;height:3px;margin-top:8px;overflow:hidden;background:rgba(255,255,255,.13)}
       #boot-loader i::after{content:"";position:absolute;top:0;left:-42%;width:42%;height:100%;background:linear-gradient(90deg,transparent,#8ed3e2,#c8eef4);box-shadow:0 0 8px #73baca;animation:boot-sweep 1.15s linear infinite}
       @keyframes boot-sweep{to{left:100%}}
-      @media (prefers-reduced-motion:reduce){#boot-loader i::after{animation-duration:2.6s}}
+      /* R18.1（Grok R18-06）：減少動態偏好下停掃光動畫，改靜態半亮條 */
+      @media (prefers-reduced-motion:reduce){#boot-loader i::after{animation:none;left:0;width:100%;opacity:.45}}
+      /* R18.1（Grok R18-01）：入口模組載入失敗時的重試鈕 */
+      #boot-reload{display:block;min-height:44px;margin:10px auto 0;padding:0 22px;color:#0d1c24;border:1px solid rgba(158,220,233,.5);background:#9edbea;font:700 12px/1 "Microsoft JhengHei","PingFang TC",sans-serif;letter-spacing:.2em;cursor:pointer}
     </style>
     <script>
       (()=>{if(!globalThis.PerformanceObserver)return;const commit=entry=>{if(performance.getEntriesByName("storm-key-art-rendered","mark").length)return;performance.mark("storm-key-art-rendered",{startTime:entry.renderTime||entry.loadTime||entry.startTime});document.documentElement.dataset.keyArtRendered="true";window.dispatchEvent(new Event("storm-key-art-rendered"))};for(const type of ["element","largest-contentful-paint"]){if(!PerformanceObserver.supportedEntryTypes.includes(type))continue;const observer=new PerformanceObserver(list=>{for(const entry of list.getEntries()){const match=type==="element"?entry.identifier==="storm-key-art":entry.element?.id==="key-art-prerender-image";if(!match)continue;commit(entry);observer.disconnect()}});observer.observe({type,buffered:true})}})()
@@ -56,6 +59,6 @@
     <div id="boot-loader" role="status" aria-live="polite"><span id="boot-loader-text">喚 醒 風 雪 · 連 線 北 境</span><i></i></div>
     <canvas id="game-canvas" aria-label="暴風啟示錄 3D 遊戲畫面"></canvas>
     <div id="app"></div>
-    <script type="module">{const start=()=>{const text=document.getElementById("boot-loader-text");if(text)text.textContent="下 載 北 境 引 擎";void import("/src/main.ts")};if(document.documentElement.dataset.keyArtRendered==="true")start();else window.addEventListener("storm-key-art-rendered",start,{once:true})}</script>
+    <script type="module">{const start=()=>{const text=document.getElementById("boot-loader-text");if(text)text.textContent="下 載 北 境 引 擎";void import("/src/main.ts").catch(()=>{const boot=document.getElementById("boot-loader");if(!boot)return;const label=document.getElementById("boot-loader-text");if(label)label.textContent="北境引擎載入失敗，請檢查連線後重試";if(!document.getElementById("boot-reload")){const button=document.createElement("button");button.id="boot-reload";button.type="button";button.textContent="重 新 載 入";button.addEventListener("click",()=>location.reload());boot.append(button)}})};if(document.documentElement.dataset.keyArtRendered==="true")start();else window.addEventListener("storm-key-art-rendered",start,{once:true})}</script>
   </body>
 </html>

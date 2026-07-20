@@ -30,6 +30,9 @@ const SHOP_TABS: ReadonlyArray<{ id: ShopTab; label: string }> = [
   { id: "expansion", label: "擴張" },
 ];
 
+// 同一個 root 重新掛載 UiController 時，先撤銷前一實例的 scroll-hint 全域 listener。
+const scrollHintRemountCleanups = new WeakMap<HTMLElement, () => void>();
+
 function detectTouchMode(): boolean {
   const userAgentData = (navigator as Navigator & { userAgentData?: { mobile?: boolean } }).userAgentData;
   const mobileUa = /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -115,7 +118,8 @@ export class UiController {
   private modalState: "intro" | "system" | "result" | null = "intro";
   private setOpenPanelPublic: (panel: "quest" | "shop" | null) => void = () => {};
   private prepModalOpen = false;
-  private readonly scrollHintUpdaters: Array<() => void> = [];
+  private readonly scrollHintUpdaters = new Map<HTMLElement, () => void>();
+  private readonly scrollHintCleanups = new Map<HTMLElement, () => void>();
 
   onStart: () => void = () => undefined;
   onAttackStart: () => void = () => undefined;
@@ -131,6 +135,7 @@ export class UiController {
   onUiSound: () => void = () => undefined;
 
   constructor(root: HTMLElement, state: RuntimeState, settings: PlayerSettings) {
+    scrollHintRemountCleanups.get(root)?.();
     this.root = root;
     this.touchMode = detectTouchMode();
     root.classList.toggle("is-touch", this.touchMode);
@@ -158,7 +163,7 @@ export class UiController {
         <div class="character-grid" role="radiogroup" aria-label="選擇主角">${selectionCards}</div>
         <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
         <button class="start-button start-button--confirm" id="start-button" disabled><span>確認屠夫老闆娘</span><small>寫入存檔 · ${startHint}</small></button>
-        <div class="select-scroll-hint" id="select-scroll-hint" aria-hidden="true"><span>▼</span>捲動選擇守燈人</div>
+        <div class="select-scroll-hint" id="select-scroll-hint" role="status" aria-live="polite"><span aria-hidden="true">▼</span>捲動選擇守燈人</div>
       </div>` : `
       <div class="intro__content">
         <span class="intro__overline">北境封鎖區 · 第 1,247 日</span><h1><span>暴風</span>啟示錄</h1><h2>STORM APOCALYPSE</h2>
@@ -339,6 +344,7 @@ export class UiController {
     this.attachScrollHint(this.questPanel);
     this.attachScrollHint(this.commandPanel);
     this.attachScrollHint(this.result.querySelector<HTMLElement>(".result__card")!);
+    scrollHintRemountCleanups.set(root, () => this.detachAllScrollHints());
 
     const clearPressed = (): void => {
       for (const button of root.querySelectorAll("button.is-pressed")) button.classList.remove("is-pressed");
@@ -528,19 +534,39 @@ export class UiController {
   }
 
   // R18 M-01/M-03：可捲容器的「下方還有內容」暗示
+  // R18.1（Grok R18-05/R18-07）：ResizeObserver 盯內容非同步撐高；listener 記錄可撤銷防洩漏
   private attachScrollHint(scroller: HTMLElement, classTarget: HTMLElement = scroller): void {
+    this.detachScrollHint(scroller);
     const update = (): void => {
       classTarget.classList.toggle("has-more-below", scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight > 24);
     };
-    this.scrollHintUpdaters.push(update);
+    this.scrollHintUpdaters.set(scroller, update);
     scroller.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(scroller);
+    for (const child of scroller.children) observer.observe(child);
     window.addEventListener("resize", update);
+    this.scrollHintCleanups.set(scroller, () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+      scroller.removeEventListener("scroll", update);
+    });
     requestAnimationFrame(update);
+  }
+
+  private detachScrollHint(scroller: HTMLElement): void {
+    this.scrollHintCleanups.get(scroller)?.();
+    this.scrollHintCleanups.delete(scroller);
+    this.scrollHintUpdaters.delete(scroller);
+  }
+
+  private detachAllScrollHints(): void {
+    for (const scroller of [...this.scrollHintCleanups.keys()]) this.detachScrollHint(scroller);
   }
 
   private refreshScrollHints(): void {
     requestAnimationFrame(() => {
-      for (const update of this.scrollHintUpdaters) update();
+      for (const update of this.scrollHintUpdaters.values()) update();
     });
   }
 
@@ -579,6 +605,8 @@ export class UiController {
   }
 
   private finishIntroTransition(): void {
+    // R18.1（Grok R18-07）：intro 卸載時撤銷其 scroll-hint 的 window/RO listener
+    this.detachScrollHint(this.intro);
     this.intro.remove();
     if (this.modalState === "intro") this.setModalState(null);
   }

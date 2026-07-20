@@ -303,8 +303,9 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 /* R18 M-01：選角溢出捲動暗示——底部漸層＋浮動指示，捲到底自動隱藏 */
 .intro--selection::after { content:""; position:fixed; z-index:4; left:0; right:0; bottom:0; height:88px; pointer-events:none; opacity:0; background:linear-gradient(180deg,transparent,rgba(2,8,11,.9)); transition:opacity .3s; }
 .intro--selection.has-more-below::after { opacity:1; }
-.select-scroll-hint { position:fixed; z-index:7; left:50%; bottom:max(78px,calc(env(safe-area-inset-bottom) + 68px)); display:flex; align-items:center; gap:7px; padding:7px 13px; pointer-events:none; opacity:0; transform:translateX(-50%); color:var(--ice); border:1px solid rgba(158,219,234,.34); background:rgba(4,14,20,.88); font-size:10px; letter-spacing:.18em; transition:opacity .3s; }
-.intro--selection.has-more-below .select-scroll-hint { opacity:1; }
+/* R18.1（Grok R18-08）：hint 用 role=status＋aria-live=polite；visibility 與 opacity 同步 */
+.select-scroll-hint { position:fixed; z-index:7; left:50%; bottom:max(78px,calc(env(safe-area-inset-bottom) + 68px)); display:flex; align-items:center; gap:7px; padding:7px 13px; pointer-events:none; visibility:hidden; opacity:0; transform:translateX(-50%); color:var(--ice); border:1px solid rgba(158,219,234,.34); background:rgba(4,14,20,.88); font-size:10px; letter-spacing:.18em; transition:opacity .3s, visibility .3s; }
+.intro--selection.has-more-below .select-scroll-hint { visibility:visible; opacity:1; }
 .select-scroll-hint span { font-size:9px; animation:hint-bob 1.4s ease-in-out infinite; }
 @keyframes hint-bob { 0%,100% { transform:translateY(-2px) } 50% { transform:translateY(2px) } }
 /* R18 L-02：整備中狀態——loader 發光強調、start 鈕鎖定 */

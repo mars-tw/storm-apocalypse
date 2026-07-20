@@ -41,6 +41,13 @@
 - 顧客好感回饋可視化：`addCustomerAffinity` 在無門檻事件時補輕量 toast「{名} 好感 +n（x/10）」（每客每波上限 2 次，既有 allowance 天然限流）。
 - 驗收：smoke 純資料斷言（條數/波號對應/文案非空）＋接線斷言。
 
+## Grok 對抗複審（R18.1 硬化，NO_P0）
+採納八項：R18-01 入口 import 失敗補 .catch＋重試鈕（不得永卡「下載北境引擎」）；R18-02 捲底自隱斷言改量測 computed opacity ≤0.05；R18-03 waiting 斷言改「攔住資產直到放行」消除競態短路；R18-04 面板 bottom 上限吃 viewport 參數；R18-05 attachScrollHint 補 ResizeObserver＋對應斷言；R18-06 reduced-motion 停 boot 掃光動畫；R18-07 scroll-hint listener 記錄並於 UI 重掛／intro 卸載時撤銷；R18-08 hint 移除 aria-hidden，改 role=status＋aria-live=polite 並同步 visibility。
+
+### 殘留（記債，未排本輪）
+- R18-09：smoke 仍以 DOM/幾何斷言為主，缺像素級視覺回歸覆蓋（截圖 diff 閘門）——需基準圖管理策略再入輪。
+- R18-10：z-index 階梯（key-art 1 / boot-loader 5 / #app 20 / intro 100 / system-menu 140）散落 index.html 與 styles.css 兩處，缺單一表格式紀律註解；後續集中文件化防再踩 z-auto 蓋台。
+
 ## 出貨閘門
 1. `npm run build`（含 typecheck）＋ `npm run test:smoke` 全綠（152＋新增斷言）。
 2. 版本 bump 0.2.8→0.2.9；grep 舊版號歸零（歷史 docs/evidence 除外）。
