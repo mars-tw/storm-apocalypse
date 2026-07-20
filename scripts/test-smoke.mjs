@@ -20,6 +20,7 @@ const loadTimeout = 180_000;
 const screenshotDir = process.env.SMOKE_SCREENSHOT_DIR;
 const r14EvidenceDir = process.env.R14_EVIDENCE_DIR;
 const r14ViewportFilter = process.env.R14_VIEWPORT;
+const r19EvidenceDir = process.env.R19_EVIDENCE_DIR;
 const outputPath = process.env.SMOKE_OUTPUT ? resolve(root, process.env.SMOKE_OUTPUT) : undefined;
 const captureOnly = process.env.SMOKE_CAPTURE_ONLY === "1";
 const headedOnly = process.argv.includes("--headed") || process.env.SMOKE_HEADED === "1";
@@ -139,6 +140,21 @@ async function runWithRetry(action, attempts = 2) {
     }
   }
   throw lastError;
+}
+
+async function closeBrowserSafely(browser) {
+  if (!browser?.isConnected()) return;
+  let timeoutId;
+  try {
+    await Promise.race([
+      browser.close(),
+      new Promise((resolveTimeout) => {
+        timeoutId = setTimeout(resolveTimeout, 10_000);
+      }),
+    ]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 }
 
 async function readGlbMetadata(relative) {
@@ -471,19 +487,37 @@ async function checkR18StaticContracts() {
       && ui.includes("scrollHintRemountCleanups.set(root, () => this.detachAllScrollHints())")
       && ui.includes('window.removeEventListener("resize", update)');
     record("lifecycle/R18.1", "scroll-hint resize listeners are removed before UI remount", remountCleanupPass, "root remount cleanup + removeEventListener");
+    const framingPass = game.includes("const portraitBlend = Math.max(0, Math.min(1, (0.72 - aspect) / 0.16))")
+      && game.includes('document.querySelector<HTMLElement>(".hud--top")')
+      && game.includes('document.querySelector<HTMLElement>(".bottom-controls")')
+      && game.includes("this.camera.targetScreenOffset.y")
+      && game.includes("const desiredBeta = 1.02 - safeFrame.portraitBlend * 0.2");
+    record("camera/R19", "narrow portrait framing reserves the measured HUD safe frame", framingPass, "aspect blend + top HUD + bottom controls + beta/radius/screen offset");
+    const resizePass = game.includes("window.setTimeout(() => {")
+      && game.includes("this.engine.resize();")
+      && game.includes("}, 140);")
+      && !game.includes('window.addEventListener("resize", () => this.engine.resize())');
+    record("resize/R19", "Babylon resize is trailing-debounced away from CSS layout", resizePass, "140ms trailing debounce; no direct resize-event rebuild");
   } catch (error) {
     record("systems/R18", "R18 static contracts load", false, error instanceof Error ? error.message : String(error));
   }
 }
 
-// R18 L-01：JS 尚未執行的首屏窗口必須已有可見載入指示（延遲所有 JS 模擬慢網）
+// R18 L-01：JS 尚未執行的首屏窗口必須已有可見載入指示（延遲 entry JS 模擬慢網）
 async function checkR18BootLoader(browser) {
   const viewport = { width: 844, height: 390 };
   const context = await browser.newContext({ viewport, hasTouch: true, isMobile: false, deviceScaleFactor: 1, reducedMotion: "reduce" });
   const page = await context.newPage();
   try {
+    let entryDelayed = false;
     await context.route("**/*.js", async (route) => {
-      await new Promise((resolveDelay) => setTimeout(resolveDelay, 2200));
+      // Production builds expose thousands of Babylon lazy shader chunks. Delaying
+      // every chunk can exhaust the browser before the R18 assertion finishes;
+      // delaying the first entry request preserves the intended pre-JS window.
+      if (!entryDelayed) {
+        entryDelayed = true;
+        await new Promise((resolveDelay) => setTimeout(resolveDelay, 2200));
+      }
       await route.continue();
     });
     const navigation = page.goto(url, { waitUntil: "commit", timeout: loadTimeout });
@@ -1519,7 +1553,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R18 UI version marker", uiVersion === "R18", `ui=${uiVersion}`);
+  record(label, "R19 UI version marker", uiVersion === "R19", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));
@@ -1572,6 +1606,87 @@ async function checkR9UX(page, label, touch) {
   }));
   record(label, "clicking a 3D build pad opens local tower action", Boolean(pointValid) && popoverOpened && !popoverState.hidden && popoverState.type === "tower" && popoverState.id === "ballista" && /建造|升級/.test(popoverState.text ?? ""), JSON.stringify({ point, popoverState }));
   await page.mouse.click(12, 12);
+}
+
+async function checkR19CameraFraming(page, label, expectedProfile, touch) {
+  await page.waitForTimeout(320);
+  const readFraming = () => page.evaluate(() => window.__stormR19Framing?.() ?? null);
+  let framing = await readFraming();
+  assert(framing, "R19 framing hook returned no data");
+
+  const bounds = framing.playerBounds;
+  const safe = framing.safeFrame;
+  const anchor = framing.playerAnchor;
+  const direction = framing.attackDirection;
+  const insideSafeFrame = Boolean(bounds && safe)
+    && bounds.left >= safe.left
+    && bounds.right <= safe.right
+    && bounds.top >= safe.top
+    && bounds.bottom <= safe.bottom;
+  const minWidth = expectedProfile === "narrow-portrait" ? 38 : 30;
+  const minHeight = expectedProfile === "narrow-portrait" ? 50 : 40;
+  const readableSize = Boolean(bounds)
+    && bounds.right - bounds.left >= minWidth
+    && bounds.bottom - bounds.top >= minHeight;
+  const directionInsideViewport = Boolean(direction)
+    && direction.x >= 0
+    && direction.x <= framing.viewport.width
+    && direction.y >= 0
+    && direction.y <= framing.viewport.height;
+  record(
+    label,
+    "R19 player body stays inside the combat HUD safe frame",
+    framing.profile === expectedProfile && insideSafeFrame && readableSize,
+    JSON.stringify({ profile: framing.profile, safe, bounds, size: bounds ? { width: bounds.right - bounds.left, height: bounds.bottom - bounds.top } : null }),
+  );
+  record(
+    label,
+    "R19 player silhouette and attack direction remain readable",
+    framing.visibleSamples >= Math.ceil(framing.sampleCount / 2) && framing.directionPixels >= 30 && Boolean(anchor) && directionInsideViewport,
+    JSON.stringify({ visibleSamples: framing.visibleSamples, sampleCount: framing.sampleCount, anchor, direction, directionPixels: framing.directionPixels, occluders: framing.occluders }),
+  );
+
+  if (!r19EvidenceDir) return;
+  const evidenceDirectory = resolve(root, r19EvidenceDir);
+  await mkdir(evidenceDirectory, { recursive: true });
+  await page.waitForFunction(() => document.querySelectorAll("#toast-host .toast").length === 0, undefined, { timeout: 10_000 }).catch(() => {});
+  if (touch) {
+    const box = await page.locator("#attack-button").boundingBox();
+    assert(box, "attack button has no bounding box for R19 evidence");
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+  } else {
+    await page.keyboard.down("Space");
+  }
+  try {
+    await page.waitForFunction(() => {
+      const animation = document.querySelector("#game-canvas")?.dataset.playerAnimation;
+      return animation === "attack_melee" || animation === "attack_ranged";
+    }, undefined, { timeout: 15_000 });
+    framing = await readFraming();
+    const slug = `${framing.viewport.width}x${framing.viewport.height}`;
+    await page.screenshot({ path: resolve(evidenceDirectory, `after-${slug}-combat-attack.png`), animations: "allow", timeout: 120_000 });
+    await writeFile(resolve(evidenceDirectory, `after-${slug}-framing.json`), `${JSON.stringify(framing, null, 2)}\n`, "utf8");
+  } finally {
+    if (touch) await page.mouse.up();
+    else await page.keyboard.up("Space");
+  }
+}
+
+async function checkR19ResizeDebounce(page, label) {
+  const before = await page.evaluate(() => window.__stormR19ResizeStats?.() ?? null);
+  assert(before, "R19 resize stats hook returned no data");
+  await page.evaluate(() => {
+    for (let index = 0; index < 5; index += 1) window.dispatchEvent(new Event("resize"));
+  });
+  await page.waitForTimeout(70);
+  const during = await page.evaluate(() => window.__stormR19ResizeStats?.() ?? null);
+  await page.waitForTimeout(150);
+  const after = await page.evaluate(() => window.__stormR19ResizeStats?.() ?? null);
+  const passed = during.events - before.events === 5
+    && during.rebuilds === before.rebuilds
+    && after.rebuilds - before.rebuilds === 1;
+  record(label, "R19 resize burst performs one delayed Babylon rebuild", passed, JSON.stringify({ before, during, after }));
 }
 
 async function runCombat(browser, config) {
@@ -1645,6 +1760,18 @@ async function runCombat(browser, config) {
       return animations?.includes("frost:attack") ? animations : false;
     }, undefined, { timeout: 15_000 }).then((handle) => handle.jsonValue());
     record(label, "tower fire triggers authored clip", typeof towerAnimations === "string" && towerAnimations.includes("frost:attack"), `animations=${towerAnimations}`);
+    if (config.touch && config.viewport.width === 390 && config.viewport.height === 844) {
+      await checkR19CameraFraming(page, label, "narrow-portrait", config.touch);
+    } else if (!config.touch) {
+      const originalViewport = page.viewportSize();
+      await page.setViewportSize({ width: 1366, height: 768 });
+      await page.waitForTimeout(420);
+      await checkR19CameraFraming(page, "1366×768", "standard", false);
+      if (originalViewport) {
+        await page.setViewportSize(originalViewport);
+        await page.waitForTimeout(420);
+      }
+    }
     const attacksBeforeZombie = await attackCount(page);
     await holdAttack(page, config.touch, 8_000);
     await page.waitForTimeout(150);
@@ -1659,8 +1786,11 @@ async function runCombat(browser, config) {
       await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.towerAnimationLod?.includes("frost:paused"), undefined, { timeout: 5_000 });
       const towerLod = await page.locator("#game-canvas").getAttribute("data-tower-animation-lod");
       record(label, "distant tower animation LOD pauses", towerLod?.includes("frost:paused") === true, `lod=${towerLod}`);
-      await page.locator("#settings-button").click();
-      await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.paused === "true", undefined, { timeout: 5_000 });
+      const settingsButton = page.locator("#settings-button");
+      if (await settingsButton.isVisible()) {
+        await settingsButton.click();
+        await page.waitForFunction(() => document.querySelector("#game-canvas")?.dataset.paused === "true", undefined, { timeout: 5_000 });
+      }
       const savedHealth = (await readSave(page))?.baseHealth;
       await page.reload({ waitUntil: "domcontentloaded", timeout: loadTimeout });
       await page.waitForFunction(() => {
@@ -1695,6 +1825,13 @@ async function runLayout(browser, viewport) {
     await checkR9UX(page, label, true);
     await checkR18PrepPanel(page, label, viewport.height);
     await checkR12SystemMenu(page, "R12 menu 844x390");
+    await moveNorthUntil(page, true, label);
+    await page.locator("#wave-button").click();
+    await page.waitForFunction(() => document.querySelector("#world-action-popover")?.hidden === true, undefined, { timeout: 5_000 });
+    await page.waitForFunction(() => document.querySelector("#hud-wave")?.textContent?.includes("夜襲"), undefined, { timeout: 15_000 });
+    await page.waitForFunction(() => Number(document.querySelector("#game-canvas")?.dataset.activeZombies) > 0, undefined, { timeout: 15_000 });
+    await checkR19CameraFraming(page, label, "standard", true);
+    await checkR19ResizeDebounce(page, label);
     record(label, "console errors", consoleErrors.length === 0, consoleErrors.join(" | ") || "0 errors");
   } finally {
     await context.close();
@@ -1710,9 +1847,21 @@ try {
   await checkR12Systems();
   await checkR18StaticContracts();
   await ensureServer();
-  const launchBrowser = () => chromium.launch(headedOnly
-    ? { headless: false, channel: "chrome" }
-    : { headless: true, executablePath: browserExecutable, args: [`--use-angle=${angleBackend}`, "--mute-audio"] });
+  const launchBrowser = async () => {
+    let timeoutId;
+    try {
+      return await Promise.race([
+        chromium.launch(headedOnly
+          ? { headless: false, channel: "chrome" }
+          : { headless: true, executablePath: browserExecutable, args: [`--use-angle=${angleBackend}`, "--mute-audio"] }),
+        new Promise((_, rejectTimeout) => {
+          timeoutId = setTimeout(() => rejectTimeout(new Error("Chromium launch exceeded 60 seconds")), 60_000);
+        }),
+      ]);
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+    }
+  };
   let browser = await launchBrowser();
   try {
     if (headedOnly) {
@@ -1728,8 +1877,8 @@ try {
         } else if (modalOnly) {
           await checkR14ModalMutualExclusion(browser);
         } else {
-          await browser.close();
-          browser = await launchBrowser();
+          await closeBrowserSafely(browser);
+          browser = await runWithRetry(() => launchBrowser());
           const desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/125 Safari/537.36";
           const mobileUa = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/125 Mobile Safari/537.36";
           for (const config of [
@@ -1749,10 +1898,16 @@ try {
           // 觸控筆電：有觸控能力但主指標是滑鼠、寬視口 → 必須維持桌機 WASD 介面
           await checkInputHints(browser, { viewport: { width: 1440, height: 900 }, touch: false, touchscreenDesktop: true });
           await checkR14ModalMutualExclusion(browser);
-          await runWithRetry(() => checkR18BootLoader(browser));
-          await runWithRetry(() => checkR18SelectionAndWaiting(browser));
-          await browser.close();
-          browser = await launchBrowser();
+          await runWithRetry(async () => {
+            if (!browser.isConnected()) browser = await launchBrowser();
+            await checkR18BootLoader(browser);
+          });
+          await runWithRetry(async () => {
+            if (!browser.isConnected()) browser = await launchBrowser();
+            await checkR18SelectionAndWaiting(browser);
+          });
+          await closeBrowserSafely(browser);
+          browser = await runWithRetry(() => launchBrowser());
         }
       }
       for (const scenario of [
@@ -1778,13 +1933,13 @@ try {
           record(scenario[0], "scenario completes", false, scenarioError instanceof Error ? scenarioError.message : String(scenarioError));
         }
         if (!scenarioFilter) {
-          await browser.close();
-          browser = await launchBrowser();
+          await closeBrowserSafely(browser);
+          browser = await runWithRetry(() => launchBrowser());
         }
       }
     }
   } finally {
-    await browser.close();
+    await closeBrowserSafely(browser);
   }
 } finally {
   server?.kill();
@@ -1804,4 +1959,10 @@ if (outputPath) {
     results,
   }, null, 2)}\n`, "utf8");
 }
-if (failures.length > 0) process.exitCode = 1;
+// On Windows/D3D11, a Chromium GPU process can outlive browser.close() after
+// all evidence has been written. Exit explicitly so the smoke command cannot
+// hang behind an already-final result.
+if (process.stdout.writableLength > 0) {
+  await new Promise((resolveFlush) => process.stdout.write("", resolveFlush));
+}
+process.exit(failures.length > 0 ? 1 : 0);

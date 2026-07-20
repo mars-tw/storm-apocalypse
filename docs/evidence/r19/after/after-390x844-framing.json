@@ -1,0 +1,36 @@
+{
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "profile": "narrow-portrait",
+  "safeFrame": {
+    "left": 12,
+    "right": 378,
+    "top": 180,
+    "bottom": 575
+  },
+  "playerBounds": {
+    "left": 169.72218614865142,
+    "right": 230.19759705917878,
+    "top": 343.2034382077548,
+    "bottom": 428.21212910525156
+  },
+  "playerAnchor": {
+    "x": 195.00000209532672,
+    "y": 378.89187721851664
+  },
+  "attackDirection": {
+    "x": 252.67920591406377,
+    "y": 333.4664501474944
+  },
+  "directionPixels": 73.41907094037741,
+  "visibleSamples": 9,
+  "sampleCount": 9,
+  "occluders": [],
+  "camera": {
+    "beta": 0.8200000000000001,
+    "radius": 27.999327825707784,
+    "targetScreenOffsetY": 1.2136834698534777
+  }
+}

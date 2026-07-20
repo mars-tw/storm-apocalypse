@@ -1,0 +1,41 @@
+{
+  "viewport": {
+    "width": 1366,
+    "height": 768
+  },
+  "profile": "standard",
+  "safeFrame": {
+    "left": 12,
+    "right": 1354,
+    "top": 12,
+    "bottom": 756
+  },
+  "playerBounds": {
+    "left": 657.3557007264426,
+    "right": 718.6763801352785,
+    "top": 350.42411612569396,
+    "bottom": 437.11844519571724
+  },
+  "playerAnchor": {
+    "x": 683.0000144563926,
+    "y": 385.59043325980974
+  },
+  "attackDirection": {
+    "x": 740.9148450369263,
+    "y": 348.849586383666
+  },
+  "directionPixels": 68.58583986762984,
+  "visibleSamples": 5,
+  "sampleCount": 9,
+  "occluders": [
+    "pasture-fence-2.1-1.7999999999999998-WorldFenceRailR13_R13 Shared Fence Snow_Batch",
+    "pasture-fence-2.1-5.8-WorldFenceRailR13_R13 Shared Fence Snow_Batch",
+    "pasture-fence-2.1-1.7999999999999998-WorldFenceRailR13_R13 Shared Fence Cut Wood_Batch",
+    "pasture-fence-2.1-5.8-WorldFenceRailR13_R13 Shared Fence Cut Wood_Batch"
+  ],
+  "camera": {
+    "beta": 1.02,
+    "radius": 24.99950431277762,
+    "targetScreenOffsetY": 0
+  }
+}

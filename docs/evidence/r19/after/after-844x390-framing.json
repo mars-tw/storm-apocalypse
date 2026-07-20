@@ -1,0 +1,38 @@
+{
+  "viewport": {
+    "width": 844,
+    "height": 390
+  },
+  "profile": "standard",
+  "safeFrame": {
+    "left": 12,
+    "right": 832,
+    "top": 12,
+    "bottom": 378
+  },
+  "playerBounds": {
+    "left": 408.9640663109417,
+    "right": 442.3697123008015,
+    "top": 177.93236483737195,
+    "bottom": 222.00190750389876
+  },
+  "playerAnchor": {
+    "x": 422.00000836750604,
+    "y": 195.80846162934367
+  },
+  "attackDirection": {
+    "x": 451.43818942094157,
+    "y": 177.13298800684925
+  },
+  "directionPixels": 34.86229795580514,
+  "visibleSamples": 8,
+  "sampleCount": 9,
+  "occluders": [
+    "pasture-fence-2.1-5.8-WorldFenceRailR13_R13 Shared Fence Snow_Batch"
+  ],
+  "camera": {
+    "beta": 1.02,
+    "radius": 24.97379636608843,
+    "targetScreenOffsetY": 0
+  }
+}

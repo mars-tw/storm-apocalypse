@@ -92,6 +92,17 @@ interface PendingPlayerAttack {
   resolved: boolean;
 }
 
+interface CameraSafeFrame {
+  width: number;
+  height: number;
+  canvasTop: number;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+  portraitBlend: number;
+}
+
 interface MeatDrop {
   root: TransformNode;
   baseY: number;
@@ -311,6 +322,9 @@ export class StormGame {
   private renderPixelRatio = 1;
   private paused = false;
   private cameraShake = 0;
+  private cameraSafeFrame?: CameraSafeFrame;
+  private resizeEventCount = 0;
+  private resizeRebuildCount = 0;
   private lastTowerAlarmAt = -10;
   private currentWavePlan?: WavePlan;
   private weatherIntensity: WeatherIntensity = "low";
@@ -364,7 +378,7 @@ export class StormGame {
 
     this.camera = new ArcRotateCamera("follow-camera", -Math.PI * 0.28, 1.02, 19, new Vector3(0, 1.2, 0), this.scene);
     this.camera.lowerRadiusLimit = 14;
-    this.camera.upperRadiusLimit = 27;
+    this.camera.upperRadiusLimit = 30;
     this.camera.minZ = 0.1;
     this.camera.maxZ = 110;
     this.camera.fov = 0.78;
@@ -502,6 +516,11 @@ export class StormGame {
       (window as Window & { __stormSelectProtagonist?: (id: ProtagonistId) => void }).__stormSelectProtagonist = (id) => this.selectProtagonist(id);
       (window as Window & { __stormStartWave?: () => void }).__stormStartWave = () => this.startWave();
       (window as Window & { __stormWorldPoint?: (type: WorldPickAction["type"], id: string) => { x: number; y: number } | null }).__stormWorldPoint = (type, id) => this.worldActionScreenPoint(type, id);
+      (window as Window & { __stormR19Framing?: () => unknown }).__stormR19Framing = () => this.playerFramingSnapshot();
+      (window as Window & { __stormR19ResizeStats?: () => unknown }).__stormR19ResizeStats = () => ({
+        events: this.resizeEventCount,
+        rebuilds: this.resizeRebuildCount,
+      });
       if (this.visualEvidenceMode) {
         (window as Window & { __stormR15EnemyPoint?: () => { x: number; y: number } | null }).__stormR15EnemyPoint = () => this.lastEvidenceEnemyPosition
           ? this.worldPositionScreenPoint(this.lastEvidenceEnemyPosition)
@@ -518,7 +537,20 @@ export class StormGame {
     this.createSnow();
     this.createDistantStorm();
 
-    window.addEventListener("resize", () => this.engine.resize());
+    let resizeTimer: number | undefined;
+    window.addEventListener("resize", () => {
+      this.resizeEventCount += 1;
+      this.cameraSafeFrame = undefined;
+      if (resizeTimer !== undefined) window.clearTimeout(resizeTimer);
+      // R19（SA-R1-03）：讓 CSS/visual viewport 先穩定，再只重建一次 Babylon
+      // render target，避免旋轉時連續 resize 與 layout 同幀尖峰。
+      resizeTimer = window.setTimeout(() => {
+        resizeTimer = undefined;
+        this.engine.resize();
+        this.resizeRebuildCount += 1;
+        this.cameraSafeFrame = undefined;
+      }, 140);
+    }, { passive: true });
     window.setInterval(() => this.monitorPerformance(), 2000);
     this.engine.runRenderLoop(() => {
       const dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.1);
@@ -619,7 +651,10 @@ export class StormGame {
 
   startAttack(): void { this.input.startAttack(); }
   stopAttack(): void { this.input.stopAttack(); }
-  startWave(): void { this.input.queueWave(); }
+  startWave(): void {
+    this.ui.hideWorldAction();
+    this.input.queueWave();
+  }
   cycleWeapon(): void {
     const unlocked = WEAPONS.map((weapon) => weapon.id).filter((id) => this.state.weapons[id]);
     if (unlocked.length <= 1) {
@@ -2377,6 +2412,7 @@ ${epilogue}` : ""), [
   }
 
   private updateCamera(dt: number): void {
+    const safeFrame = this.resolveCameraSafeFrame();
     const baseTarget = this.player.root.position.add(new Vector3(0, 1.2, 0));
     this.cameraShake *= Math.exp(-dt * 10.5);
     const shake = this.settings.screenShake && this.cameraShake > 0.002
@@ -2384,9 +2420,118 @@ ${epilogue}` : ""), [
       : Vector3.Zero();
     const target = baseTarget.add(shake);
     this.camera.target.copyFrom(Vector3.Lerp(this.camera.target, target, Math.min(1, dt * 4.8)));
-    const desiredRadius = this.state.waveActive ? 25 : 19;
+    const baseRadius = this.state.waveActive ? 25 : 19;
+    const desiredRadius = baseRadius + safeFrame.portraitBlend * 3;
     this.camera.radius += (desiredRadius - this.camera.radius) * Math.min(1, dt * 1.8);
+    const desiredBeta = 1.02 - safeFrame.portraitBlend * 0.2;
+    this.camera.beta += (desiredBeta - this.camera.beta) * Math.min(1, dt * 3.6);
+    const safeCenterY = (safeFrame.top + safeFrame.bottom) / 2;
+    const canvasCenterY = safeFrame.canvasTop + safeFrame.height / 2;
+    const verticalWorldSpan = 2 * desiredRadius * Math.tan(this.camera.fov / 2);
+    const desiredScreenOffsetY = safeFrame.portraitBlend
+      * Math.max(0, canvasCenterY - safeCenterY)
+      * verticalWorldSpan / Math.max(1, safeFrame.height);
+    this.camera.targetScreenOffset.y += (desiredScreenOffsetY - this.camera.targetScreenOffset.y) * Math.min(1, dt * 4.8);
     this.snowEmitter.position.copyFrom(this.camera.target.add(new Vector3(-2, 10, 0)));
+  }
+
+  private resolveCameraSafeFrame(): CameraSafeFrame {
+    const canvas = this.engine.getRenderingCanvas();
+    if (!canvas) return { width: 1, height: 1, canvasTop: 0, left: 0, right: 1, top: 0, bottom: 1, portraitBlend: 0 };
+    const bounds = canvas.getBoundingClientRect();
+    if (this.cameraSafeFrame?.width === bounds.width && this.cameraSafeFrame.height === bounds.height) return this.cameraSafeFrame;
+
+    const aspect = bounds.width / Math.max(1, bounds.height);
+    // R19（SA-R1-01）：只在手機級極窄直向漸入；768×1024 平板、橫向與桌機維持 R18 framing。
+    const portraitBlend = Math.max(0, Math.min(1, (0.72 - aspect) / 0.16));
+    const topHud = document.querySelector<HTMLElement>(".hud--top")?.getBoundingClientRect();
+    const bottomControls = document.querySelector<HTMLElement>(".bottom-controls")?.getBoundingClientRect();
+    const top = portraitBlend > 0 && topHud
+      ? Math.max(bounds.top + 12, topHud.bottom + 12)
+      : bounds.top + 12;
+    const bottom = portraitBlend > 0 && bottomControls
+      ? Math.min(bounds.bottom - 12, bottomControls.top - 12)
+      : bounds.bottom - 12;
+    this.cameraSafeFrame = {
+      width: bounds.width,
+      height: bounds.height,
+      canvasTop: bounds.top,
+      left: bounds.left + 12,
+      right: bounds.right - 12,
+      top,
+      bottom: Math.max(top + 1, bottom),
+      portraitBlend,
+    };
+    return this.cameraSafeFrame;
+  }
+
+  private playerFramingSnapshot(): unknown {
+    if (!this.player) return null;
+    const canvas = this.engine.getRenderingCanvas();
+    if (!canvas) return null;
+    const bounds = canvas.getBoundingClientRect();
+    const safe = this.resolveCameraSafeFrame();
+    const points = this.player.root.getChildMeshes(false)
+      .filter((mesh) => mesh.isEnabled() && mesh.getTotalVertices() > 0 && !mesh.name.endsWith("-blob-shadow"))
+      .flatMap((mesh) => {
+        mesh.computeWorldMatrix(true);
+        return mesh.getBoundingInfo().boundingBox.vectorsWorld.map((point) => this.worldPositionScreenPoint(point));
+      })
+      .filter((point): point is { x: number; y: number } => point !== null && Number.isFinite(point.x) && Number.isFinite(point.y));
+    if (!points.length) return null;
+    const playerBounds = {
+      left: Math.min(...points.map((point) => point.x)),
+      right: Math.max(...points.map((point) => point.x)),
+      top: Math.min(...points.map((point) => point.y)),
+      bottom: Math.max(...points.map((point) => point.y)),
+    };
+    const playerAnchor = this.worldPositionScreenPoint(this.player.root.position.add(new Vector3(0, 1.15, 0)));
+    const forward = this.player.meshForwardNode.getDirection(this.player.meshForwardAxis).normalize();
+    const attackDirection = this.worldPositionScreenPoint(this.player.root.position.add(forward.scale(2.6)).add(new Vector3(0, 1.15, 0)));
+    const sampleFractions = [
+      [0.5, 0.2], [0.35, 0.38], [0.5, 0.38], [0.65, 0.38],
+      [0.4, 0.56], [0.5, 0.56], [0.6, 0.56], [0.42, 0.76], [0.58, 0.76],
+    ];
+    const occluders = new Set<string>();
+    let visibleSamples = 0;
+    for (const [xFraction, yFraction] of sampleFractions) {
+      const cssX = playerBounds.left + (playerBounds.right - playerBounds.left) * xFraction;
+      const cssY = playerBounds.top + (playerBounds.bottom - playerBounds.top) * yFraction;
+      // Scene.pick consumes canvas CSS coordinates and applies the engine's
+      // hardware scaling internally; pre-scaling here would sample the wrong quadrant.
+      const picked = this.scene.pick(cssX - bounds.left, cssY - bounds.top, undefined, false, this.camera)?.pickedMesh ?? null;
+      let node: TransformNode | AbstractMesh | null = picked;
+      let belongsToPlayer = false;
+      while (node) {
+        if (node === this.player.root) {
+          belongsToPlayer = true;
+          break;
+        }
+        node = node.parent as TransformNode | AbstractMesh | null;
+      }
+      if (belongsToPlayer) visibleSamples += 1;
+      else if (picked) occluders.add(picked.name);
+    }
+    const directionPixels = playerAnchor && attackDirection
+      ? Math.hypot(attackDirection.x - playerAnchor.x, attackDirection.y - playerAnchor.y)
+      : 0;
+    return {
+      viewport: { width: bounds.width, height: bounds.height },
+      profile: safe.portraitBlend > 0 ? "narrow-portrait" : "standard",
+      safeFrame: { left: safe.left, right: safe.right, top: safe.top, bottom: safe.bottom },
+      playerBounds,
+      playerAnchor,
+      attackDirection,
+      directionPixels,
+      visibleSamples,
+      sampleCount: sampleFractions.length,
+      occluders: [...occluders].slice(0, 6),
+      camera: {
+        beta: this.camera.beta,
+        radius: this.camera.radius,
+        targetScreenOffsetY: this.camera.targetScreenOffset.y,
+      },
+    };
   }
 
   private kickCameraShake(amount: number): void {
