@@ -48,9 +48,9 @@ before/after PNG 與 after framing JSON：`docs/evidence/r19/`。before 來源�
 
 ## 版本鏈
 
-- `package.json`：0.2.10
-- `package-lock.json`：root/package 0.2.10
-- `README.md`：badge、版本文字與 R19 功能說明 0.2.10
+- `package.json`：當時發行版號
+- `package-lock.json`：root/package 當時發行版號
+- `README.md`：badge、版本文字與 R19 功能說明皆為當時發行版號
 - UI marker／系統註記：R19
 
 ## 殘留

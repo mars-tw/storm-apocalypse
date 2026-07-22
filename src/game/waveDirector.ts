@@ -11,9 +11,25 @@ export interface WavePlan {
   spawnInterval: number;
   hpMultiplier: number;
   speedMultiplier: number;
+  damageMultiplier: number;
 }
 
-export function getWavePlan(wave: number): WavePlan {
+export interface WaveBalanceProfile {
+  id: "r19" | "r20";
+  finalWaveSpawnMultiplier: number;
+  finalWaveHpMultiplier: number;
+  finalWaveEnemyBonus: number;
+  finalWaveDamageMultiplier: number;
+}
+
+export const WAVE_BALANCE_PROFILES: Readonly<Record<WaveBalanceProfile["id"], WaveBalanceProfile>> = Object.freeze({
+  r19: Object.freeze({ id: "r19", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.08, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
+  r20: Object.freeze({ id: "r20", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
+});
+
+export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r20;
+
+export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_WAVE_BALANCE): WavePlan {
   const normalized = Math.min(30, Math.max(1, Math.floor(wave)));
   const baseCount = Math.min(42, 4 + Math.ceil(normalized * 1.22));
   const baseInterval = Math.max(0.38, 0.86 - (normalized - 1) * 0.014);
@@ -25,10 +41,11 @@ export function getWavePlan(wave: number): WavePlan {
       title: "巨屍越界",
       forecast: "Boss · 重型護衛",
       announcement: "巨型屍影正撞開北境封鎖線",
-      enemyCount: Math.min(43, baseCount + 1),
-      spawnInterval: baseInterval * 0.9,
-      hpMultiplier: 1.08,
+      enemyCount: Math.min(43, baseCount + balance.finalWaveEnemyBonus),
+      spawnInterval: baseInterval * balance.finalWaveSpawnMultiplier,
+      hpMultiplier: balance.finalWaveHpMultiplier,
       speedMultiplier: 1,
+      damageMultiplier: balance.finalWaveDamageMultiplier,
     };
   }
 
@@ -43,6 +60,7 @@ export function getWavePlan(wave: number): WavePlan {
       spawnInterval: Math.max(0.3, baseInterval * 0.72),
       hpMultiplier: 0.96,
       speedMultiplier: 1.12,
+      damageMultiplier: 1,
     };
   }
 
@@ -57,6 +75,7 @@ export function getWavePlan(wave: number): WavePlan {
       spawnInterval: baseInterval * 1.08,
       hpMultiplier: 1.2,
       speedMultiplier: 0.94,
+      damageMultiplier: 1,
     };
   }
 
@@ -70,6 +89,7 @@ export function getWavePlan(wave: number): WavePlan {
     spawnInterval: baseInterval,
     hpMultiplier: 1,
     speedMultiplier: 1,
+    damageMultiplier: 1,
   };
 }
 

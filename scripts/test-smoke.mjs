@@ -457,11 +457,14 @@ async function checkR12Systems() {
 
 async function checkR18StaticContracts() {
   try {
-    const [content, game, indexHtml, ui] = await Promise.all([
+    const [content, game, indexHtml, ui, director, combatRules, simulation] = await Promise.all([
       readFile(resolve(root, "src/game/content.ts"), "utf8"),
       readFile(resolve(root, "src/game/StormGame.ts"), "utf8"),
       readFile(resolve(root, "index.html"), "utf8"),
       readFile(resolve(root, "src/game/ui.ts"), "utf8"),
+      readFile(resolve(root, "src/game/waveDirector.ts"), "utf8"),
+      readFile(resolve(root, "src/game/combatRules.ts"), "utf8"),
+      readFile(resolve(root, "src/game/waveSimulation.ts"), "utf8"),
     ]);
     const eveBlock = content.match(/WAVE_EVE_DISPATCHES[\s\S]*?\] as const;/u)?.[0] ?? "";
     const eveWaves = [...eveBlock.matchAll(/wave:\s*(\d+),\s*line:\s*"([^"]+)"/gu)].map((match) => [Number(match[1]), match[2]]);
@@ -498,6 +501,15 @@ async function checkR18StaticContracts() {
       && game.includes("}, 140);")
       && !game.includes('window.addEventListener("resize", () => this.engine.resize())');
     record("resize/R19", "Babylon resize is trailing-debounced away from CSS layout", resizePass, "140ms trailing debounce; no direct resize-event rebuild");
+    const balancePass = director.includes('r19: Object.freeze({ id: "r19", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.08')
+      && director.includes('r20: Object.freeze({ id: "r20", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07')
+      && game.includes("enemyCombatStats(wave, type, plan)")
+      && game.includes("towerCombatStats(tower.id, level)")
+      && simulation.includes('from "./combatRules"')
+      && combatRules.includes("export function enemyCombatStats")
+      && combatRules.includes("export function towerCombatStats")
+      && combatRules.includes("export function playerAttackStats");
+    record("balance/R20", "runtime and fixed-seed simulator share the R20 combat rules", balancePass, "R19=1.08, R20=1.07; shared enemy/tower/player rule functions");
   } catch (error) {
     record("systems/R18", "R18 static contracts load", false, error instanceof Error ? error.message : String(error));
   }
@@ -1553,7 +1565,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R19 UI version marker", uiVersion === "R19", `ui=${uiVersion}`);
+  record(label, "R20 UI version marker", uiVersion === "R20", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));

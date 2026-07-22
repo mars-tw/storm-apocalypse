@@ -35,6 +35,7 @@ import {
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import type { ProceduralAudio } from "./audio";
+import { COMBAT_POSITIONS, COMBAT_TIMING, enemyAttackTimings, enemyCombatStats, enemySpawnPosition, playerAttackStats, towerCombatStats } from "./combatRules";
 import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WAVE_EVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
 import { resolveQuality, type QualityLevel, type QualityPreference } from "./quality";
@@ -237,9 +238,9 @@ const STALL_POSITION = new Vector3(-8, 0, -7.05);
 const PASTURE_CENTER = new Vector3(8.5, 0, 3.7);
 const PASTURE_2_CENTER = new Vector3(15.5, 0, -7.5);
 const TOWER_POSITIONS: Record<TowerId, Vector3> = {
-  ballista: new Vector3(-1, 0, 4.2),
-  frost: new Vector3(-5.2, 0, 5.7),
-  cannon: new Vector3(3.5, 0, 5.6),
+  ballista: new Vector3(COMBAT_POSITIONS.towers.ballista.x, 0, COMBAT_POSITIONS.towers.ballista.z),
+  frost: new Vector3(COMBAT_POSITIONS.towers.frost.x, 0, COMBAT_POSITIONS.towers.frost.z),
+  cannon: new Vector3(COMBAT_POSITIONS.towers.cannon.x, 0, COMBAT_POSITIONS.towers.cannon.z),
 };
 const TOWER_ANIMATION_LOD_DISTANCE = 24;
 
@@ -1489,10 +1490,9 @@ export class StormGame {
     const renderCanvas = this.engine.getRenderingCanvas();
     if (renderCanvas) renderCanvas.dataset.lastAttack = Math.round(performance.now()).toString();
     const weapon = this.state.weapon;
-    const impactAt = weapon === "smg" ? 8 / 24 : 13 / 24;
-    const recoveryAt = weapon === "smg" ? 18 / 24 : 24 / 24;
-    this.attackCooldown = recoveryAt;
-    this.pendingPlayerAttack = { weapon, elapsed: 0, impactAt, recoveryAt, resolved: false };
+    const attack = playerAttackStats(weapon, this.state.protagonistId);
+    this.attackCooldown = attack.recovery;
+    this.pendingPlayerAttack = { weapon, elapsed: 0, impactAt: attack.impact, recoveryAt: attack.recovery, resolved: false };
     this.playAnimation(this.player, weapon === "smg" ? "attack_ranged" : "attack_melee", false, true);
     this.audio.play("swing");
   }
@@ -1517,36 +1517,37 @@ export class StormGame {
   }
 
   private resolvePlayerAttack(weapon: WeaponId): void {
+    const attack = playerAttackStats(weapon, this.state.protagonistId);
     let hit = false;
     if (weapon === "smg") {
       if (this.muzzleFlash) {
         this.muzzleFlash.setEnabled(true);
         window.setTimeout(() => this.muzzleFlash?.setEnabled(false), 70);
       }
-      const target = this.findNearestZombie(this.player.root.position, 13) ?? this.findNearestCow(this.player.root.position, 16);
+      const target = this.findNearestZombie(this.player.root.position, attack.range) ?? this.findNearestCow(this.player.root.position, 16);
       if (target && "type" in target) {
-        for (let shot = 0; shot < 3; shot += 1) this.damageZombie(target, this.playerWeaponDamage(2), "player");
+        for (const damage of attack.hitDamages) this.damageZombie(target, damage, "player");
         hit = true;
       } else if (target) {
-        for (let shot = 0; shot < 3; shot += 1) this.damageCow(target, this.playerWeaponDamage(2));
+        for (const damage of attack.hitDamages) this.damageCow(target, damage);
         hit = true;
       }
     } else if (weapon === "axe") {
-      const targets = this.zombies.filter((zombie) => zombie.alive && Vector3.Distance(zombie.root.position, this.player.root.position) < 3.5);
-      for (const zombie of targets) this.damageZombie(zombie, this.playerWeaponDamage(3), "player");
-      const cows = this.allCows().filter((cow) => cow.alive && Vector3.Distance(cow.root.position, this.player.root.position) < 3.5);
-      for (const cow of cows) this.damageCow(cow, this.playerWeaponDamage(3));
+      const targets = this.zombies.filter((zombie) => zombie.alive && Vector3.Distance(zombie.root.position, this.player.root.position) < attack.range);
+      for (const zombie of targets) for (const damage of attack.hitDamages) this.damageZombie(zombie, damage, "player");
+      const cows = this.allCows().filter((cow) => cow.alive && Vector3.Distance(cow.root.position, this.player.root.position) < attack.range);
+      for (const cow of cows) for (const damage of attack.hitDamages) this.damageCow(cow, damage);
       this.createAttackRing(new Color3(0.95, 0.55, 0.24));
       hit = targets.length + cows.length > 0;
     } else {
-      const nearestZombie = this.findNearestZombie(this.player.root.position, 2.7);
+      const nearestZombie = this.findNearestZombie(this.player.root.position, attack.range);
       if (nearestZombie) {
-        this.damageZombie(nearestZombie, this.playerWeaponDamage(2), "player");
+        for (const damage of attack.hitDamages) this.damageZombie(nearestZombie, damage, "player");
         hit = true;
       } else {
         const nearestCow = this.findNearestCow(this.player.root.position, 2.8);
         if (nearestCow) {
-        this.damageCow(nearestCow, this.playerWeaponDamage(2));
+          for (const damage of attack.hitDamages) this.damageCow(nearestCow, damage);
           hit = true;
         }
       }
@@ -1555,10 +1556,6 @@ export class StormGame {
       this.audio.play("hit");
       this.kickCameraShake(weapon === "smg" ? 0.08 : weapon === "axe" ? 0.2 : 0.14);
     } else this.ui.toast("揮砍落空——動作會完整收勢。", "ice");
-  }
-
-  private playerWeaponDamage(base: number): number {
-    return base + (this.state.protagonistId === "vet_sniper" ? 1 : 0);
   }
 
   private damageCow(cow: CowActor, damage: number): void {
@@ -2028,11 +2025,11 @@ export class StormGame {
   private tryStartWave(): void {
     if (!Object.values(this.state.towers).some((level) => level > 0) || this.state.waveActive || this.state.wave >= 30) return;
     this.state.waveActive = true;
-    this.state.baseHealth = Math.min(100, this.state.baseHealth + 12);
+    this.state.baseHealth = Math.min(100, this.state.baseHealth + COMBAT_TIMING.waveRepair);
     const waveNumber = this.state.wave + 1;
     this.currentWavePlan = getWavePlan(waveNumber);
     this.enemiesToSpawn = this.currentWavePlan.enemyCount;
-    this.spawnTimer = 0.4;
+    this.spawnTimer = COMBAT_TIMING.waveSpawnDelay;
     this.state.enemiesRemaining = this.enemiesToSpawn;
     this.waveStartedStock = this.state.displayedMeat;
     this.stockedAtCycleStart = this.waveStartedStock >= 2;
@@ -2069,16 +2066,16 @@ export class StormGame {
     for (const zombie of this.zombies) {
       if (!zombie.alive) continue;
       zombie.slowTimer = Math.max(0, zombie.slowTimer - dt);
-      const target = SHOP_POSITION.add(new Vector3(0, 0, 1.8));
+      const target = new Vector3(COMBAT_POSITIONS.barrierTarget.x, 0, COMBAT_POSITIONS.barrierTarget.z);
       const distance = Vector3.Distance(zombie.root.position, target);
-      if (distance > 2.5) {
-        const slowFactor = zombie.slowTimer > 0 ? 0.55 : 1;
+      if (distance > COMBAT_TIMING.barrierAttackRange) {
+        const slowFactor = zombie.slowTimer > 0 ? COMBAT_TIMING.frostSlowFactor : 1;
         this.moveActorToward(zombie, target, zombie.baseSpeed * slowFactor, dt);
         this.playAnimation(zombie, "Walk", true);
         zombie.attackPhase = "approach";
         zombie.attackTimer = 0;
       } else {
-        const timings = this.enemyAttackTimings(zombie.type);
+        const timings = enemyAttackTimings(zombie.type);
         if (zombie.attackPhase === "approach") {
           zombie.attackPhase = "anticipation";
           zombie.attackTimer = timings.impact;
@@ -2087,8 +2084,8 @@ export class StormGame {
           zombie.attackTimer -= dt;
         }
         if (zombie.attackPhase === "anticipation" && zombie.attackTimer <= 0) {
-          const blocked = this.state.customerAffinity.nurse_lin >= 6 && Math.random() < 0.08;
-          const damage = Math.max(0, zombie.damage - (blocked ? 1 : 0));
+          const blocked = this.state.customerAffinity.nurse_lin >= 6 && Math.random() < COMBAT_TIMING.nurseBlockChance;
+          const damage = Math.max(0, zombie.damage - (blocked ? COMBAT_TIMING.nurseBlockReduction : 0));
           this.state.baseHealth = Math.max(0, this.state.baseHealth - damage);
           this.state.stats.damageTaken += damage;
           this.triggerBarrierHitVfx(target, this.state.baseHealth);
@@ -2144,28 +2141,26 @@ export class StormGame {
   private spawnZombie(order: number): void {
     const wave = this.state.wave + 1;
     const plan = this.currentWavePlan ?? getWavePlan(wave);
-    const x = -6 + ((order * 4.7) % 12);
-    const z = 20 - (order % 2) * 1.8;
+    const position = enemySpawnPosition(order);
+    const { x, z } = position;
     const type: ZombieType = enemyTypeForWave(plan, order);
     const scale = type === "boss" ? 1.05 : type === "brute" ? 1.4 : type === "runner" ? 0.82 : 0.98;
     const zombieModel = type === "boss"
       ? "custom/boss-zombie.glb"
       : R8_ZOMBIE_MODELS[(wave + order) % R8_ZOMBIE_MODELS.length];
     const actor = this.instantiateActor(zombieModel, `zombie-${type}-${wave}-${order}-${this.elapsed}`, new Vector3(x, 0, z), scale);
-    const baseHp = 3 + Math.floor(wave * 0.72);
-    const hp = Math.round(baseHp * (type === "boss" ? 8 : type === "brute" ? 2.35 : type === "runner" ? 0.72 : 1) * plan.hpMultiplier);
-    const speed = (0.92 + wave * 0.025) * (type === "runner" ? 1.75 : type === "brute" ? 0.72 : type === "boss" ? 0.62 : 1) * plan.speedMultiplier;
+    const stats = enemyCombatStats(wave, type, plan);
     const zombie: ZombieActor = {
       ...actor,
-      hp,
-      maxHp: hp,
+      hp: stats.hp,
+      maxHp: stats.hp,
       alive: true,
-      speed,
-      baseSpeed: speed,
+      speed: stats.speed,
+      baseSpeed: stats.speed,
       attackTimer: 0.2,
       attackPhase: "approach",
-      damage: type === "boss" ? 16 : type === "brute" ? 10 : type === "runner" ? 5 : 6,
-      reward: type === "boss" ? 25 + wave : type === "brute" ? 5 : type === "runner" ? 3 : 2,
+      damage: stats.damage,
+      reward: stats.reward,
       type,
       slowTimer: 0,
       deathEndsAt: 0,
@@ -2199,13 +2194,13 @@ export class StormGame {
         }
       }
       if (!this.state.waveActive) continue;
-      const range = tower.id === "cannon" ? 19 + level : 17 + level * 1.5;
-      const target = this.findNearestZombie(tower.root.position, range);
+      const stats = towerCombatStats(tower.id, level);
+      const target = this.findNearestZombie(tower.root.position, stats.range);
       if (!target) continue;
       const delta = target.root.position.subtract(tower.root.position);
       tower.weapon.rotation.y = Math.atan2(delta.x, delta.z);
       if (tower.cooldown > 0) continue;
-      tower.cooldown = tower.id === "ballista" ? 0.98 - level * 0.12 : tower.id === "frost" ? 1.25 - level * 0.14 : 2.35 - level * 0.25;
+      tower.cooldown = stats.cooldown;
       if (!tower.animationLodPaused) this.playTowerAnimation(tower, "attack");
       const projectile = this.acquireProjectile(tower.id);
       projectile.position.copyFrom(tower.root.position.add(new Vector3(0, 3.5, 0)));
@@ -2215,9 +2210,9 @@ export class StormGame {
         progress: 0,
         start: projectile.position.clone(),
         source: tower.id,
-        damage: tower.id === "ballista" ? 2 + level : tower.id === "frost" ? 1 + level : 4 + level * 2,
-        splash: tower.id === "cannon" ? 3 + level * 0.45 : 0,
-        slow: tower.id === "frost" ? 1.7 + level * 0.65 : 0,
+        damage: stats.damage,
+        splash: stats.splash,
+        slow: stats.slow,
       });
     }
   }
@@ -2230,7 +2225,7 @@ export class StormGame {
         this.projectiles.splice(index, 1);
         continue;
       }
-      projectile.progress += dt * 2.65;
+      projectile.progress += dt / COMBAT_TIMING.projectileTravelSeconds;
       const targetPosition = projectile.target.root.position.add(new Vector3(0, 1.25, 0));
       projectile.root.position.copyFrom(Vector3.Lerp(projectile.start, targetPosition, Math.min(1, projectile.progress)));
       const direction = targetPosition.subtract(projectile.root.position);
@@ -3009,13 +3004,6 @@ ${epilogue}` : ""), [
 
   private zombieLabel(type: ZombieType): string {
     return type === "runner" ? "奔行者" : type === "brute" ? "蠻屍" : type === "boss" ? "巨型 Boss" : "行屍";
-  }
-
-  private enemyAttackTimings(type: ZombieType): { impact: number; recovery: number } {
-    if (type === "runner") return { impact: 0.22, recovery: 0.36 };
-    if (type === "boss") return { impact: 14 / 24, recovery: 0.62 };
-    if (type === "brute") return { impact: 0.38, recovery: 0.58 };
-    return { impact: 0.32, recovery: 0.5 };
   }
 
   private monitorPerformance(): void {

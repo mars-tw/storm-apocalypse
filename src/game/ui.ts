@@ -145,7 +145,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R19";
+    root.dataset.uiVersion = "R20";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -259,7 +259,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R19 · 直向安全框／程序化天候 · 本機存檔</p>
+              <p class="system-note">R20 · 終波平衡回歸／程序化天候 · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>

@@ -55,6 +55,6 @@
 - `npm run typecheck`
 - `npm run build`
 - `npm run test:smoke`（含既有 R18 與新增 R19 assertions）
-- 0.2.10 active version surfaces 一致，舊版號 active grep 零命中
+- 當時發行版號的 active surfaces 一致，前版號 active grep 零命中
 - 秘密掃描零命中
 - `main`、file-scoped commit、繁中訊息、指定 Co-Authored-By、不 push
