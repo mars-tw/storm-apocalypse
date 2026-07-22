@@ -75,7 +75,7 @@ R20 滿配站位拆解：預設前線 20/20、左側攔截 20/20、塔線支援 
 - `npm run typecheck`：PASS。
 - `npm run build`：PASS；3224 modules transformed。
 - `npm run test:smoke`：PASS，**182/182**，包含既有 R18/R19 與新增 R20 共用規則 assertion。
-- 版本：active surfaces 全部為 **0.2.11 / R20**；前版號 repo-wide grep 0 matches。
+- 版本：active surfaces 全部對齊 **R20**；前版號 repo-wide grep 0 matches。
 - 秘密掃描：本輪候選檔與 R20 evidence 0 matches。
 - `git diff --check`：PASS。
 

@@ -19,7 +19,60 @@ import {
 
 const TOWER_ORDER: readonly TowerId[] = ["ballista", "frost", "cannon"];
 const MAX_SECONDS = 180;
-const STEP_SECONDS = 0.25;
+export const SIMULATION_STEP_SECONDS = 1 / 60;
+
+export interface SpawnClockAdvance {
+  nextTimer: number;
+  triggerCount: number;
+}
+
+/**
+ * Advance a fractional spawn clock without discarding sub-step remainder.
+ * The loop also keeps the clock correct if a future profile uses an interval
+ * shorter than one simulation step.
+ */
+export function advanceSpawnClock(
+  timer: number,
+  stepSeconds: number,
+  spawnInterval: number,
+  remainingSpawns = Number.POSITIVE_INFINITY,
+): SpawnClockAdvance {
+  if (!(stepSeconds > 0) || !(spawnInterval > 0) || remainingSpawns <= 0) {
+    return { nextTimer: timer, triggerCount: 0 };
+  }
+  let nextTimer = timer - stepSeconds;
+  let triggerCount = 0;
+  while (nextTimer <= 0 && triggerCount < remainingSpawns) {
+    triggerCount += 1;
+    nextTimer += spawnInterval;
+  }
+  return { nextTimer, triggerCount };
+}
+
+export function observeSpawnCadence(
+  spawnInterval: number,
+  spawnCount = 1_001,
+  stepSeconds = SIMULATION_STEP_SECONDS,
+): { observedAverageInterval: number; relativeError: number; spawnCount: number } {
+  if (!(spawnInterval > 0) || spawnCount < 2 || !(stepSeconds > 0)) {
+    throw new RangeError("spawnInterval and stepSeconds must be positive; spawnCount must be at least 2");
+  }
+  const spawnTimes: number[] = [];
+  let elapsed = 0;
+  let timer = spawnInterval;
+  while (spawnTimes.length < spawnCount) {
+    elapsed += stepSeconds;
+    const advanced = advanceSpawnClock(timer, stepSeconds, spawnInterval, spawnCount - spawnTimes.length);
+    timer = advanced.nextTimer;
+    for (let index = 0; index < advanced.triggerCount; index += 1) spawnTimes.push(elapsed);
+  }
+  const observedAverageInterval = (spawnTimes[spawnTimes.length - 1] - spawnTimes[0]) / (spawnTimes.length - 1);
+  return {
+    observedAverageInterval,
+    relativeError: Math.abs(observedAverageInterval - spawnInterval) / spawnInterval,
+    spawnCount: spawnTimes.length,
+  };
+}
 
 export interface SimulationLoadout {
   id: "maxed" | "general";
@@ -155,6 +208,7 @@ export interface WaveSimulationBatch {
   timestepSeconds: number;
   method: {
     engine: string;
+    spawnClock: string;
     spatialModel: string;
     operatorModel: string;
     deterministicInputs: string;
@@ -190,6 +244,11 @@ export interface WaveSimulationSummary {
   meanMaxAtBarrier: number;
   meanDamageBySource: Record<DamageSource, number>;
 }
+
+export type WaveSimulationOverrides = Partial<Pick<
+  ReturnType<typeof getWavePlan>,
+  "enemyCount" | "spawnInterval" | "hpMultiplier" | "speedMultiplier" | "damageMultiplier"
+>>;
 
 function createRng(seed: number): () => number {
   let state = seed >>> 0;
@@ -250,11 +309,12 @@ export function simulateWave(
   loadout: SimulationLoadout,
   profile: WaveBalanceProfile,
   strategy: SimulationStrategy = SIMULATION_STRATEGIES[0],
+  overrides: WaveSimulationOverrides = {},
 ): WaveSimulationRun {
   const gameRng = createRng(seed ^ 0xA511E9B3);
   const strategySalt = strategy.id === "default_frontline" ? 0x165667B1 : strategy.id === "left_intercept" ? 0x27D4EB2F : 0x85EBCA77;
   const operatorRng = createRng(seed ^ strategySalt ^ (loadout.id === "maxed" ? 0x63D83595 : 0xC2B2AE35));
-  const plan = getWavePlan(wave, profile);
+  const plan = { ...getWavePlan(wave, profile), ...overrides };
   const enemies: EnemyState[] = [];
   const projectiles: ProjectileState[] = [];
   const towerCooldowns: Record<TowerId, number> = { ballista: 0, frost: 0, cannon: 0 };
@@ -314,14 +374,14 @@ export function simulateWave(
   };
 
   while (elapsed < MAX_SECONDS) {
-    elapsed += STEP_SECONDS;
-    playerCooldown = Math.max(0, playerCooldown - STEP_SECONDS);
-    for (const id of TOWER_ORDER) towerCooldowns[id] = Math.max(0, towerCooldowns[id] - STEP_SECONDS);
+    elapsed += SIMULATION_STEP_SECONDS;
+    playerCooldown = Math.max(0, playerCooldown - SIMULATION_STEP_SECONDS);
+    for (const id of TOWER_ORDER) towerCooldowns[id] = Math.max(0, towerCooldowns[id] - SIMULATION_STEP_SECONDS);
 
     if (pendingPlayerAttack) {
       const attack = playerAttackStats(pendingPlayerAttack.weapon, loadout.protagonistId);
-      pendingPlayerAttack.elapsed += STEP_SECONDS;
-      playerActiveSeconds += STEP_SECONDS;
+      pendingPlayerAttack.elapsed += SIMULATION_STEP_SECONDS;
+      playerActiveSeconds += SIMULATION_STEP_SECONDS;
       if (!pendingPlayerAttack.resolved && pendingPlayerAttack.elapsed >= attack.impact) {
         pendingPlayerAttack.resolved = true;
         resolvePlayerAttack(pendingPlayerAttack.weapon);
@@ -345,8 +405,9 @@ export function simulateWave(
     }
 
     if (enemiesToSpawn > 0) {
-      spawnTimer -= STEP_SECONDS;
-      if (spawnTimer <= 0) {
+      const spawnClock = advanceSpawnClock(spawnTimer, SIMULATION_STEP_SECONDS, plan.spawnInterval, enemiesToSpawn);
+      spawnTimer = spawnClock.nextTimer;
+      for (let spawnIndex = 0; spawnIndex < spawnClock.triggerCount; spawnIndex += 1) {
         const order = enemiesToSpawn;
         const type = enemyTypeForWave(plan, order);
         const stats = enemyCombatStats(wave, type, plan);
@@ -370,19 +431,18 @@ export function simulateWave(
         totalEnemyHp += stats.hp;
         composition[type] += 1;
         enemiesToSpawn -= 1;
-        spawnTimer = plan.spawnInterval;
       }
     }
 
     let atBarrier = 0;
     for (const enemy of enemies) {
       if (!enemy.alive) continue;
-      enemy.slowTimer = Math.max(0, enemy.slowTimer - STEP_SECONDS);
+      enemy.slowTimer = Math.max(0, enemy.slowTimer - SIMULATION_STEP_SECONDS);
       const target = COMBAT_POSITIONS.barrierTarget;
       const targetDistance = distance(enemy, target);
       if (targetDistance > COMBAT_TIMING.barrierAttackRange) {
         const slowFactor = enemy.slowTimer > 0 ? COMBAT_TIMING.frostSlowFactor : 1;
-        const step = Math.min(targetDistance, enemy.speed * slowFactor * STEP_SECONDS);
+        const step = Math.min(targetDistance, enemy.speed * slowFactor * SIMULATION_STEP_SECONDS);
         enemy.x += (target.x - enemy.x) / targetDistance * step;
         enemy.z += (target.z - enemy.z) / targetDistance * step;
         enemy.attackPhase = "approach";
@@ -394,7 +454,7 @@ export function simulateWave(
           enemy.attackPhase = "anticipation";
           enemy.attackTimer = timings.impact;
         } else {
-          enemy.attackTimer -= STEP_SECONDS;
+          enemy.attackTimer -= SIMULATION_STEP_SECONDS;
         }
         if (enemy.attackPhase === "anticipation" && enemy.attackTimer <= 0) {
           const blocked = loadout.customerAffinity >= 6 && gameRng() < COMBAT_TIMING.nurseBlockChance;
@@ -445,7 +505,7 @@ export function simulateWave(
         projectiles.splice(index, 1);
         continue;
       }
-      projectile.remaining -= STEP_SECONDS;
+      projectile.remaining -= SIMULATION_STEP_SECONDS;
       if (projectile.remaining > 0) continue;
       const victims = projectile.splash > 0
         ? enemies.filter((enemy) => enemy.alive && distance(enemy, target) <= projectile.splash)
@@ -555,9 +615,10 @@ export function simulateBalanceBatch(profileId: WaveBalanceProfile["id"], seeds:
     profile,
     seeds,
     waves,
-    timestepSeconds: STEP_SECONDS,
+    timestepSeconds: SIMULATION_STEP_SECONDS,
     method: {
-      engine: "fixed-step headless combat loop sharing src/game/combatRules.ts and src/game/waveDirector.ts with StormGame",
+      engine: "60 Hz fixed-step headless combat loop sharing src/game/combatRules.ts and src/game/waveDirector.ts with StormGame",
+      spawnClock: "fractional remainder carry with multiple triggers allowed per step; intended cadence error guarded below 1%",
       spatialModel: "2D X/Z gameplay plane; exact spawn, target, range, speed, cooldown, projectile, splash, slow, impact and recovery rules; rendering/terrain Y/animation omitted",
       operatorModel: "R1-calibrated held-SMG defense at three predeclared reasonable positions: default frontline, left intercept and ballista towerline; every seed runs every position",
       deterministicInputs: "separate Mulberry32-derived streams for player input timing and the game's 8% nurse barrier block; identical seed streams across profiles",

@@ -457,7 +457,7 @@ async function checkR12Systems() {
 
 async function checkR18StaticContracts() {
   try {
-    const [content, game, indexHtml, ui, director, combatRules, simulation] = await Promise.all([
+    const [content, game, indexHtml, ui, director, combatRules, simulation, balanceScript, fidelityScript] = await Promise.all([
       readFile(resolve(root, "src/game/content.ts"), "utf8"),
       readFile(resolve(root, "src/game/StormGame.ts"), "utf8"),
       readFile(resolve(root, "index.html"), "utf8"),
@@ -465,6 +465,8 @@ async function checkR18StaticContracts() {
       readFile(resolve(root, "src/game/waveDirector.ts"), "utf8"),
       readFile(resolve(root, "src/game/combatRules.ts"), "utf8"),
       readFile(resolve(root, "src/game/waveSimulation.ts"), "utf8"),
+      readFile(resolve(root, "scripts/sim-wave-balance.mjs"), "utf8"),
+      readFile(resolve(root, "scripts/test-wave-simulation-fidelity.mjs"), "utf8"),
     ]);
     const eveBlock = content.match(/WAVE_EVE_DISPATCHES[\s\S]*?\] as const;/u)?.[0] ?? "";
     const eveWaves = [...eveBlock.matchAll(/wave:\s*(\d+),\s*line:\s*"([^"]+)"/gu)].map((match) => [Number(match[1]), match[2]]);
@@ -510,6 +512,21 @@ async function checkR18StaticContracts() {
       && combatRules.includes("export function towerCombatStats")
       && combatRules.includes("export function playerAttackStats");
     record("balance/R20", "runtime and fixed-seed simulator share the R20 combat rules", balancePass, "R19=1.08, R20=1.07; shared enemy/tower/player rule functions");
+    const r21BalancePass = director.includes('r21: Object.freeze({ id: "r21", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07')
+      && director.includes("export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r21")
+      && !director.includes("ordinaryLateWaveHpMultiplier")
+      && game.includes("this.currentWavePlan = getWavePlan(waveNumber)")
+      && simulation.includes("const plan = { ...getWavePlan(wave, profile), ...overrides }")
+      && balanceScript.includes("generalWave30WinRate15To40")
+      && balanceScript.includes("maxedWave30WinRate50To70")
+      && balanceScript.includes("rejectedR21GameplayFullyRemoved");
+    record("balance/R21", "R21 keeps bounded W30 gates without the rejected HP scaling", r21BalancePass, "general W30=15-40%; maxed W30=50-70%; R21 gameplay values equal R20");
+    const fidelityPass = simulation.includes("export const SIMULATION_STEP_SECONDS = 1 / 60")
+      && simulation.includes("nextTimer += spawnInterval")
+      && simulation.includes("spawnClock.triggerCount")
+      && fidelityScript.includes("Object.freeze([0.496, 0.510])")
+      && fidelityScript.includes("corrected.relativeError < 0.01");
+    record("simulation/R21", "spawn cadence uses 60 Hz fractional carry and verifies both boundary intervals", fidelityPass, "0.496s and 0.510s; relative error <1%; multi-trigger clock");
   } catch (error) {
     record("systems/R18", "R18 static contracts load", false, error instanceof Error ? error.message : String(error));
   }
@@ -1565,7 +1582,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R20 UI version marker", uiVersion === "R20", `ui=${uiVersion}`);
+  record(label, "R21 UI version marker", uiVersion === "R21", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));

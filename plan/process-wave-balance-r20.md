@@ -21,7 +21,7 @@ tags: [process, balance, simulation, regression, r20]
 - **REQ-003**: `docs/evidence/r20/` 必須保存可由 repo 指令重現的 before、after 與比較 JSON。
 - **REQ-004**: 第 30 波滿配合理操作通關率目標為 50% 至 70%，一般配置維持挑戰；第 25–29 波不得因調校而改變。
 - **REQ-005**: `npm run typecheck`、`npm run build`、`npm run test:smoke`、active 舊版號檢查與秘密掃描必須通過。
-- **REQ-006**: 將 active 版本升為 0.2.11，建立 `docs/CODEX_RESPONSE_R20.md`，並由 `main` 建立一個只含本輪檔案的 commit，不 push。
+- **REQ-006**: 將 active 版本升為 R20 當輪版本，建立 `docs/CODEX_RESPONSE_R20.md`，並由 `main` 建立一個只含本輪檔案的 commit，不 push。
 - **CON-001**: 只修改 `C:/Users/digimkt/Desktop/遊戲/storm-apocalypse`，保留且不提交使用者既有的 `docs/playtest/` 未追蹤資料。
 - **CON-002**: 平衡數值必須在 before 資料產生後才能改動；before 與 after 必須使用完全相同的 seeds、配置、操作模型與 timestep。
 - **CON-003**: 角色動畫、physics root、collider 與既有 R18/R19 行為不得退化。
@@ -49,7 +49,7 @@ tags: [process, balance, simulation, regression, r20]
 |------|-------------|-----------|------|
 | TASK-005 | 只修改 `src/game/waveDirector.ts` 中量測證明必要的終波參數，保留可重播 R19 profile 並讓遊戲預設使用 R20 profile。 | Yes | 2026-07-22 |
 | TASK-006 | 以相同 seeds 重跑 `docs/evidence/r20/after.json`，產生 `docs/evidence/r20/comparison.json` 並驗證滿配目標與第 25–29 波不變。 | Yes | 2026-07-22 |
-| TASK-007 | 更新 `package.json`、`package-lock.json`、`README.md`、`src/game/ui.ts` 與 smoke 的 active 版本標記為 0.2.11/R20。 | Yes | 2026-07-22 |
+| TASK-007 | 更新 `package.json`、`package-lock.json`、`README.md`、`src/game/ui.ts` 與 smoke 的 active 版本標記為 R20。 | Yes | 2026-07-22 |
 | TASK-008 | 執行 typecheck、build、smoke、模擬回歸、active 舊版號與秘密掃描，記錄於 `docs/evidence/r20/validation.md`。 | Yes | 2026-07-22 |
 | TASK-009 | 撰寫 `docs/CODEX_RESPONSE_R20.md`，檢查 diff 與未追蹤檔案後建立含指定共同作者 trailer 的 file-scoped `main` commit。 | Yes | 2026-07-22 |
 

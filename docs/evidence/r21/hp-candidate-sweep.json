@@ -1,0 +1,1098 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-22T10:09:27.440Z",
+  "baselineProfile": "r20",
+  "timestepSeconds": 0.016666666666666666,
+  "seeds": [
+    334462,
+    1229022,
+    2757070,
+    4058881,
+    4753953,
+    6228830,
+    7119134,
+    7819742,
+    9026065,
+    10124887,
+    10837741,
+    11803230,
+    12783605,
+    13824013,
+    14777943,
+    15772897,
+    16890462,
+    18008830,
+    19124237,
+    20246910
+  ],
+  "strategies": [
+    "default_frontline",
+    "left_intercept",
+    "towerline_support"
+  ],
+  "hpScales": [
+    1,
+    0.9,
+    0.85,
+    0.8,
+    0.75,
+    0.7,
+    0.65,
+    0.6,
+    0.55,
+    0.5
+  ],
+  "elapsedSeconds": 19.565,
+  "rows": [
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 1,
+      "effectiveHpMultiplier": 1,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.9,
+      "effectiveHpMultiplier": 0.9,
+      "wins": 6,
+      "runs": 60,
+      "winRate": 0.1,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 6,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.85,
+      "effectiveHpMultiplier": 0.85,
+      "wins": 41,
+      "runs": 60,
+      "winRate": 0.683,
+      "strategyWins": {
+        "default_frontline": 17,
+        "left_intercept": 20,
+        "towerline_support": 4
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.8,
+      "effectiveHpMultiplier": 0.8,
+      "wins": 44,
+      "runs": 60,
+      "winRate": 0.733,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 4
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.75,
+      "effectiveHpMultiplier": 0.75,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.7,
+      "effectiveHpMultiplier": 0.7,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.65,
+      "effectiveHpMultiplier": 0.65,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.6,
+      "effectiveHpMultiplier": 0.6,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.55,
+      "effectiveHpMultiplier": 0.55,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "event": "standard",
+      "hpScale": 0.5,
+      "effectiveHpMultiplier": 0.5,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 1,
+      "effectiveHpMultiplier": 1,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.9,
+      "effectiveHpMultiplier": 0.9,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.85,
+      "effectiveHpMultiplier": 0.85,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.8,
+      "effectiveHpMultiplier": 0.8,
+      "wins": 7,
+      "runs": 60,
+      "winRate": 0.117,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 5,
+        "towerline_support": 2
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.75,
+      "effectiveHpMultiplier": 0.75,
+      "wins": 54,
+      "runs": 60,
+      "winRate": 0.9,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 14
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.7,
+      "effectiveHpMultiplier": 0.7,
+      "wins": 43,
+      "runs": 60,
+      "winRate": 0.717,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 3
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.65,
+      "effectiveHpMultiplier": 0.65,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.6,
+      "effectiveHpMultiplier": 0.6,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.55,
+      "effectiveHpMultiplier": 0.55,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "event": "standard",
+      "hpScale": 0.5,
+      "effectiveHpMultiplier": 0.5,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 1,
+      "effectiveHpMultiplier": 1,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.9,
+      "effectiveHpMultiplier": 0.9,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.85,
+      "effectiveHpMultiplier": 0.85,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.8,
+      "effectiveHpMultiplier": 0.8,
+      "wins": 1,
+      "runs": 60,
+      "winRate": 0.017,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 1,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.75,
+      "effectiveHpMultiplier": 0.75,
+      "wins": 31,
+      "runs": 60,
+      "winRate": 0.517,
+      "strategyWins": {
+        "default_frontline": 12,
+        "left_intercept": 3,
+        "towerline_support": 16
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.7,
+      "effectiveHpMultiplier": 0.7,
+      "wins": 43,
+      "runs": 60,
+      "winRate": 0.717,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 3
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.65,
+      "effectiveHpMultiplier": 0.65,
+      "wins": 57,
+      "runs": 60,
+      "winRate": 0.95,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 17
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.6,
+      "effectiveHpMultiplier": 0.6,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.55,
+      "effectiveHpMultiplier": 0.55,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "event": "standard",
+      "hpScale": 0.5,
+      "effectiveHpMultiplier": 0.5,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 1,
+      "effectiveHpMultiplier": 1,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.9,
+      "effectiveHpMultiplier": 0.9,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.85,
+      "effectiveHpMultiplier": 0.85,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.8,
+      "effectiveHpMultiplier": 0.8,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.75,
+      "effectiveHpMultiplier": 0.75,
+      "wins": 16,
+      "runs": 60,
+      "winRate": 0.267,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 16,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.7,
+      "effectiveHpMultiplier": 0.7,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.65,
+      "effectiveHpMultiplier": 0.65,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.6,
+      "effectiveHpMultiplier": 0.6,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.55,
+      "effectiveHpMultiplier": 0.55,
+      "wins": 50,
+      "runs": 60,
+      "winRate": 0.833,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 10
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "event": "standard",
+      "hpScale": 0.5,
+      "effectiveHpMultiplier": 0.5,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 1,
+      "effectiveHpMultiplier": 1.2,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.9,
+      "effectiveHpMultiplier": 1.08,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.85,
+      "effectiveHpMultiplier": 1.02,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.8,
+      "effectiveHpMultiplier": 0.96,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.75,
+      "effectiveHpMultiplier": 0.9,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.7,
+      "effectiveHpMultiplier": 0.84,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.65,
+      "effectiveHpMultiplier": 0.78,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.6,
+      "effectiveHpMultiplier": 0.72,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.55,
+      "effectiveHpMultiplier": 0.66,
+      "wins": 20,
+      "runs": 60,
+      "winRate": 0.333,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.5,
+      "effectiveHpMultiplier": 0.6,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 1,
+      "effectiveHpMultiplier": 1.07,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.9,
+      "effectiveHpMultiplier": 0.963,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.85,
+      "effectiveHpMultiplier": 0.9095,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.8,
+      "effectiveHpMultiplier": 0.856,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.75,
+      "effectiveHpMultiplier": 0.8025,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.7,
+      "effectiveHpMultiplier": 0.749,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.65,
+      "effectiveHpMultiplier": 0.6955,
+      "wins": 17,
+      "runs": 60,
+      "winRate": 0.283,
+      "strategyWins": {
+        "default_frontline": 2,
+        "left_intercept": 15,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.6,
+      "effectiveHpMultiplier": 0.642,
+      "wins": 40,
+      "runs": 60,
+      "winRate": 0.667,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.55,
+      "effectiveHpMultiplier": 0.5885,
+      "wins": 31,
+      "runs": 60,
+      "winRate": 0.517,
+      "strategyWins": {
+        "default_frontline": 11,
+        "left_intercept": 20,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "event": "boss",
+      "hpScale": 0.5,
+      "effectiveHpMultiplier": 0.535,
+      "wins": 40,
+      "runs": 60,
+      "winRate": 0.667,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 1,
+      "effectiveHpMultiplier": 1.2,
+      "wins": 0,
+      "runs": 60,
+      "winRate": 0,
+      "strategyWins": {
+        "default_frontline": 0,
+        "left_intercept": 0,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.9,
+      "effectiveHpMultiplier": 1.08,
+      "wins": 29,
+      "runs": 60,
+      "winRate": 0.483,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 9,
+        "towerline_support": 0
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.85,
+      "effectiveHpMultiplier": 1.02,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.8,
+      "effectiveHpMultiplier": 0.96,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.75,
+      "effectiveHpMultiplier": 0.9,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.7,
+      "effectiveHpMultiplier": 0.84,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.65,
+      "effectiveHpMultiplier": 0.78,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.6,
+      "effectiveHpMultiplier": 0.72,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.55,
+      "effectiveHpMultiplier": 0.66,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "event": "elite_surge",
+      "hpScale": 0.5,
+      "effectiveHpMultiplier": 0.6,
+      "wins": 60,
+      "runs": 60,
+      "winRate": 1,
+      "strategyWins": {
+        "default_frontline": 20,
+        "left_intercept": 20,
+        "towerline_support": 20
+      }
+    }
+  ]
+}

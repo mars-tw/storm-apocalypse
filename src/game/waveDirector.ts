@@ -15,7 +15,7 @@ export interface WavePlan {
 }
 
 export interface WaveBalanceProfile {
-  id: "r19" | "r20";
+  id: "r19" | "r20" | "r21";
   finalWaveSpawnMultiplier: number;
   finalWaveHpMultiplier: number;
   finalWaveEnemyBonus: number;
@@ -25,9 +25,10 @@ export interface WaveBalanceProfile {
 export const WAVE_BALANCE_PROFILES: Readonly<Record<WaveBalanceProfile["id"], WaveBalanceProfile>> = Object.freeze({
   r19: Object.freeze({ id: "r19", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.08, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
   r20: Object.freeze({ id: "r20", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
+  r21: Object.freeze({ id: "r21", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
 });
 
-export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r20;
+export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r21;
 
 export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_WAVE_BALANCE): WavePlan {
   const normalized = Math.min(30, Math.max(1, Math.floor(wave)));

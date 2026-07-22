@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-22T10:12:17.593Z",
+  "sampleCount": 1001,
+  "legacyMethod": {
+    "stepSeconds": 0.25,
+    "timerPolicy": "reset to spawnInterval after each spawn; discarded overshoot"
+  },
+  "correctedMethod": {
+    "stepSeconds": 0.016666666666666666,
+    "timerPolicy": "fractional remainder carry; multiple triggers allowed in one step"
+  },
+  "acceptance": "absolute relative error < 1% for every target interval",
+  "cases": [
+    {
+      "targetInterval": 0.496,
+      "legacyObservedAverageInterval": 0.5,
+      "legacyRelativeError": 0.008064516,
+      "correctedObservedAverageInterval": 0.496,
+      "correctedRelativeError": 0,
+      "correctedPassesUnderOnePercent": true
+    },
+    {
+      "targetInterval": 0.51,
+      "legacyObservedAverageInterval": 0.75,
+      "legacyRelativeError": 0.470588235,
+      "correctedObservedAverageInterval": 0.51,
+      "correctedRelativeError": 0,
+      "correctedPassesUnderOnePercent": true
+    }
+  ],
+  "pass": true
+}
