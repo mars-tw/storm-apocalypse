@@ -5,6 +5,7 @@ import {
   enemyCombatStats,
   enemySpawnPosition,
   playerAttackStats,
+  resolvedPlayerHitDamages,
   towerCombatStats,
   type CombatPoint,
 } from "./combatRules";
@@ -314,6 +315,7 @@ export function simulateWave(
   const gameRng = createRng(seed ^ 0xA511E9B3);
   const strategySalt = strategy.id === "default_frontline" ? 0x165667B1 : strategy.id === "left_intercept" ? 0x27D4EB2F : 0x85EBCA77;
   const operatorRng = createRng(seed ^ strategySalt ^ (loadout.id === "maxed" ? 0x63D83595 : 0xC2B2AE35));
+  const criticalRng = createRng(seed ^ strategySalt ^ 0x9E3779B9);
   const plan = { ...getWavePlan(wave, profile), ...overrides };
   const enemies: EnemyState[] = [];
   const projectiles: ProjectileState[] = [];
@@ -357,11 +359,12 @@ export function simulateWave(
   };
 
   const resolvePlayerAttack = (weapon: WeaponId): void => {
-    const attack = playerAttackStats(weapon, loadout.protagonistId);
+    const attack = playerAttackStats(weapon, loadout.protagonistId, profile.id);
+    const hitDamages = resolvedPlayerHitDamages(attack, criticalRng());
     playerImpacts += 1;
     if (attack.area) {
       const victims = enemies.filter((enemy) => enemy.alive && distance(enemy, strategy.position) < attack.range);
-      for (const victim of victims) for (const damage of attack.hitDamages) applyDamage(victim, damage, "player");
+      for (const victim of victims) for (const damage of hitDamages) applyDamage(victim, damage, "player");
       if (victims.length === 0) playerWhiffs += 1;
       return;
     }
@@ -370,7 +373,7 @@ export function simulateWave(
       playerWhiffs += 1;
       return;
     }
-    for (const damage of attack.hitDamages) applyDamage(target, damage, "player");
+    for (const damage of hitDamages) applyDamage(target, damage, "player");
   };
 
   while (elapsed < MAX_SECONDS) {
@@ -379,7 +382,7 @@ export function simulateWave(
     for (const id of TOWER_ORDER) towerCooldowns[id] = Math.max(0, towerCooldowns[id] - SIMULATION_STEP_SECONDS);
 
     if (pendingPlayerAttack) {
-      const attack = playerAttackStats(pendingPlayerAttack.weapon, loadout.protagonistId);
+      const attack = playerAttackStats(pendingPlayerAttack.weapon, loadout.protagonistId, profile.id);
       pendingPlayerAttack.elapsed += SIMULATION_STEP_SECONDS;
       playerActiveSeconds += SIMULATION_STEP_SECONDS;
       if (!pendingPlayerAttack.resolved && pendingPlayerAttack.elapsed >= attack.impact) {
@@ -390,12 +393,12 @@ export function simulateWave(
     }
 
     if (!pendingPlayerAttack && playerCooldown <= 0 && elapsed >= nextPlayerInputAt) {
-      const axeStats = playerAttackStats("axe", loadout.protagonistId);
+      const axeStats = playerAttackStats("axe", loadout.protagonistId, profile.id);
       const axeTargets = enemies.filter((enemy) => enemy.alive && distance(enemy, strategy.position) < axeStats.range).length;
       const weapon: WeaponId = loadout.availableWeapons.includes("axe") && axeTargets >= loadout.operator.axeCrowdThreshold
         ? "axe"
         : loadout.availableWeapons.includes("smg") ? "smg" : "machete";
-      const attack = playerAttackStats(weapon, loadout.protagonistId);
+      const attack = playerAttackStats(weapon, loadout.protagonistId, profile.id);
       if (nearestEnemy(enemies, strategy.position, attack.range)) {
         pendingPlayerAttack = { weapon, elapsed: 0, resolved: false };
         playerCooldown = attack.recovery;
@@ -621,7 +624,7 @@ export function simulateBalanceBatch(profileId: WaveBalanceProfile["id"], seeds:
       spawnClock: "fractional remainder carry with multiple triggers allowed per step; intended cadence error guarded below 1%",
       spatialModel: "2D X/Z gameplay plane; exact spawn, target, range, speed, cooldown, projectile, splash, slow, impact and recovery rules; rendering/terrain Y/animation omitted",
       operatorModel: "R1-calibrated held-SMG defense at three predeclared reasonable positions: default frontline, left intercept and ballista towerline; every seed runs every position",
-      deterministicInputs: "separate Mulberry32-derived streams for player input timing and the game's 8% nurse barrier block; identical seed streams across profiles",
+      deterministicInputs: "separate Mulberry32-derived streams for player input timing, sniper criticals and the game's 8% nurse barrier block; identical seed streams across profiles",
     },
     loadouts: SIMULATION_LOADOUTS,
     strategies: SIMULATION_STRATEGIES,

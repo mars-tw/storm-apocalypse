@@ -26,6 +26,8 @@ export interface PlayerAttackStats {
   recovery: number;
   range: number;
   hitDamages: readonly number[];
+  criticalChance: number;
+  criticalMultiplier: number;
   area: boolean;
 }
 
@@ -83,13 +85,45 @@ export function towerCombatStats(id: TowerId, level: number): TowerCombatStats {
   };
 }
 
-export function playerAttackStats(weapon: WeaponId, protagonistId: ProtagonistId): PlayerAttackStats {
-  const bonus = protagonistId === "vet_sniper" ? 1 : 0;
+export function playerAttackStats(
+  weapon: WeaponId,
+  protagonistId: ProtagonistId,
+  balanceRevision: "r19" | "r20" | "r21" | "r22" = "r22",
+): PlayerAttackStats {
   if (weapon === "smg") {
-    return { impact: 8 / 24, recovery: 18 / 24, range: 13, hitDamages: [2 + bonus, 2 + bonus, 2 + bonus], area: false };
+    if (balanceRevision !== "r22") {
+      const legacyBonus = protagonistId === "vet_sniper" ? 1 : 0;
+      return {
+        impact: 8 / 24,
+        recovery: 18 / 24,
+        range: 13,
+        hitDamages: [2 + legacyBonus, 2 + legacyBonus, 2 + legacyBonus],
+        criticalChance: 0,
+        criticalMultiplier: 1,
+        area: false,
+      };
+    }
+    const sniper = protagonistId === "vet_sniper";
+    return {
+      impact: 8 / 24,
+      recovery: sniper ? 1.205 : 18 / 24,
+      range: sniper ? 15 : 13,
+      hitDamages: [6, 6, 6],
+      criticalChance: sniper ? 0.15 : 0,
+      criticalMultiplier: 2,
+      area: false,
+    };
   }
+  const bonus = protagonistId === "vet_sniper" ? 1 : 0;
   if (weapon === "axe") {
-    return { impact: 13 / 24, recovery: 24 / 24, range: 3.5, hitDamages: [3 + bonus], area: true };
+    return { impact: 13 / 24, recovery: 24 / 24, range: 3.5, hitDamages: [3 + bonus], criticalChance: 0, criticalMultiplier: 1, area: true };
   }
-  return { impact: 13 / 24, recovery: 24 / 24, range: 2.7, hitDamages: [2 + bonus], area: false };
+  return { impact: 13 / 24, recovery: 24 / 24, range: 2.7, hitDamages: [2 + bonus], criticalChance: 0, criticalMultiplier: 1, area: false };
+}
+
+export function resolvedPlayerHitDamages(attack: PlayerAttackStats, criticalRoll: number): readonly number[] {
+  const multiplier = attack.criticalChance > 0 && criticalRoll < attack.criticalChance
+    ? attack.criticalMultiplier
+    : 1;
+  return attack.hitDamages.map((damage) => damage * multiplier);
 }

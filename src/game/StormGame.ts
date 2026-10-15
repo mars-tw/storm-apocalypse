@@ -35,7 +35,7 @@ import {
 } from "@babylonjs/core";
 import "@babylonjs/loaders/glTF";
 import type { ProceduralAudio } from "./audio";
-import { COMBAT_POSITIONS, COMBAT_TIMING, enemyAttackTimings, enemyCombatStats, enemySpawnPosition, playerAttackStats, towerCombatStats } from "./combatRules";
+import { COMBAT_POSITIONS, COMBAT_TIMING, enemyAttackTimings, enemyCombatStats, enemySpawnPosition, playerAttackStats, resolvedPlayerHitDamages, towerCombatStats } from "./combatRules";
 import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WAVE_EVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
 import { resolveQuality, type QualityLevel, type QualityPreference } from "./quality";
@@ -1518,6 +1518,7 @@ export class StormGame {
 
   private resolvePlayerAttack(weapon: WeaponId): void {
     const attack = playerAttackStats(weapon, this.state.protagonistId);
+    const hitDamages = resolvedPlayerHitDamages(attack, Math.random());
     let hit = false;
     if (weapon === "smg") {
       if (this.muzzleFlash) {
@@ -1526,28 +1527,28 @@ export class StormGame {
       }
       const target = this.findNearestZombie(this.player.root.position, attack.range) ?? this.findNearestCow(this.player.root.position, 16);
       if (target && "type" in target) {
-        for (const damage of attack.hitDamages) this.damageZombie(target, damage, "player");
+        for (const damage of hitDamages) this.damageZombie(target, damage, "player");
         hit = true;
       } else if (target) {
-        for (const damage of attack.hitDamages) this.damageCow(target, damage);
+        for (const damage of hitDamages) this.damageCow(target, damage);
         hit = true;
       }
     } else if (weapon === "axe") {
       const targets = this.zombies.filter((zombie) => zombie.alive && Vector3.Distance(zombie.root.position, this.player.root.position) < attack.range);
-      for (const zombie of targets) for (const damage of attack.hitDamages) this.damageZombie(zombie, damage, "player");
+      for (const zombie of targets) for (const damage of hitDamages) this.damageZombie(zombie, damage, "player");
       const cows = this.allCows().filter((cow) => cow.alive && Vector3.Distance(cow.root.position, this.player.root.position) < attack.range);
-      for (const cow of cows) for (const damage of attack.hitDamages) this.damageCow(cow, damage);
+      for (const cow of cows) for (const damage of hitDamages) this.damageCow(cow, damage);
       this.createAttackRing(new Color3(0.95, 0.55, 0.24));
       hit = targets.length + cows.length > 0;
     } else {
       const nearestZombie = this.findNearestZombie(this.player.root.position, attack.range);
       if (nearestZombie) {
-        for (const damage of attack.hitDamages) this.damageZombie(nearestZombie, damage, "player");
+        for (const damage of hitDamages) this.damageZombie(nearestZombie, damage, "player");
         hit = true;
       } else {
         const nearestCow = this.findNearestCow(this.player.root.position, 2.8);
         if (nearestCow) {
-          for (const damage of attack.hitDamages) this.damageCow(nearestCow, damage);
+          for (const damage of hitDamages) this.damageCow(nearestCow, damage);
           hit = true;
         }
       }

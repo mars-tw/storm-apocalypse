@@ -92,7 +92,7 @@ async function ensureServer() {
   });
   const buildExit = await new Promise((resolveExit) => build.once("exit", resolveExit));
   if (buildExit !== 0) throw new Error(`Vite smoke bundle failed with exit code ${buildExit}`);
-  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4173", "--strictPort", "--outDir", ".smoke-dist"], {
+  server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", new URL(url).port || "4173", "--strictPort", "--outDir", ".smoke-dist"], {
     cwd: root,
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
@@ -443,7 +443,7 @@ async function checkR12Systems() {
     const directorContract = /event:\s*"whiteout"/u.test(director)
       && /event:\s*"elite_surge"/u.test(director)
       && /spawnInterval:\s*Math\.max\(0\.3,\s*baseInterval\s*\*\s*0\.72\)/u.test(director)
-      && /hpMultiplier:\s*1\.2/u.test(director)
+      && /hpMultiplier:\s*(?:usesR22EliteCurve \? 1\.07 : )?1\.2/u.test(director)
       && game.includes("enemyTypeForWave(plan, order)");
     record("director/R12", "whiteout and elite event waves change spawn rhythm and composition", directorContract, "whiteout=fast runner surge, elite_surge=brute/high-HP formation");
     const healthContract = /interface SaveState[\s\S]*baseHealth:\s*number/u.test(state)
@@ -512,15 +512,23 @@ async function checkR18StaticContracts() {
       && combatRules.includes("export function towerCombatStats")
       && combatRules.includes("export function playerAttackStats");
     record("balance/R20", "runtime and fixed-seed simulator share the R20 combat rules", balancePass, "R19=1.08, R20=1.07; shared enemy/tower/player rule functions");
-    const r21BalancePass = director.includes('r21: Object.freeze({ id: "r21", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07')
-      && director.includes("export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r21")
+    const r22BalancePass = director.includes('r22: Object.freeze({ id: "r22", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1.075')
+      && director.includes("export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r22")
+      && director.includes('spawnInterval: baseInterval * (usesR22EliteCurve ? 1 : 1.08)')
+      && director.includes('hpMultiplier: usesR22EliteCurve ? 1.07 : 1.2')
       && !director.includes("ordinaryLateWaveHpMultiplier")
       && game.includes("this.currentWavePlan = getWavePlan(waveNumber)")
+      && game.includes("resolvedPlayerHitDamages(attack, Math.random())")
       && simulation.includes("const plan = { ...getWavePlan(wave, profile), ...overrides }")
-      && balanceScript.includes("generalWave30WinRate15To40")
+      && simulation.includes("const criticalRng = createRng")
+      && combatRules.includes("hitDamages: [6, 6, 6]")
+      && combatRules.includes("criticalChance: sniper ? 0.15 : 0")
+      && balanceScript.includes("generalW25To28WithinPlayableRanges")
+      && balanceScript.includes("maxedW29WinRate40To60")
       && balanceScript.includes("maxedWave30WinRate50To70")
-      && balanceScript.includes("rejectedR21GameplayFullyRemoved");
-    record("balance/R21", "R21 keeps bounded W30 gates without the rejected HP scaling", r21BalancePass, "general W30=15-40%; maxed W30=50-70%; R21 gameplay values equal R20");
+      && balanceScript.includes('status: "informational_only"')
+      && !balanceScript.includes("generalWave30WinRate15To40");
+    record("balance/R22", "R22 uses midgame, monotonicity and maxed endgame gates while general W30 is informational", r22BalancePass, "general W25-28 playable/non-increasing; maxed W29=40-60% and W30=50-70%; fixed/fresh validation");
     const fidelityPass = simulation.includes("export const SIMULATION_STEP_SECONDS = 1 / 60")
       && simulation.includes("nextTimer += spawnInterval")
       && simulation.includes("spawnClock.triggerCount")
@@ -1582,7 +1590,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R21 UI version marker", uiVersion === "R21", `ui=${uiVersion}`);
+  record(label, "R22 UI version marker", uiVersion === "R22", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));

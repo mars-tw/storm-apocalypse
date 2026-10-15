@@ -80,7 +80,7 @@ async function reachable() {
 
 async function ensureServer() {
   if (await reachable()) return;
-  server = spawn(process.execPath, [resolve(root, "node_modules/vite/bin/vite.js"), "--host", "127.0.0.1", "--port", "4173", "--strictPort"], {
+  server = spawn(process.execPath, [resolve(root, "node_modules/vite/bin/vite.js"), "--host", "127.0.0.1", "--port", new URL(url).port || "4173", "--strictPort"], {
     cwd: appRoot,
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,

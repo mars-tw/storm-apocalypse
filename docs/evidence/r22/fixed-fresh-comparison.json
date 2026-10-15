@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-23T01:46:28.669Z",
+  "comparisonKind": "r22_fixed_fresh_validation",
+  "profile": {
+    "id": "r22",
+    "finalWaveSpawnMultiplier": 0.9,
+    "finalWaveHpMultiplier": 1.07,
+    "finalWaveEnemyBonus": 1,
+    "finalWaveDamageMultiplier": 1.075
+  },
+  "fixedSeeds": [
+    334462,
+    1229022,
+    2757070,
+    4058881,
+    4753953,
+    6228830,
+    7119134,
+    7819742,
+    9026065,
+    10124887,
+    10837741,
+    11803230,
+    12783605,
+    13824013,
+    14777943,
+    15772897,
+    16890462,
+    18008830,
+    19124237,
+    20246910
+  ],
+  "freshSeeds": [
+    34489584,
+    3148247788,
+    2626689569,
+    3826751811,
+    2900935273,
+    1999537516,
+    3613338652,
+    4277931366,
+    664562641,
+    1454430135,
+    1828549544,
+    3300491232,
+    114273558,
+    2741483379,
+    2356457723,
+    2852601745,
+    2452439809,
+    3867521278,
+    3633793619,
+    3631257218
+  ],
+  "thresholds": {
+    "maxAbsoluteWinRateDelta": 0.15
+  },
+  "fixedAcceptance": {
+    "thresholds": {
+      "generalMidWinRates": {
+        "25": {
+          "min": 0.7,
+          "max": 0.95
+        },
+        "26": {
+          "min": 0.55,
+          "max": 0.85
+        },
+        "27": {
+          "min": 0.45,
+          "max": 0.8
+        },
+        "28": {
+          "min": 0.35,
+          "max": 0.75
+        }
+      },
+      "maxedW29WinRate": {
+        "min": 0.4,
+        "max": 0.6
+      },
+      "maxedWave30WinRate": {
+        "min": 0.5,
+        "max": 0.7
+      },
+      "generalMidMinimumDrop": 0.15
+    },
+    "informational": {
+      "generalWave30WinRate": 0,
+      "status": "informational_only",
+      "reason": "W30 general is not a representative persistent-roguelite end-state loadout"
+    },
+    "observed": {
+      "generalW25To28WinRates": [
+        0.867,
+        0.7,
+        0.667,
+        0.5
+      ],
+      "maxedW28To30WinRates": [
+        0.817,
+        0.533,
+        0.5
+      ],
+      "totalEnemyHpW25To30": [
+        877,
+        892,
+        964,
+        1048,
+        1347,
+        1447
+      ]
+    },
+    "gates": {
+      "generalW25To28WithinPlayableRanges": true,
+      "generalW25To28NonIncreasing": true,
+      "generalW25To28DropsAtLeast15Points": true,
+      "maxedW27OrW28BelowPerfect": true,
+      "maxedW29WinRate40To60": true,
+      "maxedWave30WinRate50To70": true,
+      "maxedW28To30NonIncreasing": true,
+      "totalEnemyHpW25To30NonDecreasing": true
+    },
+    "pass": true
+  },
+  "freshAcceptance": {
+    "thresholds": {
+      "generalMidWinRates": {
+        "25": {
+          "min": 0.7,
+          "max": 0.95
+        },
+        "26": {
+          "min": 0.55,
+          "max": 0.85
+        },
+        "27": {
+          "min": 0.45,
+          "max": 0.8
+        },
+        "28": {
+          "min": 0.35,
+          "max": 0.75
+        }
+      },
+      "maxedW29WinRate": {
+        "min": 0.4,
+        "max": 0.6
+      },
+      "maxedWave30WinRate": {
+        "min": 0.5,
+        "max": 0.7
+      },
+      "generalMidMinimumDrop": 0.15
+    },
+    "informational": {
+      "generalWave30WinRate": 0,
+      "status": "informational_only",
+      "reason": "W30 general is not a representative persistent-roguelite end-state loadout"
+    },
+    "observed": {
+      "generalW25To28WinRates": [
+        0.783,
+        0.767,
+        0.667,
+        0.517
+      ],
+      "maxedW28To30WinRates": [
+        0.85,
+        0.533,
+        0.533
+      ],
+      "totalEnemyHpW25To30": [
+        877,
+        892,
+        964,
+        1048,
+        1347,
+        1447
+      ]
+    },
+    "gates": {
+      "generalW25To28WithinPlayableRanges": true,
+      "generalW25To28NonIncreasing": true,
+      "generalW25To28DropsAtLeast15Points": true,
+      "maxedW27OrW28BelowPerfect": true,
+      "maxedW29WinRate40To60": true,
+      "maxedWave30WinRate50To70": true,
+      "maxedW28To30NonIncreasing": true,
+      "totalEnemyHpW25To30NonDecreasing": true
+    },
+    "pass": true
+  },
+  "observed": {
+    "maxAbsoluteWinRateDelta": 0.084
+  },
+  "gates": {
+    "fixedAcceptancePasses": true,
+    "freshAcceptancePasses": true,
+    "allW25To30WinRateDeltasAtMost15Points": true
+  },
+  "pass": true,
+  "rows": [
+    {
+      "loadout": "maxed",
+      "wave": 25,
+      "fixedWinRate": 1,
+      "freshWinRate": 1,
+      "absoluteDelta": 0
+    },
+    {
+      "loadout": "maxed",
+      "wave": 26,
+      "fixedWinRate": 1,
+      "freshWinRate": 0.983,
+      "absoluteDelta": 0.017
+    },
+    {
+      "loadout": "maxed",
+      "wave": 27,
+      "fixedWinRate": 1,
+      "freshWinRate": 1,
+      "absoluteDelta": 0
+    },
+    {
+      "loadout": "maxed",
+      "wave": 28,
+      "fixedWinRate": 0.817,
+      "freshWinRate": 0.85,
+      "absoluteDelta": 0.033
+    },
+    {
+      "loadout": "maxed",
+      "wave": 29,
+      "fixedWinRate": 0.533,
+      "freshWinRate": 0.533,
+      "absoluteDelta": 0
+    },
+    {
+      "loadout": "maxed",
+      "wave": 30,
+      "fixedWinRate": 0.5,
+      "freshWinRate": 0.533,
+      "absoluteDelta": 0.033
+    },
+    {
+      "loadout": "general",
+      "wave": 25,
+      "fixedWinRate": 0.867,
+      "freshWinRate": 0.783,
+      "absoluteDelta": 0.084
+    },
+    {
+      "loadout": "general",
+      "wave": 26,
+      "fixedWinRate": 0.7,
+      "freshWinRate": 0.767,
+      "absoluteDelta": 0.067
+    },
+    {
+      "loadout": "general",
+      "wave": 27,
+      "fixedWinRate": 0.667,
+      "freshWinRate": 0.667,
+      "absoluteDelta": 0
+    },
+    {
+      "loadout": "general",
+      "wave": 28,
+      "fixedWinRate": 0.5,
+      "freshWinRate": 0.517,
+      "absoluteDelta": 0.017
+    },
+    {
+      "loadout": "general",
+      "wave": 29,
+      "fixedWinRate": 0,
+      "freshWinRate": 0,
+      "absoluteDelta": 0
+    },
+    {
+      "loadout": "general",
+      "wave": 30,
+      "fixedWinRate": 0,
+      "freshWinRate": 0,
+      "absoluteDelta": 0
+    }
+  ]
+}

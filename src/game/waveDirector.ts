@@ -3,6 +3,7 @@ export type WaveEventId = "standard" | "whiteout" | "elite_surge" | "boss";
 
 export interface WavePlan {
   wave: number;
+  balanceProfile: WaveBalanceProfile["id"];
   event: WaveEventId;
   title: string;
   forecast: string;
@@ -15,7 +16,7 @@ export interface WavePlan {
 }
 
 export interface WaveBalanceProfile {
-  id: "r19" | "r20" | "r21";
+  id: "r19" | "r20" | "r21" | "r22";
   finalWaveSpawnMultiplier: number;
   finalWaveHpMultiplier: number;
   finalWaveEnemyBonus: number;
@@ -26,9 +27,10 @@ export const WAVE_BALANCE_PROFILES: Readonly<Record<WaveBalanceProfile["id"], Wa
   r19: Object.freeze({ id: "r19", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.08, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
   r20: Object.freeze({ id: "r20", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
   r21: Object.freeze({ id: "r21", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1 }),
+  r22: Object.freeze({ id: "r22", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1.075 }),
 });
 
-export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r21;
+export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r22;
 
 export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_WAVE_BALANCE): WavePlan {
   const normalized = Math.min(30, Math.max(1, Math.floor(wave)));
@@ -38,6 +40,7 @@ export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_W
   if (normalized % 10 === 0) {
     return {
       wave: normalized,
+      balanceProfile: balance.id,
       event: "boss",
       title: "巨屍越界",
       forecast: "Boss · 重型護衛",
@@ -53,6 +56,7 @@ export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_W
   if (normalized % 6 === 0) {
     return {
       wave: normalized,
+      balanceProfile: balance.id,
       event: "whiteout",
       title: "白幕突襲",
       forecast: "低能見度 · 奔行者連襲",
@@ -66,22 +70,25 @@ export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_W
   }
 
   if (normalized >= 9 && normalized % 5 === 4) {
+    const usesR22EliteCurve = balance.id === "r22";
     return {
       wave: normalized,
+      balanceProfile: balance.id,
       event: "elite_surge",
       title: "精英壓境",
       forecast: "蠻屍隊列 · 高生命",
       announcement: "精英蠻屍護住屍群中央，準備集火",
-      enemyCount: Math.min(42, baseCount + 2),
-      spawnInterval: baseInterval * 1.08,
-      hpMultiplier: 1.2,
-      speedMultiplier: 0.94,
+      enemyCount: usesR22EliteCurve ? baseCount : Math.min(42, baseCount + 2),
+      spawnInterval: baseInterval * (usesR22EliteCurve ? 1 : 1.08),
+      hpMultiplier: usesR22EliteCurve ? 1.07 : 1.2,
+      speedMultiplier: usesR22EliteCurve ? 1 : 0.94,
       damageMultiplier: 1,
     };
   }
 
   return {
     wave: normalized,
+    balanceProfile: balance.id,
     event: "standard",
     title: "北境夜襲",
     forecast: normalized >= 16 ? "奔行者＋蠻屍" : normalized >= 6 ? "行屍＋奔行者" : "行屍",
@@ -97,6 +104,11 @@ export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_W
 export function enemyTypeForWave(plan: WavePlan, order: number): DirectorZombieType {
   if (plan.event === "boss" && order === 1) return "boss";
   if (plan.event === "whiteout" && (order % 4 === 0 || order % 4 === 1)) return "runner";
+  if (plan.event === "elite_surge" && plan.balanceProfile === "r22") {
+    if (order === 1 || order % 3 === 0) return "brute";
+    if (order % 4 === 0) return "runner";
+    return "walker";
+  }
   if (plan.event === "elite_surge" && order % 3 === 0) return "brute";
   if (plan.wave >= 8 && order % 5 === 0) return "brute";
   if (plan.wave >= 4 && order % 3 === 0) return "runner";
