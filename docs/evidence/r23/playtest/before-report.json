@@ -1,0 +1,1285 @@
+{
+  "phase": "before",
+  "url": "http://127.0.0.1:5101/storm-apocalypse/",
+  "startedAt": "2026-10-15T04:50:24.470Z",
+  "viewports": {
+    "desktop-1366x768": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "debug": {
+            "fps": 43,
+            "drawCalls": 364,
+            "activeMeshes": 304,
+            "totalMeshes": 863,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "firstHitHud": {
+          "toasts": [
+            "手冊 01 完成 · ✦ 10",
+            "牛隻生命 1 / 3"
+          ],
+          "toastCount": 2,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 300,
+            "activeMeshes": 265,
+            "totalMeshes": 863,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 6.06,
+              "z": 2.85
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "45"
+        },
+        "killHud": {
+          "toasts": [
+            "牛隻倒下 · 掉落 3 份肉",
+            "手冊 02 完成 · ✦ 20",
+            "肉品裝袋 · 1 / 6",
+            "肉品裝袋 · 2 / 6",
+            "肉品裝袋 · 3 / 6",
+            "手冊 03 完成 · 解鎖陳列提示"
+          ],
+          "toastCount": 6,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 50,
+            "drawCalls": 319,
+            "activeMeshes": 295,
+            "totalMeshes": 866,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 8.63,
+              "z": 2.28
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 2,
+              "lastAt": 10.531
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "65"
+        },
+        "timeline": [
+          {
+            "name": "reachedPasture",
+            "seconds": 5.9
+          },
+          {
+            "name": "firstCowKill",
+            "seconds": 9.6
+          },
+          {
+            "name": "meatPickup",
+            "seconds": 18.3
+          },
+          {
+            "name": "reachedStall",
+            "seconds": 23.3
+          },
+          {
+            "name": "afterWaitingForSale",
+            "seconds": 29.8
+          }
+        ],
+        "salesAfter": 1,
+        "meatDeposited": 3,
+        "money": 142,
+        "chapter": 6,
+        "stallHud": {
+          "toasts": [
+            "交易結帳 · 收入 ✦ 22",
+            "手冊 05 完成 · ✦ 30 · 防線商店"
+          ],
+          "toastCount": 2,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 331,
+            "activeMeshes": 282,
+            "totalMeshes": 866,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -8.91,
+              "z": -5.48
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 0,
+              "lastAt": 10.531
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "142"
+        },
+        "errors": []
+      },
+      "wave": {
+        "combatHud": {
+          "toasts": [
+            "揮砍落空——動作會完整收勢。",
+            "牧場牛隻已重返圍欄。",
+            "牛隻生命 2 / 3",
+            "牛隻生命 1 / 3"
+          ],
+          "toastCount": 4,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 51,
+            "drawCalls": 137,
+            "activeMeshes": 242,
+            "totalMeshes": 990,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 0.55,
+            "performanceTier": 1,
+            "shadowMode": "blob",
+            "fogDensity": 0.02499995444540562,
+            "weather": {
+              "intensity": "high",
+              "farRate": 75,
+              "nearRate": 9,
+              "density": 0.25,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 8,
+            "playerPosition": {
+              "x": -6.07,
+              "z": 5.87
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 7,
+              "seconds": 11
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 21,
+              "active": 8,
+              "lastAt": 14.552
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 8 敵",
+          "money": "657"
+        },
+        "lateHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 92,
+            "activeMeshes": 143,
+            "totalMeshes": 1014,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 0.4,
+            "performanceTier": 2,
+            "shadowMode": "blob",
+            "fogDensity": 0.02499999987619383,
+            "weather": {
+              "intensity": "high",
+              "farRate": 30,
+              "nearRate": 4,
+              "density": 0.1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 5,
+            "playerPosition": {
+              "x": -6.07,
+              "z": 5.87
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 10,
+              "seconds": 16
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 32,
+              "active": 7,
+              "lastAt": 19.485
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 5 敵",
+          "money": "666"
+        },
+        "endSeconds": 5.7,
+        "clearHud": {
+          "toasts": [
+            "奔行者正在破壞肉舖壁壘！",
+            "奔行者正在破壞肉舖壁壘！",
+            "奔行者正在破壞肉舖壁壘！",
+            "奔行者正在破壞肉舖壁壘！",
+            "牛隻生命 1 / 3",
+            "第 6 波已清除 · 防守獎金 ✦ 34",
+            "牛隻倒下 · 掉落 3 份肉"
+          ],
+          "toastCount": 7,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 68,
+            "activeMeshes": 88,
+            "totalMeshes": 1039,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 0.4,
+            "performanceTier": 2,
+            "shadowMode": "blob",
+            "fogDensity": 0.013941680616041837,
+            "weather": {
+              "intensity": "low",
+              "farRate": 9,
+              "nearRate": 1,
+              "density": 0.1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -6.07,
+              "z": 5.87
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 15,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 51,
+              "active": 6,
+              "lastAt": 26.435
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    },
+    "laptop-1366x600": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 364,
+            "activeMeshes": 368,
+            "totalMeshes": 863,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "firstHitHud": {
+          "toasts": [
+            "手冊 01 完成 · ✦ 10",
+            "牛隻生命 1 / 3"
+          ],
+          "toastCount": 2,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 362,
+            "activeMeshes": 346,
+            "totalMeshes": 863,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 6.11,
+              "z": 3.24
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "45"
+        },
+        "killHud": {
+          "toasts": [
+            "牛隻倒下 · 掉落 3 份肉",
+            "手冊 02 完成 · ✦ 20",
+            "肉品裝袋 · 1 / 6",
+            "肉品裝袋 · 2 / 6"
+          ],
+          "toastCount": 4,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 383,
+            "activeMeshes": 373,
+            "totalMeshes": 874,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 7.42,
+              "z": 3.24
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 2,
+              "lastAt": 10.064
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "65"
+        },
+        "timeline": [
+          {
+            "name": "reachedPasture",
+            "seconds": 5.7
+          },
+          {
+            "name": "firstCowKill",
+            "seconds": 8.9
+          },
+          {
+            "name": "meatPickup",
+            "seconds": 20.2
+          },
+          {
+            "name": "reachedStall",
+            "seconds": 24.7
+          },
+          {
+            "name": "afterWaitingForSale",
+            "seconds": 31.2
+          }
+        ],
+        "salesAfter": 1,
+        "meatDeposited": 3,
+        "money": 142,
+        "chapter": 6,
+        "stallHud": {
+          "toasts": [
+            "交易結帳 · 收入 ✦ 22",
+            "手冊 05 完成 · ✦ 30 · 防線商店"
+          ],
+          "toastCount": 2,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 332,
+            "activeMeshes": 304,
+            "totalMeshes": 866,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -8.22,
+              "z": -5.52
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 0,
+              "lastAt": 10.064
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "142"
+        },
+        "errors": []
+      },
+      "wave": {
+        "combatHud": {
+          "toasts": [
+            "揮砍落空——動作會完整收勢。",
+            "牧場牛隻已重返圍欄。",
+            "牛隻生命 2 / 3",
+            "牛隻生命 1 / 3"
+          ],
+          "toastCount": 4,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 46,
+            "drawCalls": 593,
+            "activeMeshes": 470,
+            "totalMeshes": 963,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.02499991970116003,
+            "weather": {
+              "intensity": "high",
+              "farRate": 300,
+              "nearRate": 36,
+              "density": 1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 7,
+            "playerPosition": {
+              "x": -5.55,
+              "z": 5.45
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 8,
+              "seconds": 10
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 21,
+              "active": 6,
+              "lastAt": 13.788
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 7 敵",
+          "money": "660"
+        },
+        "lateHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 125,
+            "activeMeshes": 258,
+            "totalMeshes": 1006,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 0.55,
+            "performanceTier": 1,
+            "shadowMode": "blob",
+            "fogDensity": 0.024999999813281888,
+            "weather": {
+              "intensity": "high",
+              "farRate": 75,
+              "nearRate": 9,
+              "density": 0.25,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 5,
+            "playerPosition": {
+              "x": -5.55,
+              "z": 5.45
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 10,
+              "seconds": 15
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 32,
+              "active": 6,
+              "lastAt": 18.782
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 5 敵",
+          "money": "666"
+        },
+        "endSeconds": 4.2,
+        "clearHud": {
+          "toasts": [
+            "奔行者正在破壞肉舖壁壘！",
+            "牧場牛隻已重返圍欄。",
+            "奔行者正在破壞肉舖壁壘！",
+            "牛隻生命 2 / 3",
+            "奔行者正在破壞肉舖壁壘！",
+            "第 6 波已清除 · 防守獎金 ✦ 34"
+          ],
+          "toastCount": 6,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 58,
+            "drawCalls": 86,
+            "activeMeshes": 121,
+            "totalMeshes": 1006,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 0.4,
+            "performanceTier": 2,
+            "shadowMode": "blob",
+            "fogDensity": 0.016133703500071022,
+            "weather": {
+              "intensity": "low",
+              "farRate": 9,
+              "nearRate": 1,
+              "density": 0.1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -5.55,
+              "z": 5.45
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 15,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 45,
+              "active": 6,
+              "lastAt": 23.843
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    },
+    "phone-portrait-390x844": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 196,
+            "activeMeshes": 84,
+            "totalMeshes": 863,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "attackHud": {
+          "toasts": [
+            "揮砍落空——動作會完整收勢。"
+          ],
+          "toastCount": 1,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 58,
+            "drawCalls": 196,
+            "activeMeshes": 84,
+            "totalMeshes": 863,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "errors": []
+      },
+      "wave": {
+        "combatHud": {
+          "toasts": [
+            "揮砍落空——動作會完整收勢。",
+            "箭雨校準完成 · ✦ 38",
+            "揮砍落空——動作會完整收勢。",
+            "揮砍落空——動作會完整收勢。",
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 5,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 59,
+            "drawCalls": 414,
+            "activeMeshes": 206,
+            "totalMeshes": 960,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.02499945424039785,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 10,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 5,
+              "seconds": 8
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 16,
+              "active": 6,
+              "lastAt": 11.709
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 10 敵",
+          "money": "652"
+        },
+        "lateHud": {
+          "toasts": [
+            "牛隻倒下 · 掉落 3 份肉"
+          ],
+          "toastCount": 1,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 381,
+            "activeMeshes": 210,
+            "totalMeshes": 987,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024999998522230255,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 6,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 9,
+              "seconds": 14
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 27,
+              "active": 6,
+              "lastAt": 17.11
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 6 敵",
+          "money": "663"
+        },
+        "endSeconds": 6.9,
+        "clearHud": {
+          "toasts": [
+            "牧場牛隻已重返圍欄。",
+            "牛隻生命 2 / 3",
+            "奔行者正在破壞肉舖壁壘！",
+            "奔行者正在破壞肉舖壁壘！",
+            "奔行者正在破壞肉舖壁壘！",
+            "第 6 波已清除 · 防守獎金 ✦ 34",
+            "牛隻生命 1 / 3"
+          ],
+          "toastCount": 7,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 55,
+            "drawCalls": 385,
+            "activeMeshes": 176,
+            "totalMeshes": 987,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.01647456957622761,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 15,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 45,
+              "active": 6,
+              "lastAt": 24.864
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    },
+    "phone-landscape-844x390": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "debug": {
+            "fps": 58,
+            "drawCalls": 364,
+            "activeMeshes": 352,
+            "totalMeshes": 863,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "attackHud": {
+          "toasts": [
+            "揮砍落空——動作會完整收勢。"
+          ],
+          "toastCount": 1,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 60,
+            "drawCalls": 364,
+            "activeMeshes": 352,
+            "totalMeshes": 863,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "errors": []
+      },
+      "wave": {
+        "combatHud": {
+          "toasts": [
+            "揮砍落空——動作會完整收勢。",
+            "揮砍落空——動作會完整收勢。",
+            "箭雨校準完成 · ✦ 38",
+            "揮砍落空——動作會完整收勢。",
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 5,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 53,
+            "drawCalls": 159,
+            "activeMeshes": 344,
+            "totalMeshes": 984,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 0.55,
+            "performanceTier": 1,
+            "shadowMode": "blob",
+            "fogDensity": 0.024999485807749248,
+            "weather": {
+              "intensity": "high",
+              "farRate": 51,
+              "nearRate": 6,
+              "density": 0.17,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 9,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 6,
+              "seconds": 9
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 16,
+              "active": 6,
+              "lastAt": 11.889
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 9 敵",
+          "money": "654"
+        },
+        "lateHud": {
+          "toasts": [
+            "牛隻倒下 · 掉落 3 份肉"
+          ],
+          "toastCount": 1,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 56,
+            "drawCalls": 125,
+            "activeMeshes": 323,
+            "totalMeshes": 1013,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 0.55,
+            "performanceTier": 1,
+            "shadowMode": "blob",
+            "fogDensity": 0.02499999863687855,
+            "weather": {
+              "intensity": "high",
+              "farRate": 51,
+              "nearRate": 6,
+              "density": 0.17,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 5,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 10,
+              "seconds": 14
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 27,
+              "active": 6,
+              "lastAt": 17.091
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 5 敵",
+          "money": "666"
+        },
+        "endSeconds": 6.5,
+        "clearHud": {
+          "toasts": [
+            "奔行者正在破壞肉舖壁壘！",
+            "牧場牛隻已重返圍欄。",
+            "奔行者正在破壞肉舖壁壘！",
+            "牛隻生命 2 / 3",
+            "奔行者正在破壞肉舖壁壘！",
+            "第 6 波已清除 · 防守獎金 ✦ 34",
+            "牛隻生命 1 / 3"
+          ],
+          "toastCount": 7,
+          "toastFont": "9px",
+          "floaters": 0,
+          "debug": {
+            "fps": 48,
+            "drawCalls": 149,
+            "activeMeshes": 312,
+            "totalMeshes": 1013,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 0.55,
+            "performanceTier": 1,
+            "shadowMode": "blob",
+            "fogDensity": 0.01476883853994067,
+            "weather": {
+              "intensity": "low",
+              "farRate": 15,
+              "nearRate": 2,
+              "density": 0.17,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 15,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 45,
+              "active": 7,
+              "lastAt": 24.879
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    }
+  },
+  "finishedAt": "2026-10-15T04:53:41.099Z"
+}

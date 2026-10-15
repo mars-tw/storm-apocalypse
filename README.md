@@ -1,7 +1,7 @@
 # 暴風啟示錄 Storm Apocalypse
 
 [![Deploy Pages](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml/badge.svg)](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml)
-[![Version](https://img.shields.io/badge/version-0.2.13-c66b3d)](package.json)
+[![Version](https://img.shields.io/badge/version-0.2.14-c66b3d)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-79c3d2.svg)](LICENSE)
 
 在永夜暴雪中狩獵、經營最後一間肉舖，建立防線並在三十次鐘聲裡守住僅存的燈火。《暴風啟示錄》是一款可直接在瀏覽器遊玩的 3D 經營 × 動作 × 塔防遊戲。
@@ -25,6 +25,7 @@
 - **R19 直向戰鬥安全框**：極窄手機直向鏡頭依實際上下 HUD 保留可視區，角色姿勢與命中方向不再被底部控制或圍欄遮蔽；旋轉時 Babylon resize 改為穩定後單次重建。
 - **R20 終波平衡回歸**：固定 seed 無頭模擬與遊戲共用敵人、武器、塔、彈道及 impact 規則；第 30 波 HP 乘數由 1.08 收斂至 1.07，保留站位差異與一般配置壓力。
 - **R21 模擬保真修正**：固定 seed 模擬改用 60 Hz 與分數餘量生成時鐘，移除被量化假象誤導的 W27–30 HP 調整，並以一般 15–40%、滿配 50–70% 的終波區間誠實守門。
+- **R23 好玩 × 美觀**：命中浮動傷害數字與暴擊、近戰 hit-stop 與受擊白閃、連斬獎勵、招牌「鮮肉誘餌」（守波時按 `Q`／點「誘餌」把屍群拉進塔射界）、清波評級戰報、結算「下一局建議」、遮擋淡化、開場目標信標，以及白晝／夜襲配樂。
 - **事件波導演**：白幕突襲與精英壓境會改變敵人組成、血量、速度及出生節奏，不再只有固定數量公式。
 - **品質分檔**：依裝置能力自動套用低／中／高畫質，也可在設定中手動選擇自動／高／中／低；動態降級仍會保護幀率。
 
@@ -38,8 +39,8 @@
 
 | 平台 | 移動 | 攻擊 | 其他操作 |
 | --- | --- | --- | --- |
-| 桌機 | `WASD` 或方向鍵 | `Space` 或 `E`；按住可連續攻擊 | `B` 建造、`N` 啟動下一波、`Esc` 暫停／設定；商店與任務亦可用畫面按鈕 |
-| 手機／平板 | 左下虛擬搖桿 | 右下「揮砍」按鈕 | 使用畫面按鈕開啟任務、補給站、波次及右上設定 |
+| 桌機 | `WASD` 或方向鍵 | `Space` 或 `E`；按住可連續攻擊 | `Q` 丟鮮肉誘餌（夜襲中）、`B` 建造、`N` 啟動下一波、`Esc` 暫停／設定；商店與任務亦可用畫面按鈕 |
+| 手機／平板 | 左下虛擬搖桿 | 右下「揮砍」按鈕（按住連續攻擊） | 夜襲時「誘餌」鈕丟肉；畫面按鈕開啟任務、補給站、波次及右上設定 |
 
 ## 技術棧
 
@@ -49,7 +50,7 @@
 - Playwright（桌機、觸控、動畫契約與戰鬥 smoke 測試）
 - GitHub Actions + GitHub Pages
 
-目前版本為 **0.2.13**，與 [`package.json`](package.json) 及 lockfile 一致。
+目前版本為 **0.2.14**，與 [`package.json`](package.json) 及 lockfile 一致。
 
 ## 本地開發
 

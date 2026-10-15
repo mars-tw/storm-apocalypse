@@ -47,6 +47,7 @@ CC0 素材可用於個人及商業用途，署名並非授權要求；本專案�
 - `public/images/vfx/r13/`：R13 以 `gpt-image-2` 生成 8 張 opaque master，經本機 chroma-key 去背、despill、edge contract 與 Lanczos runtime resize 產生的原創 RGBA 戰鬥 VFX；prompt、hash、mask 與 alpha QA 記於同目錄 manifest 及 `docs/evidence/R13_art/`。
 - `public/favicon.svg`：R12 自製北境閃電圖示，使用 repo 色票與純 SVG 路徑。
 - `src/game/audio.ts`：R12 以 WebAudio oscillator、濾波 noise 與 gain envelope 即時合成八類遊戲音效；不載入外部音檔。
+- `src/game/music.ts`：R23 白晝／夜襲配樂導演。執行期優先載入 `public/audio/bgm-day.ogg`、`bgm-night.ogg`；檔案不存在時以 WebAudio 三角波和弦墊、風聲濾波 noise、低鼓與 hi-hat 即時合成程序化配樂（原創，無外部音檔）。本機 AI 派工器 `music`（ace_step）生成檔的來源與狀態記於 `docs/R23_FUN_AND_POLISH_REPORT.md`。
 - `docs/evidence/R8/`：上述模型與 UI 的 turntable、角色陣容、主選單及遊戲畫面稽核證據。
 
 R8 原創素材沒有直接搬運 Quaternius、Kenney 或其他外部模型／貼圖；第三方 CC0 模型仍以本文件列出的獨立路徑保留。現行 repo 沒有音樂、外部音效檔或內嵌第三方字型檔；R12 音效全部在瀏覽器內即時合成，無新增授權依賴。

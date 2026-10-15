@@ -40,6 +40,7 @@ async function bootstrap(): Promise<void> {
   ui.onShopAction = (category, id) => game.shopAction(category, id);
   ui.onTowerAction = (id) => game.towerAction(id);
   ui.onWeaponCycle = () => game.cycleWeapon();
+  ui.onBait = () => game.requestBait();
   ui.onReset = () => resetSave();
   ui.onPauseChange = (paused) => game.setPaused(paused);
   ui.onSettingsChange = (next) => {

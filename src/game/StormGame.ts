@@ -22,6 +22,7 @@ import {
   PBRMaterial,
   PointLight,
   PointerEventTypes,
+  Ray,
   Scene,
   SceneInstrumentation,
   ShadowGenerator,
@@ -36,6 +37,7 @@ import {
 import "@babylonjs/loaders/glTF";
 import type { ProceduralAudio } from "./audio";
 import { COMBAT_POSITIONS, COMBAT_TIMING, enemyAttackTimings, enemyCombatStats, enemySpawnPosition, playerAttackStats, resolvedPlayerHitDamages, towerCombatStats } from "./combatRules";
+import { BAIT_RULES, baitAttractedIndices, comboExpired, createCombo, gradeWave, pickBaitSource, registerComboKill, runAdvice, WAVE_GRADE_LABEL } from "./feedback";
 import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WAVE_EVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
 import { resolveQuality, type QualityLevel, type QualityPreference } from "./quality";
@@ -83,6 +85,15 @@ interface ZombieActor extends Actor {
   slowTimer: number;
   deathEndsAt: number;
   animationLodPaused: boolean;
+  baitUntil: number;
+  flashUntil: number;
+}
+
+interface MeatBait {
+  root: TransformNode;
+  ring: Mesh;
+  position: Vector3;
+  expiresAt: number;
 }
 
 interface PendingPlayerAttack {
@@ -312,6 +323,28 @@ export class StormGame {
   private waveTowerKills = 0;
   private waveStartTime = 0;
   private campaignStartTime = performance.now();
+  // R23：打擊回饋、連斬、誘餌、信標、遮擋淡化
+  private hitStopTimer = 0;
+  private readonly combo = createCombo();
+  private runBestCombo = 0;
+  private waveBestCombo = 0;
+  private waveWallDamage = 0;
+  private bait?: MeatBait;
+  private baitCooldown = 0;
+  private baitsThrown = 0;
+  private baitScraps = 0;
+  private baitedZombies = 0;
+  private hitStops = 0;
+  private hitFlashes = 0;
+  private floaterCount = 0;
+  private beacon?: TransformNode;
+  private beaconTarget = "none";
+  private readonly fadedOccluders = new Set<AbstractMesh>();
+  private occlusionTimer = 0;
+  private occluderCandidates: AbstractMesh[] = [];
+  private occluderCandidatesAt = 0;
+  private flashingZombies: ZombieActor[] = [];
+  private lastWaveGrade = "";
   private attackCount = 0;
   private uiUpdateTimer = 0;
   private lowFpsSamples = 0;
@@ -554,7 +587,15 @@ export class StormGame {
     }, { passive: true });
     window.setInterval(() => this.monitorPerformance(), 2000);
     this.engine.runRenderLoop(() => {
-      const dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.1);
+      let dt = Math.min(this.engine.getDeltaTime() / 1000, this.smokeMode ? 0.5 : 0.1);
+      // R23 hit-stop：近戰命中幀後短暫凍結模擬與動畫（只在命中時觸發，揮空不停頓）
+      if (this.hitStopTimer > 0 && !this.paused) {
+        this.hitStopTimer -= dt;
+        dt *= 0.06;
+        this.scene.animationTimeScale = 0.06;
+      } else if (this.scene.animationTimeScale !== 1) {
+        this.scene.animationTimeScale = 1;
+      }
       if (!this.paused) this.update(dt);
       this.scene.render();
     });
@@ -673,6 +714,8 @@ export class StormGame {
   }
 
   towerAction(id: TowerId): void { this.buyOrUpgradeTower(id); }
+
+  requestBait(): void { this.input.queueBait(); }
 
   private bindWorldActions(): void {
     this.scene.onPointerObservable.add((pointerInfo) => {
@@ -1398,16 +1441,19 @@ export class StormGame {
     this.updateCustomer(dt);
     this.updateCow(dt);
     this.updateStaff(dt);
+    this.updateR23Feedback(dt);
     if (!this.started || this.endShown) return;
 
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
     for (const tower of this.towerActors.values()) tower.cooldown = Math.max(0, tower.cooldown - dt);
     this.handleMovement(dt);
     this.updatePlayerAttack(dt);
-    const attackRequested = this.input.consumeAttack() || this.state.weapon === "smg" && this.input.isAttackHeld;
+    // R23 手感：按住攻擊鍵所有武器都會在收勢結束後自動接下一擊（仍走完整前搖／命中／收勢）
+    const attackRequested = this.input.consumeAttack() || this.input.isAttackHeld;
     if (attackRequested) this.performAttack();
     if (this.input.consumeBuild()) this.buyOrUpgradeTower("ballista");
     if (this.input.consumeWave()) this.tryStartWave();
+    if (this.input.consumeBait()) this.throwBait();
     this.autoDeposit();
     this.updateWave(dt);
     this.updateTowers(dt);
@@ -1452,6 +1498,20 @@ export class StormGame {
           events: this.vfxEventCount,
           active: this.combatVfx.length,
           lastAt: Number(this.lastVfxAt.toFixed(3)),
+        },
+        feedback: {
+          hitStops: this.hitStops,
+          hitFlashes: this.hitFlashes,
+          floaters: this.floaterCount,
+          combo: this.combo.count,
+          bestCombo: this.runBestCombo,
+          baitsThrown: this.baitsThrown,
+          baitedZombies: this.baitedZombies,
+          baitActive: Boolean(this.bait),
+          baitCooldown: Number(this.baitCooldown.toFixed(2)),
+          beacon: this.beaconTarget,
+          fadedOccluders: this.fadedOccluders.size,
+          lastWaveGrade: this.lastWaveGrade,
         },
       };
     }
@@ -1519,6 +1579,9 @@ export class StormGame {
   private resolvePlayerAttack(weapon: WeaponId): void {
     const attack = playerAttackStats(weapon, this.state.protagonistId);
     const hitDamages = resolvedPlayerHitDamages(attack, Math.random());
+    const critical = hitDamages[0] > attack.hitDamages[0];
+    const total = hitDamages.reduce((sum, damage) => sum + damage, 0);
+    const victims: Vector3[] = [];
     let hit = false;
     if (weapon === "smg") {
       if (this.muzzleFlash) {
@@ -1527,36 +1590,54 @@ export class StormGame {
       }
       const target = this.findNearestZombie(this.player.root.position, attack.range) ?? this.findNearestCow(this.player.root.position, 16);
       if (target && "type" in target) {
+        victims.push(target.root.position.clone());
         for (const damage of hitDamages) this.damageZombie(target, damage, "player");
         hit = true;
       } else if (target) {
+        victims.push(target.root.position.clone());
         for (const damage of hitDamages) this.damageCow(target, damage);
         hit = true;
       }
     } else if (weapon === "axe") {
       const targets = this.zombies.filter((zombie) => zombie.alive && Vector3.Distance(zombie.root.position, this.player.root.position) < attack.range);
-      for (const zombie of targets) for (const damage of hitDamages) this.damageZombie(zombie, damage, "player");
+      for (const zombie of targets) {
+        victims.push(zombie.root.position.clone());
+        for (const damage of hitDamages) this.damageZombie(zombie, damage, "player");
+      }
       const cows = this.allCows().filter((cow) => cow.alive && Vector3.Distance(cow.root.position, this.player.root.position) < attack.range);
-      for (const cow of cows) for (const damage of hitDamages) this.damageCow(cow, damage);
+      for (const cow of cows) {
+        victims.push(cow.root.position.clone());
+        for (const damage of hitDamages) this.damageCow(cow, damage);
+      }
       this.createAttackRing(new Color3(0.95, 0.55, 0.24));
       hit = targets.length + cows.length > 0;
     } else {
       const nearestZombie = this.findNearestZombie(this.player.root.position, attack.range);
       if (nearestZombie) {
+        victims.push(nearestZombie.root.position.clone());
         for (const damage of hitDamages) this.damageZombie(nearestZombie, damage, "player");
         hit = true;
       } else {
         const nearestCow = this.findNearestCow(this.player.root.position, 2.8);
         if (nearestCow) {
+          victims.push(nearestCow.root.position.clone());
           for (const damage of hitDamages) this.damageCow(nearestCow, damage);
           hit = true;
         }
       }
     }
+    // R23：每個受擊目標一個傷害數字（衝鋒槍三連發合併顯示），暴擊放大金色
+    for (const position of victims.slice(0, 6)) this.showFloater(position.add(new Vector3(0, 2.1, 0)), critical ? `暴擊 ${total}` : `${total}`, critical ? "crit" : "hit");
     if (hit) {
       this.audio.play("hit");
       this.kickCameraShake(weapon === "smg" ? 0.08 : weapon === "axe" ? 0.2 : 0.14);
-    } else this.ui.toast("揮砍落空——動作會完整收勢。", "ice");
+      if (weapon !== "smg") {
+        this.hitStopTimer = weapon === "axe" ? 0.075 : 0.06;
+        this.hitStops += 1;
+      }
+    } else {
+      this.showFloater(this.player.root.position.add(new Vector3(0, 2.4, 0)), "落空", "miss");
+    }
   }
 
   private damageCow(cow: CowActor, damage: number): void {
@@ -1567,7 +1648,7 @@ export class StormGame {
     this.triggerGroundImpactVfx(cow.root.position);
     this.playAnimation(cow, cow.hp > 0 ? "Idle_HitReact1" : "Death", false);
     if (cow.hp <= 0) this.killCow(cow);
-    else this.ui.toast(`${cow.strong ? "強化牛" : "牛隻"}生命 ${cow.hp} / ${cow.maxHp}`, "danger");
+
   }
 
   private killCow(cow: CowActor): void {
@@ -2036,6 +2117,10 @@ export class StormGame {
     this.stockedAtCycleStart = this.waveStartedStock >= 2;
     this.wavePlayerKills = 0;
     this.waveTowerKills = 0;
+    this.waveWallDamage = 0;
+    this.waveBestCombo = 0;
+    this.baitCooldown = 0;
+    this.baitScraps = 1;
     this.waveStartTime = performance.now();
     this.waveStockLost = false;
     assignLoopQuest(this.state, {
@@ -2048,6 +2133,9 @@ export class StormGame {
     saveState(this.state);
     this.audio.play("wave");
     this.ui.toast(`警報：第 ${waveNumber} 波 · ${this.currentWavePlan.title}！${this.currentWavePlan.announcement}`, "danger");
+    if (waveNumber <= 3 || this.baitsThrown === 0 && waveNumber % 4 === 0) {
+      window.setTimeout(() => this.ui.toast(this.ui.touchMode ? "招牌戰術：點「誘餌」丟一塊肉，把屍群拉進塔的射界" : "招牌戰術：按 Q 丟一塊肉當誘餌，把屍群拉進塔的射界", "warm"), 3200);
+    }
     { // R18 C-01：里程碑波前動員線——與完成廣播成對，強化波次間敘事節奏
       const eve = WAVE_EVE_DISPATCHES.find((entry) => entry.wave === waveNumber);
       if (eve) window.setTimeout(() => this.ui.toast(eve.line, "ice"), 1500);
@@ -2067,6 +2155,21 @@ export class StormGame {
     for (const zombie of this.zombies) {
       if (!zombie.alive) continue;
       zombie.slowTimer = Math.max(0, zombie.slowTimer - dt);
+      const baited = this.bait && zombie.baitUntil > this.elapsed;
+      if (baited && this.bait) {
+        // R23 鮮肉誘餌：被吸引的殭屍改追誘餌，抵達後原地啃食（不攻擊壁壘）
+        const feeding = Vector3.Distance(zombie.root.position, this.bait.position) <= BAIT_RULES.feedRange;
+        if (!feeding) {
+          const slowFactor = zombie.slowTimer > 0 ? COMBAT_TIMING.frostSlowFactor : 1;
+          this.moveActorToward(zombie, this.bait.position, zombie.baseSpeed * slowFactor, dt);
+          this.playAnimation(zombie, "Walk", true);
+        } else {
+          this.playAnimation(zombie, "Idle_Attack", true);
+        }
+        zombie.attackPhase = "approach";
+        zombie.attackTimer = 0;
+        continue;
+      }
       const target = new Vector3(COMBAT_POSITIONS.barrierTarget.x, 0, COMBAT_POSITIONS.barrierTarget.z);
       const distance = Vector3.Distance(zombie.root.position, target);
       if (distance > COMBAT_TIMING.barrierAttackRange) {
@@ -2089,6 +2192,7 @@ export class StormGame {
           const damage = Math.max(0, zombie.damage - (blocked ? COMBAT_TIMING.nurseBlockReduction : 0));
           this.state.baseHealth = Math.max(0, this.state.baseHealth - damage);
           this.state.stats.damageTaken += damage;
+          this.waveWallDamage += damage;
           this.triggerBarrierHitVfx(target, this.state.baseHealth);
           zombie.attackPhase = "recovery";
           zombie.attackTimer = timings.recovery;
@@ -2166,6 +2270,8 @@ export class StormGame {
       slowTimer: 0,
       deathEndsAt: 0,
       animationLodPaused: false,
+      baitUntil: 0,
+      flashUntil: 0,
     };
     zombie.root.position.y = this.heightAt(x, z);
     if (type === "boss") {
@@ -2299,6 +2405,7 @@ export class StormGame {
       this.lastEvidenceEnemyPosition = zombie.root.position.add(new Vector3(0, 1.15, 0));
     }
     this.playAnimation(zombie, "HitReact", false);
+    if (source === "player") this.flashZombie(zombie);
     if (zombie.hp <= 0) this.killZombie(zombie, source);
   }
 
@@ -2308,8 +2415,20 @@ export class StormGame {
     const deathAnimation = this.playAnimation(zombie, "Death", false, true);
     const deathDuration = this.animationDuration(deathAnimation, 1.35);
     zombie.deathEndsAt = this.elapsed + deathDuration;
-    creditIncome(this.state, zombie.reward + (this.state.customerAffinity.scout_he >= 6 ? 1 : 0));
+    const killReward = zombie.reward + (this.state.customerAffinity.scout_he >= 6 ? 1 : 0);
+    creditIncome(this.state, killReward);
     this.state.stats.zombiesKilled += 1;
+    let comboBonus = 0;
+    if (source === "player") {
+      // R23 連斬：2.6 秒內連續親手擊殺，5 連斬起每殺加發 ✦
+      const combo = registerComboKill(this.combo, this.elapsed);
+      comboBonus = combo.bonus;
+      if (comboBonus > 0) creditIncome(this.state, comboBonus);
+      this.runBestCombo = Math.max(this.runBestCombo, combo.count);
+      this.waveBestCombo = Math.max(this.waveBestCombo, combo.count);
+      this.ui.setCombo(combo.count, comboBonus);
+    }
+    this.showFloater(zombie.root.position.add(new Vector3(0.35, 2.7, 0)), `+✦${killReward + comboBonus}`, "coin");
     if (source === "player") {
       this.state.stats.playerKills += 1;
       this.wavePlayerKills += 1;
@@ -2334,6 +2453,26 @@ export class StormGame {
     creditIncome(this.state, reward);
     saveState(this.state);
     this.ui.toast(`第 ${this.state.wave} 波已清除 · 防守獎金 ✦ ${reward}`, "warm");
+    {
+      const grade = gradeWave({
+        wallDamage: this.waveWallDamage,
+        playerKills: this.wavePlayerKills,
+        totalKills: this.wavePlayerKills + this.waveTowerKills,
+        bestCombo: this.waveBestCombo,
+        stockLost: this.waveStockLost,
+      });
+      this.lastWaveGrade = grade;
+      this.ui.showWaveReport({
+        wave: this.state.wave,
+        grade,
+        gradeLabel: WAVE_GRADE_LABEL[grade],
+        kills: this.wavePlayerKills + this.waveTowerKills,
+        playerKills: this.wavePlayerKills,
+        bestCombo: this.waveBestCombo,
+        wallDamage: Math.round(this.waveWallDamage),
+        reward,
+      });
+    }
     { // R17（辯論裁決 B-01）：北境電台里程碑廣播
       const dispatch = WAVE_DISPATCHES.find((entry) => entry.wave === this.state.wave);
       if (dispatch) window.setTimeout(() => this.ui.toast(dispatch.line, "ice"), 1600);
@@ -2377,7 +2516,21 @@ ${epilogue}` : ""), [
       ["累計總收入", `✦ ${this.state.stats.totalEarned}`],
       ["剩餘資金", `✦ ${this.state.money}`],
       ["本輪時間", `${minutes} 分`],
-    ]);
+      ["親手／塔擊殺", `${this.state.stats.playerKills} / ${this.state.stats.towerKills}`],
+      ["本局最高連斬", `${this.runBestCombo}`],
+      ["壁壘總承傷", `${Math.round(this.state.stats.damageTaken)}`],
+      ["丟出誘餌", `${this.baitsThrown}`],
+    ], runAdvice({
+      won,
+      wave: this.state.wave,
+      playerKills: this.state.stats.playerKills,
+      towerKills: this.state.stats.towerKills,
+      damageTaken: this.state.stats.damageTaken,
+      baitsThrown: this.baitsThrown,
+      bestCombo: this.runBestCombo,
+      towersBuilt: Object.values(this.state.towers).filter((level) => level > 0).length,
+      maxTowerLevel: Math.max(...Object.values(this.state.towers)),
+    }));
   }
 
   private updateAtmosphere(dt: number): void {
@@ -2495,7 +2648,8 @@ ${epilogue}` : ""), [
       const cssY = playerBounds.top + (playerBounds.bottom - playerBounds.top) * yFraction;
       // Scene.pick consumes canvas CSS coordinates and applies the engine's
       // hardware scaling internally; pre-scaling here would sample the wrong quadrant.
-      const picked = this.scene.pick(cssX - bounds.left, cssY - bounds.top, undefined, false, this.camera)?.pickedMesh ?? null;
+      // R23：已淡化到 28% 的遮擋物不再算遮擋（玩家看得到後方角色）
+      const picked = this.scene.pick(cssX - bounds.left, cssY - bounds.top, (mesh) => mesh.isPickable && mesh.isVisible && mesh.isEnabled() && !this.fadedOccluders.has(mesh), false, this.camera)?.pickedMesh ?? null;
       let node: TransformNode | AbstractMesh | null = picked;
       let belongsToPlayer = false;
       while (node) {
@@ -2890,6 +3044,240 @@ ${epilogue}` : ""), [
       this.muzzleFlash = flash;
     }
     this.weaponModel = root;
+  }
+
+  // ===== R23：打擊回饋／連斬／誘餌／信標／遮擋淡化 =====
+  private showFloater(position: Vector3, text: string, kind: "hit" | "crit" | "coin" | "miss" | "info"): void {
+    const point = this.worldPositionScreenPoint(position);
+    if (!point) return;
+    this.floaterCount += 1;
+    this.ui.floater(point.x, point.y, text, kind);
+  }
+
+  private flashZombie(zombie: ZombieActor): void {
+    for (const mesh of zombie.root.getChildMeshes(false)) {
+      if (mesh.getClassName() === "InstancedMesh") continue;
+      mesh.renderOverlay = true;
+      mesh.overlayColor = Color3.White();
+      mesh.overlayAlpha = 0.55;
+    }
+    zombie.flashUntil = this.elapsed + 0.09;
+    if (!this.flashingZombies.includes(zombie)) this.flashingZombies.push(zombie);
+    this.hitFlashes += 1;
+  }
+
+  private throwBait(): void {
+    if (!this.started || this.endShown) return;
+    if (!this.state.waveActive) {
+      this.ui.toast("誘餌只在夜襲時使用：把屍群拉進塔的射界。", "ice");
+      return;
+    }
+    if (this.baitCooldown > 0) {
+      this.showFloater(this.player.root.position.add(new Vector3(0, 2.4, 0)), `誘餌冷卻 ${Math.ceil(this.baitCooldown)} 秒`, "info");
+      return;
+    }
+    const source = pickBaitSource(this.state.carriedMeat, this.state.displayedMeat, this.baitScraps);
+    if (!source) {
+      this.ui.toast("背包和攤位都沒有肉，無法丟誘餌。白天多狩獵一些吧。", "danger");
+      return;
+    }
+    if (source === "scraps") this.baitScraps -= 1;
+    else if (source === "carried") this.state.carriedMeat -= 1;
+    else this.state.displayedMeat -= 1;
+    this.updateMeatVisuals();
+    this.disposeBait();
+    const forward = this.player.meshForwardNode.getDirection(this.player.meshForwardAxis);
+    forward.y = 0;
+    if (forward.lengthSquared() < 0.01) forward.set(0, 0, 1);
+    forward.normalize();
+    const position = this.player.root.position.add(forward.scale(BAIT_RULES.throwDistance));
+    position.x = Math.max(-24, Math.min(24, position.x));
+    position.z = Math.max(-20, Math.min(20, position.z));
+    position.y = this.heightAt(position.x, position.z);
+    const root = this.createMeatPiece(`meat-bait-${this.elapsed}`, 0.85);
+    root.position.set(position.x, position.y + 0.35, position.z);
+    root.rotation.set(0.2, 0, Math.PI / 2);
+    const ring = this.createWorldRing(`meat-bait-ring-${this.elapsed}`, position, BAIT_RULES.radius * 2, new Color3(0.95, 0.32, 0.22));
+    ring.isPickable = false;
+    this.bait = { root, ring, position, expiresAt: this.elapsed + BAIT_RULES.lifetime };
+    this.baitCooldown = BAIT_RULES.cooldown;
+    this.baitsThrown += 1;
+    const attracted = this.attractToBait();
+    this.audio.play("bait");
+    this.kickCameraShake(0.06);
+    this.showFloater(position.add(new Vector3(0, 1.6, 0)), attracted > 0 ? `誘餌 · 引來 ${attracted} 隻` : "誘餌落地", "info");
+    saveState(this.state);
+  }
+
+  private attractToBait(): number {
+    if (!this.bait) return 0;
+    const bait = this.bait;
+    const living = this.zombies.map((zombie) => ({ type: zombie.type, alive: zombie.alive && zombie.baitUntil < bait.expiresAt, x: zombie.root.position.x, z: zombie.root.position.z }));
+    const indices = baitAttractedIndices({ x: bait.position.x, z: bait.position.z }, living);
+    for (const index of indices) this.zombies[index].baitUntil = bait.expiresAt;
+    this.baitedZombies += indices.length;
+    return indices.length;
+  }
+
+  private disposeBait(): void {
+    if (!this.bait) return;
+    this.bait.root.dispose(false, false);
+    this.bait.ring.material?.dispose();
+    this.bait.ring.dispose(false, true);
+    this.bait = undefined;
+  }
+
+  private updateR23Feedback(dt: number): void {
+    this.baitCooldown = Math.max(0, this.baitCooldown - dt);
+    if (comboExpired(this.combo, this.elapsed)) {
+      this.combo.count = 0;
+      this.ui.setCombo(0, 0);
+    }
+    if (this.flashingZombies.length > 0) {
+      this.flashingZombies = this.flashingZombies.filter((zombie) => {
+        if (zombie.flashUntil > this.elapsed && zombie.alive) return true;
+        for (const mesh of zombie.root.getChildMeshes(false)) mesh.renderOverlay = false;
+        return false;
+      });
+    }
+    if (this.bait) {
+      if (!this.state.waveActive || this.elapsed >= this.bait.expiresAt) this.disposeBait();
+      else {
+        const life = (this.bait.expiresAt - this.elapsed) / BAIT_RULES.lifetime;
+        const pulse = 0.92 + Math.sin(this.elapsed * 7) * 0.05;
+        this.bait.ring.scaling.set(pulse * (0.55 + life * 0.45), 1, pulse * (0.55 + life * 0.45));
+        this.bait.root.rotation.y += dt * 1.8;
+        this.attractToBait();
+      }
+    }
+    this.ui.setBaitState({
+      visible: this.started && this.state.waveActive,
+      cooldown: this.baitCooldown / BAIT_RULES.cooldown,
+      meat: this.baitScraps + this.state.carriedMeat + this.state.displayedMeat,
+    });
+    if (this.started) this.audio.setMusicMode(this.endShown ? "off" : this.state.waveActive ? "night" : "day");
+    this.updateBeacon();
+    this.occlusionTimer -= dt;
+    if (this.occlusionTimer <= 0) {
+      this.occlusionTimer = 0.15;
+      this.updateOcclusionFade();
+    }
+  }
+
+  private beaconTargetPosition(): { id: string; position: Vector3 | null } {
+    if (!this.started || this.endShown || this.state.waveActive || this.state.wave >= 3) return { id: "none", position: null };
+    if (this.state.carriedMeat >= 6) return { id: "stall", position: STALL_POSITION };
+    const drop = this.drops
+      .slice()
+      .sort((left, right) => Vector3.DistanceSquared(left.root.position, this.player.root.position) - Vector3.DistanceSquared(right.root.position, this.player.root.position))[0];
+    if (drop) return { id: "meat", position: drop.root.position };
+    if (this.state.carriedMeat > 0) return { id: "stall", position: STALL_POSITION };
+    const chapter = this.state.quest.chapter;
+    const hasTower = Object.values(this.state.towers).some((level) => level > 0);
+    const defenseUnlocked = hasCompletedChapter(this.state, SHOP_UNLOCK_CHAPTER.defenseShop);
+    if (defenseUnlocked && !hasTower && this.state.money >= towerCostForState(this.state, "ballista", 0)) return { id: "tower", position: TOWER_POSITIONS.ballista };
+    if (chapter <= 6 && this.cow.alive && this.state.displayedMeat < 3) return { id: "cow", position: this.cow.root.position };
+    return { id: "none", position: null };
+  }
+
+  private ensureBeacon(): TransformNode {
+    if (this.beacon) return this.beacon;
+    const root = new TransformNode("r23-objective-beacon", this.scene);
+    const material = new StandardMaterial("r23-beacon-material", this.scene);
+    material.emissiveColor = new Color3(1, 0.72, 0.32);
+    material.diffuseColor = Color3.Black();
+    material.disableLighting = true;
+    material.alpha = 0.32;
+    material.backFaceCulling = false;
+    const pillar = MeshBuilder.CreateCylinder("r23-beacon-pillar", { height: 7, diameterTop: 0.18, diameterBottom: 0.75, tessellation: 18 }, this.scene);
+    pillar.position.y = 3.5;
+    pillar.material = material;
+    pillar.isPickable = false;
+    pillar.parent = root;
+    const arrowMaterial = material.clone("r23-beacon-arrow-material");
+    arrowMaterial.alpha = 0.95;
+    const arrow = MeshBuilder.CreateCylinder("r23-beacon-arrow", { height: 0.7, diameterTop: 0.62, diameterBottom: 0, tessellation: 4 }, this.scene);
+    arrow.position.y = 2.6;
+    arrow.material = arrowMaterial;
+    arrow.isPickable = false;
+    arrow.parent = root;
+    root.setEnabled(false);
+    this.beacon = root;
+    return root;
+  }
+
+  private updateBeacon(): void {
+    const target = this.beaconTargetPosition();
+    this.beaconTarget = target.id;
+    if (!target.position) {
+      if (this.beacon) this.beacon.setEnabled(false);
+      return;
+    }
+    const beacon = this.ensureBeacon();
+    beacon.setEnabled(true);
+    beacon.position.set(target.position.x, this.heightAt(target.position.x, target.position.z), target.position.z);
+    const arrow = beacon.getChildMeshes(true).find((mesh) => mesh.name === "r23-beacon-arrow");
+    if (arrow) {
+      arrow.position.y = 2.6 + Math.sin(this.elapsed * 3.2) * 0.25;
+      arrow.rotation.y += 0.04;
+    }
+  }
+
+  private isOccluderCandidate(mesh: AbstractMesh): boolean {
+    if (!mesh.isEnabled() || /wind-carved-snow|snow-path|zombie|cow|customer|staff|blob-shadow|ring|decal|vfx|beacon|bait|meat/u.test(mesh.name)) return false;
+    let node: TransformNode | AbstractMesh | null = mesh;
+    while (node) {
+      if (node === this.player.root) return false;
+      node = node.parent as TransformNode | AbstractMesh | null;
+    }
+    return true;
+  }
+
+  private refreshOccluderCandidates(): void {
+    // 只快取一次靜態場景候選（圍欄、樹、房屋、塔…），避免每次對全場 ~1000 個網格做射線檢查
+    this.occluderCandidates = this.scene.meshes.filter((mesh) => mesh.isPickable && mesh.getTotalVertices() > 0 && this.isOccluderCandidate(mesh));
+    this.occluderCandidatesAt = this.elapsed;
+  }
+
+  private updateOcclusionFade(): void {
+    if (!this.player || !this.started) return;
+    if (this.occluderCandidates.length === 0 || this.elapsed - this.occluderCandidatesAt > 8) this.refreshOccluderCandidates();
+    const occluding = new Set<AbstractMesh>();
+    const view = this.player.root.position.subtract(this.camera.position);
+    const side = Vector3.Cross(view, Vector3.Up()).normalize().scale(0.32);
+    for (const [height, lateral] of [[0.35, 0], [0.85, 0], [1.35, 0], [0.85, 1], [0.85, -1]] as const) {
+      const target = this.player.root.position.add(new Vector3(0, height, 0)).add(side.scale(lateral));
+      const direction = target.subtract(this.camera.position);
+      const length = direction.length();
+      const ray = new Ray(this.camera.position, direction.normalize(), length - 0.35);
+      for (const mesh of this.occluderCandidates) {
+        if (occluding.has(mesh) || !mesh.isEnabled()) continue;
+        const box = mesh.getBoundingInfo().boundingBox;
+        if (!ray.intersectsBoxMinMax(box.minimumWorld, box.maximumWorld)) continue;
+        if (!ray.intersectsMesh(mesh as Mesh, true).hit) continue;
+        occluding.add(mesh);
+        // 同一件道具（圍欄段、樹、房屋）的所有子網格一起淡化，避免只透明一層材質
+        let top: TransformNode | AbstractMesh = mesh;
+        while (top.parent) top = top.parent as TransformNode | AbstractMesh;
+        if (top !== mesh) {
+          const group = top.getChildMeshes(false);
+          if (group.length <= 48) for (const child of group) if (this.occluderCandidates.includes(child)) occluding.add(child);
+        }
+      }
+    }
+    for (const mesh of this.fadedOccluders) {
+      if (occluding.has(mesh)) continue;
+      if (mesh.getClassName() === "InstancedMesh") mesh.isVisible = true;
+      else mesh.visibility = 1;
+      this.fadedOccluders.delete(mesh);
+    }
+    for (const mesh of occluding) {
+      if (this.fadedOccluders.has(mesh)) continue;
+      if (mesh.getClassName() === "InstancedMesh") mesh.isVisible = false;
+      else mesh.visibility = 0.28;
+      // 保留可點選（塔、圍欄的世界操作仍可用）；可讀性判讀改由 fadedOccluders 排除
+      this.fadedOccluders.add(mesh);
+    }
   }
 
   private createAttackRing(color: Color3, position = this.player.root.position): void {

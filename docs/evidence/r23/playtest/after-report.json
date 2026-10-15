@@ -1,0 +1,2436 @@
+{
+  "phase": "after",
+  "url": "http://127.0.0.1:5101/storm-apocalypse/",
+  "startedAt": "2026-10-15T06:01:49.265Z",
+  "viewports": {
+    "desktop-1366x768": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 6,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 368,
+            "activeMeshes": 300,
+            "totalMeshes": 865,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 6,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "firstHitHud": {
+          "toasts": [
+            "手冊 01 完成 · ✦ 10"
+          ],
+          "toastCount": 1,
+          "toastFont": "12px",
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 0,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 304,
+            "activeMeshes": 269,
+            "totalMeshes": 865,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 6.61,
+              "z": 2.61
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 0,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "45"
+        },
+        "killHud": {
+          "toasts": [
+            "牛隻倒下 · 掉落 3 份肉",
+            "手冊 02 完成 · ✦ 20",
+            "肉品裝袋 · 1 / 6"
+          ],
+          "toastCount": 3,
+          "toastFont": "12px",
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 2,
+            "hitFlashes": 0,
+            "floaters": 2,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "meat",
+            "fadedOccluders": 0,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 307,
+            "activeMeshes": 282,
+            "totalMeshes": 884,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 8.13,
+              "z": 4.13
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 2,
+              "lastAt": 9.581
+            },
+            "feedback": {
+              "hitStops": 2,
+              "hitFlashes": 0,
+              "floaters": 2,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "meat",
+              "fadedOccluders": 0,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "65"
+        },
+        "timeline": [
+          {
+            "name": "reachedPasture",
+            "seconds": 5.8
+          },
+          {
+            "name": "firstCowKill",
+            "seconds": 9
+          },
+          {
+            "name": "meatPickup",
+            "seconds": 18.9
+          },
+          {
+            "name": "reachedStall",
+            "seconds": 23.7
+          },
+          {
+            "name": "afterWaitingForSale",
+            "seconds": 30.2
+          }
+        ],
+        "salesAfter": 1,
+        "meatDeposited": 3,
+        "money": 142,
+        "chapter": 6,
+        "stallHud": {
+          "toasts": [
+            "交易結帳 · 收入 ✦ 22",
+            "手冊 05 完成 · ✦ 30 · 防線商店"
+          ],
+          "toastCount": 2,
+          "toastFont": "12px",
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 2,
+            "hitFlashes": 0,
+            "floaters": 2,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "tower",
+            "fadedOccluders": 31,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 290,
+            "activeMeshes": 265,
+            "totalMeshes": 868,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -8.94,
+              "z": -5.44
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 0,
+              "lastAt": 9.581
+            },
+            "feedback": {
+              "hitStops": 2,
+              "hitFlashes": 0,
+              "floaters": 2,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "tower",
+              "fadedOccluders": 31,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "142"
+        },
+        "errors": []
+      },
+      "wave": {
+        "baitHud": {
+          "toasts": [
+            "箭雨校準完成 · ✦ 38",
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 2,
+          "toastFont": "12px",
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 7,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 6,
+            "baitActive": true,
+            "baitCooldown": 7.53,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 514,
+            "activeMeshes": 357,
+            "totalMeshes": 972,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.02499971660750037,
+            "weather": {
+              "intensity": "high",
+              "farRate": 300,
+              "nearRate": 36,
+              "density": 1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 9,
+            "playerPosition": {
+              "x": -5.83,
+              "z": 5.98
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 6,
+              "seconds": 9
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 17,
+              "active": 6,
+              "lastAt": 11.999
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 7,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 6,
+              "baitActive": true,
+              "baitCooldown": 7.53,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 9 敵",
+          "money": "654"
+        },
+        "combatHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 2,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 11,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 9,
+            "baitActive": true,
+            "baitCooldown": 5,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 504,
+            "activeMeshes": 352,
+            "totalMeshes": 972,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024999985044967574,
+            "weather": {
+              "intensity": "high",
+              "farRate": 300,
+              "nearRate": 36,
+              "density": 1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 7,
+            "playerPosition": {
+              "x": -5.83,
+              "z": 5.98
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 8,
+              "seconds": 12
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 22,
+              "active": 6,
+              "lastAt": 14.249
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 11,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 9,
+              "baitActive": true,
+              "baitCooldown": 5,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 6 敵",
+          "money": "663"
+        },
+        "lateHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 2,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 4,
+            "hitFlashes": 6,
+            "floaters": 24,
+            "combo": 1,
+            "bestCombo": 1,
+            "baitsThrown": 1,
+            "baitedZombies": 9,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 447,
+            "activeMeshes": 328,
+            "totalMeshes": 989,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024999999957489357,
+            "weather": {
+              "intensity": "high",
+              "farRate": 300,
+              "nearRate": 36,
+              "density": 1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 1,
+            "playerPosition": {
+              "x": -5.83,
+              "z": 5.98
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 2,
+              "towerKills": 12,
+              "seconds": 17
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 34,
+              "active": 7,
+              "lastAt": 19.815
+            },
+            "feedback": {
+              "hitStops": 4,
+              "hitFlashes": 6,
+              "floaters": 24,
+              "combo": 1,
+              "bestCombo": 1,
+              "baitsThrown": 1,
+              "baitedZombies": 9,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 1 敵",
+          "money": "676"
+        },
+        "endSeconds": 1.1,
+        "clearHud": {
+          "toasts": [
+            "第 6 波已清除 · 防守獎金 ✦ 34",
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 2,
+          "toastFont": "12px",
+          "floaters": 0,
+          "waveReport": "A防線穩固第 6 波 · 守住了擊殺15親手2最高連斬1壁壘承傷0獎金✦34",
+          "combo": null,
+          "feedback": {
+            "hitStops": 4,
+            "hitFlashes": 6,
+            "floaters": 26,
+            "combo": 0,
+            "bestCombo": 1,
+            "baitsThrown": 1,
+            "baitedZombies": 9,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": "A"
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 402,
+            "activeMeshes": 224,
+            "totalMeshes": 944,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.013348795903744513,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -5.83,
+              "z": 5.98
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 2,
+              "towerKills": 13,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 38,
+              "active": 6,
+              "lastAt": 22.716
+            },
+            "feedback": {
+              "hitStops": 4,
+              "hitFlashes": 6,
+              "floaters": 26,
+              "combo": 0,
+              "bestCombo": 1,
+              "baitsThrown": 1,
+              "baitedZombies": 9,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": "A"
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    },
+    "laptop-1366x600": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 6,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 368,
+            "activeMeshes": 364,
+            "totalMeshes": 865,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 6,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "firstHitHud": {
+          "toasts": [
+            "手冊 01 完成 · ✦ 10"
+          ],
+          "toastCount": 1,
+          "toastFont": "12px",
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 0,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 366,
+            "activeMeshes": 350,
+            "totalMeshes": 865,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 6.81,
+              "z": 2.9
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 0,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "45"
+        },
+        "killHud": {
+          "toasts": [
+            "牛隻倒下 · 掉落 3 份肉",
+            "手冊 02 完成 · ✦ 20",
+            "肉品裝袋 · 1 / 6"
+          ],
+          "toastCount": 3,
+          "toastFont": "12px",
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 2,
+            "hitFlashes": 0,
+            "floaters": 2,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "meat",
+            "fadedOccluders": 0,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 391,
+            "activeMeshes": 379,
+            "totalMeshes": 884,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": 7.22,
+              "z": 2.9
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 2,
+              "lastAt": 8.79
+            },
+            "feedback": {
+              "hitStops": 2,
+              "hitFlashes": 0,
+              "floaters": 2,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "meat",
+              "fadedOccluders": 0,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "65"
+        },
+        "timeline": [
+          {
+            "name": "reachedPasture",
+            "seconds": 5.7
+          },
+          {
+            "name": "firstCowKill",
+            "seconds": 8.4
+          },
+          {
+            "name": "meatPickup",
+            "seconds": 17.3
+          },
+          {
+            "name": "reachedStall",
+            "seconds": 21.7
+          },
+          {
+            "name": "afterWaitingForSale",
+            "seconds": 28.2
+          }
+        ],
+        "salesAfter": 1,
+        "meatDeposited": 3,
+        "money": 142,
+        "chapter": 6,
+        "stallHud": {
+          "toasts": [
+            "交易結帳 · 收入 ✦ 22",
+            "手冊 05 完成 · ✦ 30 · 防線商店"
+          ],
+          "toastCount": 2,
+          "toastFont": "12px",
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 2,
+            "hitFlashes": 0,
+            "floaters": 2,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "tower",
+            "fadedOccluders": 32,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 299,
+            "activeMeshes": 294,
+            "totalMeshes": 868,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -7.34,
+              "z": -4.62
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 2,
+              "active": 0,
+              "lastAt": 8.79
+            },
+            "feedback": {
+              "hitStops": 2,
+              "hitFlashes": 0,
+              "floaters": 2,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "tower",
+              "fadedOccluders": 32,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "142"
+        },
+        "errors": []
+      },
+      "wave": {
+        "baitHud": {
+          "toasts": [
+            "箭雨校準完成 · ✦ 38",
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 2,
+          "toastFont": "12px",
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 7,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 6,
+            "baitActive": true,
+            "baitCooldown": 7.48,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 514,
+            "activeMeshes": 418,
+            "totalMeshes": 972,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.02499973223972437,
+            "weather": {
+              "intensity": "high",
+              "farRate": 300,
+              "nearRate": 36,
+              "density": 1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 9,
+            "playerPosition": {
+              "x": -5.88,
+              "z": 5.95
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 6,
+              "seconds": 9
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 17,
+              "active": 6,
+              "lastAt": 11.983
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 7,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 6,
+              "baitActive": true,
+              "baitCooldown": 7.48,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 9 敵",
+          "money": "654"
+        },
+        "combatHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 11,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 9,
+            "baitActive": true,
+            "baitCooldown": 4.93,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 506,
+            "activeMeshes": 414,
+            "totalMeshes": 972,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.02499998613783403,
+            "weather": {
+              "intensity": "high",
+              "farRate": 300,
+              "nearRate": 36,
+              "density": 1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 7,
+            "playerPosition": {
+              "x": -5.88,
+              "z": 5.95
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 8,
+              "seconds": 12
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 22,
+              "active": 6,
+              "lastAt": 14.232
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 11,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 9,
+              "baitActive": true,
+              "baitCooldown": 4.93,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 7 敵",
+          "money": "660"
+        },
+        "lateHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 2,
+          "waveReport": null,
+          "combo": "2連斬",
+          "feedback": {
+            "hitStops": 4,
+            "hitFlashes": 6,
+            "floaters": 24,
+            "combo": 2,
+            "bestCombo": 2,
+            "baitsThrown": 1,
+            "baitedZombies": 9,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 447,
+            "activeMeshes": 387,
+            "totalMeshes": 988,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024999999961549918,
+            "weather": {
+              "intensity": "high",
+              "farRate": 300,
+              "nearRate": 36,
+              "density": 1,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 1,
+            "playerPosition": {
+              "x": -5.88,
+              "z": 5.95
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 2,
+              "towerKills": 12,
+              "seconds": 17
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 35,
+              "active": 7,
+              "lastAt": 19.805
+            },
+            "feedback": {
+              "hitStops": 4,
+              "hitFlashes": 6,
+              "floaters": 24,
+              "combo": 2,
+              "bestCombo": 2,
+              "baitsThrown": 1,
+              "baitedZombies": 9,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 1 敵",
+          "money": "676"
+        },
+        "endSeconds": 1.4,
+        "clearHud": {
+          "toasts": [
+            "第 6 波已清除 · 防守獎金 ✦ 34",
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 2,
+          "toastFont": "12px",
+          "floaters": 0,
+          "waveReport": "A防線穩固第 6 波 · 守住了擊殺15親手2最高連斬2壁壘承傷0獎金✦34",
+          "combo": null,
+          "feedback": {
+            "hitStops": 4,
+            "hitFlashes": 6,
+            "floaters": 26,
+            "combo": 0,
+            "bestCombo": 2,
+            "baitsThrown": 1,
+            "baitedZombies": 9,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 26,
+            "lastWaveGrade": "A"
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 431,
+            "activeMeshes": 274,
+            "totalMeshes": 988,
+            "quality": "高",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.01422747556725804,
+            "weather": {
+              "intensity": "low",
+              "farRate": 90,
+              "nearRate": 10,
+              "density": 1,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -5.88,
+              "z": 5.95
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 2,
+              "towerKills": 13,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 38,
+              "active": 6,
+              "lastAt": 21.536
+            },
+            "feedback": {
+              "hitStops": 4,
+              "hitFlashes": 6,
+              "floaters": 26,
+              "combo": 0,
+              "bestCombo": 2,
+              "baitsThrown": 1,
+              "baitedZombies": 9,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 26,
+              "lastWaveGrade": "A"
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    },
+    "phone-portrait-390x844": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 3,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 196,
+            "activeMeshes": 81,
+            "totalMeshes": 865,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 3,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "attackHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 3,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 196,
+            "activeMeshes": 81,
+            "totalMeshes": 865,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 3,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "errors": []
+      },
+      "wave": {
+        "baitHud": {
+          "toasts": [
+            "箭雨校準完成 · ✦ 38"
+          ],
+          "toastCount": 1,
+          "toastFont": "11px",
+          "floaters": 2,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 5,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": true,
+            "baitCooldown": 7.8,
+            "beacon": "none",
+            "fadedOccluders": 3,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 392,
+            "activeMeshes": 205,
+            "totalMeshes": 960,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.02499462116093738,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 11,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 4,
+              "seconds": 6
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 13,
+              "active": 7,
+              "lastAt": 9.851
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 5,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": true,
+              "baitCooldown": 7.8,
+              "beacon": "none",
+              "fadedOccluders": 3,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 10 敵",
+          "money": "652"
+        },
+        "combatHud": {
+          "toasts": [
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 1,
+          "toastFont": "11px",
+          "floaters": 2,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 11,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 4.21,
+            "beacon": "none",
+            "fadedOccluders": 3,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 57,
+            "drawCalls": 408,
+            "activeMeshes": 201,
+            "totalMeshes": 963,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024999917734629805,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 8,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 7,
+              "seconds": 10
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 19,
+              "active": 6,
+              "lastAt": 12.935
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 11,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 4.21,
+              "beacon": "none",
+              "fadedOccluders": 3,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 8 敵",
+          "money": "657"
+        },
+        "lateHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 15,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 3,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 58,
+            "drawCalls": 383,
+            "activeMeshes": 208,
+            "totalMeshes": 987,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.0249999997795403,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 4,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 11,
+              "seconds": 15
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 30,
+              "active": 6,
+              "lastAt": 18.134
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 15,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 3,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 4 敵",
+          "money": "669"
+        },
+        "endSeconds": 5.4,
+        "clearHud": {
+          "toasts": [
+            "奔行者正在破壞肉舖壁壘！×3",
+            "第 6 波已清除 · 防守獎金 ✦ 34"
+          ],
+          "toastCount": 2,
+          "toastFont": "11px",
+          "floaters": 0,
+          "waveReport": "C險些失守第 6 波 · 守住了擊殺15親手0最高連斬0壁壘承傷15獎金✦34",
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 19,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 3,
+            "lastWaveGrade": "C"
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 381,
+            "activeMeshes": 166,
+            "totalMeshes": 987,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.01427275106357468,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 15,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 44,
+              "active": 6,
+              "lastAt": 24.417
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 19,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 3,
+              "lastWaveGrade": "C"
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    },
+    "phone-landscape-844x390": {
+      "first60": {
+        "firstFrameHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 6,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 368,
+            "activeMeshes": 348,
+            "totalMeshes": 865,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 6,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "attackHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 1,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 0,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 0,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "cow",
+            "fadedOccluders": 6,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 368,
+            "activeMeshes": 348,
+            "totalMeshes": 865,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.012,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 0,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 0,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 0,
+              "active": 0,
+              "lastAt": -10
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 0,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 0,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "cow",
+              "fadedOccluders": 6,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "黎明 · 0 / 30",
+          "money": "35"
+        },
+        "errors": []
+      },
+      "wave": {
+        "baitHud": {
+          "toasts": [
+            "箭雨校準完成 · ✦ 38"
+          ],
+          "toastCount": 1,
+          "toastFont": "11px",
+          "floaters": 2,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 5,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": true,
+            "baitCooldown": 7.78,
+            "beacon": "none",
+            "fadedOccluders": 6,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 521,
+            "activeMeshes": 535,
+            "totalMeshes": 960,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024994832068830082,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 11,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 4,
+              "seconds": 7
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 13,
+              "active": 7,
+              "lastAt": 9.84
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 5,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": true,
+              "baitCooldown": 7.78,
+              "beacon": "none",
+              "fadedOccluders": 6,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 11 敵",
+          "money": "612"
+        },
+        "combatHud": {
+          "toasts": [
+            "牧場牛隻已重返圍欄。"
+          ],
+          "toastCount": 1,
+          "toastFont": "11px",
+          "floaters": 2,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 11,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 4.23,
+            "beacon": "none",
+            "fadedOccluders": 6,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 610,
+            "activeMeshes": 559,
+            "totalMeshes": 963,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024999916257161567,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 8,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 7,
+              "seconds": 10
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 19,
+              "active": 6,
+              "lastAt": 12.923
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 11,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 4.23,
+              "beacon": "none",
+              "fadedOccluders": 6,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 8 敵",
+          "money": "657"
+        },
+        "lateHud": {
+          "toasts": [],
+          "toastCount": 0,
+          "toastFont": null,
+          "floaters": 0,
+          "waveReport": null,
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 15,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 6,
+            "lastWaveGrade": ""
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 510,
+            "activeMeshes": 541,
+            "totalMeshes": 987,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.024999999775585636,
+            "weather": {
+              "intensity": "high",
+              "farRate": 204,
+              "nearRate": 24,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.04,\"maxSize\":0.17,\"nearMinSize\":0.12,\"nearMaxSize\":0.3,\"minLifeTime\":1.9,\"maxLifeTime\":3.6,\"gravity\":[2.4,-2.7,0.62],\"direction1\":[4.6,-1.8,-0.5],\"direction2\":[7.8,-3.5,1.1],\"color1\":[0.94,0.99,1,0.84],\"color2\":[0.61,0.81,0.9,0.48],\"fogDayAdd\":0.003,\"fogNightAdd\":0.002,\"contrast\":1.2,\"exposure\":1.12,\"veilAlpha\":0.16,\"vignetteWeight\":1.62,\"bloomWeight\":0.22}"
+            },
+            "wave": 5,
+            "enemies": 4,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 11,
+              "seconds": 15
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 30,
+              "active": 6,
+              "lastAt": 18.123
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 15,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 6,
+              "lastWaveGrade": ""
+            }
+          },
+          "wave": "夜襲 · 6 / 30 · 4 敵",
+          "money": "669"
+        },
+        "endSeconds": 5.4,
+        "clearHud": {
+          "toasts": [
+            "奔行者正在破壞肉舖壁壘！×3",
+            "第 6 波已清除 · 防守獎金 ✦ 34"
+          ],
+          "toastCount": 2,
+          "toastFont": "11px",
+          "floaters": 0,
+          "waveReport": "C險些失守第 6 波 · 守住了擊殺15親手0最高連斬0壁壘承傷15獎金✦34",
+          "combo": null,
+          "feedback": {
+            "hitStops": 0,
+            "hitFlashes": 0,
+            "floaters": 19,
+            "combo": 0,
+            "bestCombo": 0,
+            "baitsThrown": 1,
+            "baitedZombies": 0,
+            "baitActive": false,
+            "baitCooldown": 0,
+            "beacon": "none",
+            "fadedOccluders": 6,
+            "lastWaveGrade": "C"
+          },
+          "music": {
+            "mode": "day",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          },
+          "debug": {
+            "fps": 60,
+            "drawCalls": 581,
+            "activeMeshes": 504,
+            "totalMeshes": 988,
+            "quality": "中",
+            "targetFps": 30,
+            "renderPixelRatio": 1,
+            "performanceTier": 0,
+            "shadowMode": "realtime",
+            "fogDensity": 0.014228332182854115,
+            "weather": {
+              "intensity": "low",
+              "farRate": 61,
+              "nearRate": 7,
+              "density": 0.68,
+              "behavior": "{\"minSize\":0.03,\"maxSize\":0.12,\"nearMinSize\":0.08,\"nearMaxSize\":0.2,\"minLifeTime\":2.4,\"maxLifeTime\":4.4,\"gravity\":[0.9,-2.2,0.24],\"direction1\":[1.5,-1.1,-0.2],\"direction2\":[3.1,-2.5,0.5],\"color1\":[0.91,0.98,1,0.72],\"color2\":[0.67,0.84,0.91,0.38],\"fogDayAdd\":0,\"fogNightAdd\":0,\"contrast\":1.1,\"exposure\":1.08,\"veilAlpha\":0.05,\"vignetteWeight\":1.35,\"bloomWeight\":0.18}"
+            },
+            "wave": 6,
+            "enemies": 0,
+            "playerPosition": {
+              "x": -0.5,
+              "z": -1.5
+            },
+            "hardwareInstancing": true,
+            "waveMetrics": {
+              "stockAtStart": 0,
+              "playerKills": 0,
+              "towerKills": 15,
+              "seconds": 0
+            },
+            "combatVfx": {
+              "assets": 8,
+              "events": 44,
+              "active": 6,
+              "lastAt": 24.473
+            },
+            "feedback": {
+              "hitStops": 0,
+              "hitFlashes": 0,
+              "floaters": 19,
+              "combo": 0,
+              "bestCombo": 0,
+              "baitsThrown": 1,
+              "baitedZombies": 0,
+              "baitActive": false,
+              "baitCooldown": 0,
+              "beacon": "none",
+              "fadedOccluders": 6,
+              "lastWaveGrade": "C"
+            }
+          },
+          "wave": "黎明 · 6 / 30",
+          "money": "712"
+        },
+        "errors": []
+      }
+    }
+  },
+  "finishedAt": "2026-10-15T06:04:48.153Z"
+}

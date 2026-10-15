@@ -1,6 +1,7 @@
+import { MusicDirector, type MusicMode } from "./music";
 import type { PlayerSettings } from "./settings";
 
-export type SoundCue = "hit" | "swing" | "build" | "sale" | "wave" | "boss" | "towerAlarm" | "ui";
+export type SoundCue = "hit" | "swing" | "build" | "sale" | "wave" | "boss" | "towerAlarm" | "ui" | "bait";
 
 interface AudioDebugState {
   supported: boolean;
@@ -9,6 +10,7 @@ interface AudioDebugState {
   effectiveVolume: number;
   lastCue: SoundCue | null;
   counts: Record<SoundCue, number>;
+  music: { mode: MusicMode; day: string; night: string; volume: number };
 }
 
 const EMPTY_COUNTS: Record<SoundCue, number> = {
@@ -20,6 +22,7 @@ const EMPTY_COUNTS: Record<SoundCue, number> = {
   boss: 0,
   towerAlarm: 0,
   ui: 0,
+  bait: 0,
 };
 
 export class ProceduralAudio {
@@ -29,6 +32,8 @@ export class ProceduralAudio {
   private settings: PlayerSettings;
   private lastCue: SoundCue | null = null;
   private readonly counts = { ...EMPTY_COUNTS };
+  private music?: MusicDirector;
+  private musicMode: MusicMode = "off";
 
   constructor(settings: PlayerSettings) {
     this.settings = { ...settings };
@@ -55,7 +60,26 @@ export class ProceduralAudio {
       this.master.gain.cancelScheduledValues(now);
       this.master.gain.setTargetAtTime(this.effectiveVolume(), now, 0.012);
     }
+    this.music?.setVolume(this.musicVolume());
     this.publishDebug();
+  }
+
+  /** R23 配樂：白晝／夜襲交叉淡入淡出；需在使用者手勢解鎖 AudioContext 後才會發聲。 */
+  setMusicMode(mode: MusicMode): void {
+    if (mode === this.musicMode && (this.music || mode === "off")) return;
+    this.musicMode = mode;
+    const context = mode === "off" ? this.context : this.ensureContext();
+    if (!context) return;
+    if (!this.music && mode !== "off") {
+      this.music = new MusicDirector(context, context.destination, import.meta.env.BASE_URL, () => this.publishDebug());
+      this.music.setVolume(this.musicVolume());
+    }
+    this.music?.setMode(mode);
+    this.publishDebug();
+  }
+
+  private musicVolume(): number {
+    return this.settings.muted ? 0 : this.settings.masterVolume * 0.42;
   }
 
   play(cue: SoundCue): void {
@@ -95,6 +119,11 @@ export class ProceduralAudio {
       case "boss":
         this.tone("sawtooth", 92, 43, at, 0.72, 0.18);
         this.noise(at + 0.04, 0.55, 0.11, 180, 1.6);
+        break;
+      case "bait":
+        this.noise(at, 0.18, 0.12, 300, 0.9);
+        this.tone("sine", 180, 90, at + 0.05, 0.25, 0.1);
+        this.tone("triangle", 520, 760, at + 0.12, 0.18, 0.05);
         break;
       case "towerAlarm":
         this.tone("square", 620, 560, at, 0.12, 0.08);
@@ -179,6 +208,7 @@ export class ProceduralAudio {
       effectiveVolume: Number(this.effectiveVolume().toFixed(3)),
       lastCue: this.lastCue,
       counts: { ...this.counts },
+      music: { mode: this.musicMode, day: this.music?.sourceKind.day ?? "pending", night: this.music?.sourceKind.night ?? "pending", volume: Number(this.musicVolume().toFixed(3)) },
     };
     (window as Window & { __stormAudio?: AudioDebugState }).__stormAudio = debug;
   }

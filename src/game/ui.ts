@@ -1,4 +1,5 @@
 import { EMPLOYEES, MAIN_QUESTS, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
+import { findMergeableToast, TOAST_MAX_VISIBLE, type ToastEntry, type WaveGrade } from "./feedback";
 import { currentLoopDefinition, currentMainQuest, type QuestCompletion } from "./quests";
 import type { PlayerSettings } from "./settings";
 import type { EmployeeId, ProtagonistId, RuntimeState, TowerId, WeaponId } from "./state";
@@ -12,6 +13,17 @@ export type WorldActionTarget =
   | { type: "tower"; id: TowerId; x: number; y: number }
   | { type: "employee"; id: EmployeeId; x: number; y: number }
   | { type: "pasture"; id: "pasture2"; x: number; y: number };
+
+export interface WaveReport {
+  wave: number;
+  grade: WaveGrade;
+  gradeLabel: string;
+  kills: number;
+  playerKills: number;
+  bestCombo: number;
+  wallDamage: number;
+  reward: number;
+}
 
 interface ActionState {
   title: string;
@@ -120,6 +132,15 @@ export class UiController {
   private prepModalOpen = false;
   private readonly scrollHintUpdaters = new Map<HTMLElement, () => void>();
   private readonly scrollHintCleanups = new Map<HTMLElement, () => void>();
+  // R23
+  private readonly toastEntries: Array<ToastEntry & { element: HTMLElement; outTimer: number; removeTimer: number }> = [];
+  private floaterLayer!: HTMLElement;
+  private comboBadge!: HTMLElement;
+  private baitButton!: HTMLButtonElement;
+  private waveReport!: HTMLElement;
+  private waveReportTimer: number | undefined;
+  private comboShown = 0;
+  private baitSignature = "";
 
   onStart: () => void = () => undefined;
   onAttackStart: () => void = () => undefined;
@@ -130,6 +151,7 @@ export class UiController {
   onShopAction: (category: ShopCategory, id: string) => void = () => undefined;
   onTowerAction: (id: TowerId) => void = () => undefined;
   onWeaponCycle: () => void = () => undefined;
+  onBait: () => void = () => undefined;
   onPauseChange: (paused: boolean) => void = () => undefined;
   onSettingsChange: (settings: PlayerSettings) => void = () => undefined;
   onUiSound: () => void = () => undefined;
@@ -145,7 +167,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R22";
+    root.dataset.uiVersion = "R23";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -222,6 +244,7 @@ export class UiController {
           <button class="wave-button" id="wave-button" disabled><small>準備防守</small><b>至少建造一座塔</b></button>
         </div>
         <div class="right-combat-controls">
+          <button class="bait-button" id="bait-button" type="button" aria-label="丟出鮮肉誘餌（Q）" hidden><i class="bait-button__icon" aria-hidden="true">🥩</i><small>誘餌</small><em class="bait-button__count" id="bait-count">0</em></button>
           <button class="weapon-button" id="weapon-button" type="button" aria-label="切換武器"><i id="weapon-cycle-icon" class="asset-icon asset-icon--weapon-machete weapon-button__icon" aria-hidden="true"></i><small>武器</small></button>
           <button class="attack-button" id="attack-button" aria-label="攻擊"><i id="attack-icon" class="asset-icon asset-icon--weapon-machete attack-button__icon" aria-hidden="true"></i><small>揮砍</small></button>
         </div>
@@ -233,7 +256,10 @@ export class UiController {
           <em id="world-action-price"></em>
         </button>
       </div>
-      <div class="toast-host" id="toast-host"></div>
+      <div class="toast-host" id="toast-host" aria-live="polite"></div>
+      <div class="floater-layer" id="floater-layer" aria-hidden="true"></div>
+      <div class="combo-badge" id="combo-badge" aria-live="polite" hidden><b id="combo-count">0</b><span>連斬</span><small id="combo-bonus"></small></div>
+      <section class="wave-report" id="wave-report" role="status" aria-live="polite" hidden></section>
       </div>
 
       <section class="system-menu" id="system-menu" role="dialog" aria-modal="true" aria-labelledby="system-menu-title" hidden>
@@ -259,7 +285,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R22 · 中後段戰鬥曲線／程序化天候 · 本機存檔</p>
+              <p class="system-note">R23 · 打擊回饋／鮮肉誘餌／連斬戰報 · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
@@ -321,6 +347,10 @@ export class UiController {
     this.worldActionDetail = get("world-action-detail");
     this.worldActionPrice = get("world-action-price");
     this.toastHost = get("toast-host");
+    this.floaterLayer = get("floater-layer");
+    this.comboBadge = get("combo-badge");
+    this.baitButton = get<HTMLButtonElement>("bait-button");
+    this.waveReport = get("wave-report");
     this.result = get("result");
     this.resultTitle = get("result-title");
     this.resultCopy = get("result-copy");
@@ -394,6 +424,7 @@ export class UiController {
       bindImmediate(button, () => this.onTowerAction(button.dataset.towerDock as TowerId));
     }
     bindImmediate(this.weaponButton, () => this.onWeaponCycle());
+    bindImmediate(this.baitButton, () => this.onBait());
     bindImmediate(this.worldActionButton, () => {
       if (!this.activeWorldAction) return;
       if (this.activeWorldAction.type === "tower") this.onTowerAction(this.activeWorldAction.id);
@@ -771,6 +802,8 @@ export class UiController {
   }
 
   update(state: RuntimeState): void {
+    // R23 開場 60 秒：手冊 1–4 章商店沒有可買項目，桌機先收起右側整備欄，讓牧場與目標信標露出
+    this.gameUi.classList.toggle("is-onboarding", state.quest.chapter <= 4 && state.wave === 0);
     this.money.textContent = state.money.toString();
     this.meat.textContent = `${state.carriedMeat} / 6`;
     this.stock.textContent = `${state.displayedMeat} / ${state.stallLevel * 6}`;
@@ -1058,6 +1091,21 @@ export class UiController {
   }
 
   toast(message: string, tone: "warm" | "danger" | "ice" = "warm"): void {
+    // R23：同句 2.2 秒內合併為「×N」，同時最多 3 則，避免戰鬥時洗版
+    const now = performance.now() / 1000;
+    const mergeIndex = findMergeableToast(this.toastEntries, message, now);
+    if (mergeIndex >= 0) {
+      const entry = this.toastEntries[mergeIndex];
+      entry.count += 1;
+      entry.shownAt = now;
+      const counter = entry.element.querySelector("em") ?? entry.element.appendChild(document.createElement("em"));
+      counter.textContent = `×${entry.count}`;
+      entry.element.classList.remove("is-bumped");
+      void entry.element.offsetWidth;
+      entry.element.classList.add("is-bumped");
+      this.scheduleToastRemoval(entry);
+      return;
+    }
     const toast = document.createElement("div");
     toast.className = `toast toast--${tone}`;
     const dot = document.createElement("i");
@@ -1065,11 +1113,95 @@ export class UiController {
     copy.textContent = message;
     toast.append(dot, copy);
     this.toastHost.append(toast);
-    window.setTimeout(() => toast.classList.add("is-out"), 2400);
-    window.setTimeout(() => toast.remove(), 2900);
+    const entry = { message, count: 1, shownAt: now, element: toast, outTimer: 0, removeTimer: 0 };
+    this.toastEntries.push(entry);
+    this.scheduleToastRemoval(entry);
+    while (this.toastEntries.length > TOAST_MAX_VISIBLE) this.dropToast(this.toastEntries[0]);
   }
 
-  showResult(won: boolean, copy: string, stats: ReadonlyArray<[string, string]> = []): void {
+  private scheduleToastRemoval(entry: ToastEntry & { element: HTMLElement; outTimer: number; removeTimer: number }): void {
+    window.clearTimeout(entry.outTimer);
+    window.clearTimeout(entry.removeTimer);
+    entry.element.classList.remove("is-out");
+    entry.outTimer = window.setTimeout(() => entry.element.classList.add("is-out"), 2400);
+    entry.removeTimer = window.setTimeout(() => this.dropToast(entry), 2900);
+  }
+
+  private dropToast(entry: ToastEntry & { element: HTMLElement; outTimer: number; removeTimer: number }): void {
+    window.clearTimeout(entry.outTimer);
+    window.clearTimeout(entry.removeTimer);
+    entry.element.remove();
+    const index = this.toastEntries.indexOf(entry);
+    if (index >= 0) this.toastEntries.splice(index, 1);
+  }
+
+  /** R23：世界座標投影後的浮動字（傷害、暴擊、✦、落空）。 */
+  floater(x: number, y: number, text: string, kind: "hit" | "crit" | "coin" | "miss" | "info"): void {
+    if (this.modalState !== null) return;
+    const layer = this.floaterLayer;
+    while (layer.childElementCount >= 16) layer.firstElementChild?.remove();
+    const element = document.createElement("span");
+    element.className = `combat-floater combat-floater--${kind}`;
+    element.textContent = text;
+    const jitter = (Math.random() - 0.5) * 26;
+    element.style.left = `${Math.round(x + jitter)}px`;
+    element.style.top = `${Math.round(y)}px`;
+    layer.append(element);
+    window.setTimeout(() => element.remove(), kind === "crit" ? 1100 : 900);
+  }
+
+  setCombo(count: number, bonus: number): void {
+    if (count === this.comboShown && bonus === 0) return;
+    this.comboShown = count;
+    if (count < 2) {
+      this.comboBadge.hidden = true;
+      return;
+    }
+    this.comboBadge.hidden = false;
+    this.comboBadge.dataset.tier = count >= 10 ? "3" : count >= 5 ? "2" : "1";
+    this.comboBadge.querySelector("#combo-count")!.textContent = String(count);
+    this.comboBadge.querySelector("#combo-bonus")!.textContent = bonus > 0 ? `連斬獎勵 +✦${bonus}` : count >= 3 ? "5 連斬起加發 ✦" : "";
+    this.comboBadge.classList.remove("is-pop");
+    void this.comboBadge.offsetWidth;
+    this.comboBadge.classList.add("is-pop");
+  }
+
+  setBaitState(bait: { visible: boolean; cooldown: number; meat: number }): void {
+    const signature = `${bait.visible}|${bait.cooldown.toFixed(1)}|${bait.meat}`;
+    if (signature === this.baitSignature) return;
+    this.baitSignature = signature;
+    this.baitButton.hidden = !bait.visible;
+    this.gameUi.classList.toggle("has-bait", bait.visible);
+    if (!bait.visible) return;
+    this.baitButton.style.setProperty("--bait-cooldown", `${Math.round(bait.cooldown * 360)}deg`);
+    this.baitButton.classList.toggle("is-cooling", bait.cooldown > 0);
+    this.baitButton.classList.toggle("is-empty", bait.meat <= 0);
+    this.baitButton.querySelector("#bait-count")!.textContent = String(bait.meat);
+    this.baitButton.setAttribute("aria-disabled", String(bait.cooldown > 0 || bait.meat <= 0));
+  }
+
+  showWaveReport(report: WaveReport): void {
+    const element = this.waveReport;
+    element.dataset.grade = report.grade;
+    element.innerHTML = `<div class="wave-report__grade"><b>${report.grade}</b><small>${report.gradeLabel}</small></div>`
+      + `<div class="wave-report__body"><span>第 ${report.wave} 波 · 守住了</span>`
+      + `<dl><div><dt>擊殺</dt><dd>${report.kills}</dd></div><div><dt>親手</dt><dd>${report.playerKills}</dd></div>`
+      + `<div><dt>最高連斬</dt><dd>${report.bestCombo}</dd></div><div><dt>壁壘承傷</dt><dd>${report.wallDamage}</dd></div>`
+      + `<div><dt>獎金</dt><dd>✦${report.reward}</dd></div></dl></div>`;
+    element.hidden = false;
+    element.classList.remove("is-out");
+    this.gameUi.classList.add("has-wave-report");
+    window.clearTimeout(this.waveReportTimer);
+    this.waveReportTimer = window.setTimeout(() => {
+      element.classList.add("is-out");
+      this.waveReportTimer = window.setTimeout(() => {
+        element.hidden = true;
+        this.gameUi.classList.remove("has-wave-report");
+      }, 450);
+    }, 4200);
+  }
+
+  showResult(won: boolean, copy: string, stats: ReadonlyArray<[string, string]> = [], advice = ""): void {
     if (this.systemMenuOpen) this.setSystemMenuOpen(false);
     this.setModalState("result");
     this.result.hidden = false;
@@ -1084,6 +1216,14 @@ export class UiController {
       item.append(small, strong);
       return item;
     }));
+    let adviceElement = this.result.querySelector<HTMLElement>(".result-advice");
+    if (!adviceElement) {
+      adviceElement = document.createElement("p");
+      adviceElement.className = "result-advice";
+      this.resultStats.after(adviceElement);
+    }
+    adviceElement.textContent = advice;
+    adviceElement.hidden = !advice;
     requestAnimationFrame(() => this.result.classList.add("is-visible"));
     this.refreshScrollHints();
   }

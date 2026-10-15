@@ -7,6 +7,7 @@ export class InputController {
   private attackHeld = false;
   private buildQueued = false;
   private waveQueued = false;
+  private baitQueued = false;
   private joystickPointer: number | null = null;
   private joystickCenter = Vector2.Zero();
   private readonly knob: HTMLElement;
@@ -69,6 +70,17 @@ export class InputController {
     return value;
   }
 
+  queueBait(): void {
+    if (!this.enabled) return;
+    this.baitQueued = true;
+  }
+
+  consumeBait(): boolean {
+    const value = this.baitQueued;
+    this.baitQueued = false;
+    return value;
+  }
+
   consumeWave(): boolean {
     const value = this.waveQueued;
     this.waveQueued = false;
@@ -90,6 +102,7 @@ export class InputController {
     }
     if (!event.repeat && event.code === "KeyB") this.buildQueued = true;
     if (!event.repeat && event.code === "KeyN") this.waveQueued = true;
+    if (!event.repeat && event.code === "KeyQ") this.baitQueued = true;
   };
 
   private readonly onKeyUp = (event: KeyboardEvent): void => {
@@ -132,6 +145,7 @@ export class InputController {
     this.attackQueued = false;
     this.buildQueued = false;
     this.waveQueued = false;
+    this.baitQueued = false;
     this.joystickPointer = null;
     this.joystick.setAll(0);
     this.joystickZone.classList.remove("is-pressed");

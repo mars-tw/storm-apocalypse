@@ -529,6 +529,18 @@ async function checkR18StaticContracts() {
       && balanceScript.includes('status: "informational_only"')
       && !balanceScript.includes("generalWave30WinRate15To40");
     record("balance/R22", "R22 uses midgame, monotonicity and maxed endgame gates while general W30 is informational", r22BalancePass, "general W25-28 playable/non-increasing; maxed W29=40-60% and W30=50-70%; fixed/fresh validation");
+    const r23Feedback = await readFile(resolve(root, "src/game/feedback.ts"), "utf8");
+    const r23Hitstop = /if \(weapon !== "smg"\) \{\s*this\.hitStopTimer = weapon === "axe" \? 0\.075 : 0\.06;/u.test(game)
+      && /if \(hit\) \{[\s\S]{0,260}this\.hitStopTimer[\s\S]{0,200}\} else \{\s*this\.showFloater\(this\.player\.root\.position\.add\(new Vector3\(0, 2\.4, 0\)\), "落空", "miss"\)/u.test(game)
+      && game.includes("this.scene.animationTimeScale = 0.06");
+    record("feel/R23", "hit-stop only follows a confirmed melee hit; whiffs show a miss floater without freezing", r23Hitstop, "hitStopTimer set inside if (hit), miss branch only floats text");
+    const r23Signature = r23Feedback.includes("export const BAIT_RULES")
+      && game.includes("baitAttractedIndices(")
+      && game.includes("zombie.baitUntil > this.elapsed")
+      && game.includes("pickBaitSource(this.state.carriedMeat, this.state.displayedMeat, this.baitScraps)")
+      && game.includes("gradeWave({")
+      && game.includes("runAdvice({");
+    record("fun/R23", "meat bait, wave grade and run advice are wired from the shared rule module", r23Signature, "feedback.ts rules used by StormGame");
     const fidelityPass = simulation.includes("export const SIMULATION_STEP_SECONDS = 1 / 60")
       && simulation.includes("nextTimer += spawnInterval")
       && simulation.includes("spawnClock.triggerCount")
@@ -1120,8 +1132,8 @@ async function checkR12SystemMenu(page, label, fullChecks = false) {
     await page.locator("#mute-toggle").click();
     const audioState = await page.evaluate((key) => ({ debug: window.__stormAudio, saved: JSON.parse(localStorage.getItem(key) ?? "null") }), settingsKey);
     const cues = Object.keys(audioState.debug?.counts ?? {}).sort();
-    const expectedCues = ["boss", "build", "hit", "sale", "swing", "towerAlarm", "ui", "wave"].sort();
-    record(label, "volume and mute persist while all eight audio cues remain available", audioState.saved?.masterVolume === 0.25 && audioState.saved?.muted === true && JSON.stringify(cues) === JSON.stringify(expectedCues), JSON.stringify({ saved: audioState.saved, cues }));
+    const expectedCues = ["bait", "boss", "build", "hit", "sale", "swing", "towerAlarm", "ui", "wave"].sort();
+    record(label, "volume and mute persist while all nine audio cues (R23 adds bait) remain available", audioState.saved?.masterVolume === 0.25 && audioState.saved?.muted === true && JSON.stringify(cues) === JSON.stringify(expectedCues), JSON.stringify({ saved: audioState.saved, cues }));
     await page.locator("#mute-toggle").click();
     await page.locator("#master-volume").fill("80");
   }
@@ -1590,7 +1602,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R22 UI version marker", uiVersion === "R22", `ui=${uiVersion}`);
+  record(label, "R23 UI version marker", uiVersion === "R23", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));
@@ -1643,6 +1655,43 @@ async function checkR9UX(page, label, touch) {
   }));
   record(label, "clicking a 3D build pad opens local tower action", Boolean(pointValid) && popoverOpened && !popoverState.hidden && popoverState.type === "tower" && popoverState.id === "ballista" && /建造|升級/.test(popoverState.text ?? ""), JSON.stringify({ point, popoverState }));
   await page.mouse.click(12, 12);
+}
+
+async function checkR23ToastMerge(page, label) {
+  await page.waitForFunction(() => document.querySelectorAll("#toast-host .toast").length === 0, undefined, { timeout: 10_000 }).catch(() => {});
+  for (let index = 0; index < 5; index += 1) {
+    await page.keyboard.press("q");
+    await page.waitForTimeout(60);
+  }
+  const toastState = await page.evaluate(() => {
+    const toasts = [...document.querySelectorAll("#toast-host .toast")];
+    const target = toasts.filter((toast) => toast.textContent?.includes("誘餌只在夜襲時使用"));
+    const span = toasts[0]?.querySelector("span");
+    return { total: toasts.length, matching: target.length, counter: target[0]?.querySelector("em")?.textContent ?? null, fontSize: span ? parseFloat(getComputedStyle(span).fontSize) : 0 };
+  });
+  record(label, "R23 repeated toast merges into one ×N entry and stays readable", toastState.matching === 1 && toastState.counter === "×5" && toastState.total <= 3 && toastState.fontSize >= 11, JSON.stringify(toastState));
+}
+
+async function checkR23WaveFeedback(page, label, touch) {
+  const bait = page.locator("#bait-button");
+  await bait.waitFor({ state: "visible", timeout: 8_000 });
+  const layout = await page.evaluate(() => {
+    const rect = (selector) => {
+      const box = document.querySelector(selector)?.getBoundingClientRect();
+      return box ? { left: box.left, top: box.top, right: box.right, bottom: box.bottom, width: box.width, height: box.height } : null;
+    };
+    return { bait: rect("#bait-button"), weapon: rect("#weapon-button"), attack: rect("#attack-button"), wave: rect("#wave-button"), viewport: { width: innerWidth, height: innerHeight } };
+  });
+  const overlap = (a, b) => Boolean(a && b) && a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+  const inside = layout.bait && layout.bait.left >= 0 && layout.bait.top >= 0 && layout.bait.right <= layout.viewport.width && layout.bait.bottom <= layout.viewport.height;
+  record(label, "R23 bait button is ≥44px, inside the viewport and clear of combat controls", Boolean(inside) && layout.bait.width >= 44 && layout.bait.height >= 44 && !overlap(layout.bait, layout.weapon) && !overlap(layout.bait, layout.attack) && !overlap(layout.bait, layout.wave), JSON.stringify(layout));
+  const before = await page.evaluate(() => ({ feedback: window.__stormDebug?.feedback ?? null, stock: document.querySelector("#hud-stock")?.textContent ?? "" }));
+  if (touch) await bait.tap();
+  else await page.keyboard.press("q");
+  await page.waitForFunction(() => window.__stormDebug?.feedback?.baitsThrown >= 1, undefined, { timeout: 5_000 }).catch(() => {});
+  const after = await page.evaluate(() => ({ feedback: window.__stormDebug?.feedback ?? null, audio: window.__stormAudio?.counts?.bait ?? 0, music: window.__stormAudio?.music ?? null }));
+  record(label, "R23 meat bait throws during a wave, starts cooldown and plays its cue", after.feedback?.baitsThrown === 1 && after.feedback?.baitActive === true && after.feedback?.baitCooldown > 0 && after.audio > 0, JSON.stringify({ before, after }));
+  record(label, "R23 music director switches to the night layer during waves", after.music?.mode === "night" && ["file", "procedural"].includes(after.music?.night), JSON.stringify(after.music));
 }
 
 async function checkR19CameraFraming(page, label, expectedProfile, touch) {
@@ -1777,6 +1826,7 @@ async function runCombat(browser, config) {
     record(label, "swing and hit cues follow attack and impact", combatAudio?.counts?.swing > 0 && combatAudio?.counts?.hit > 0, JSON.stringify(combatAudio?.counts));
 
     await moveNorthUntil(page, config.touch, label);
+    await checkR23ToastMerge(page, label);
     if (config.touch) await page.locator("#wave-button").click();
     else await page.keyboard.press("n");
     await page.waitForTimeout(3_000);
@@ -1797,6 +1847,7 @@ async function runCombat(browser, config) {
       return animations?.includes("frost:attack") ? animations : false;
     }, undefined, { timeout: 15_000 }).then((handle) => handle.jsonValue());
     record(label, "tower fire triggers authored clip", typeof towerAnimations === "string" && towerAnimations.includes("frost:attack"), `animations=${towerAnimations}`);
+    await checkR23WaveFeedback(page, label, config.touch);
     if (config.touch && config.viewport.width === 390 && config.viewport.height === 844) {
       await checkR19CameraFraming(page, label, "narrow-portrait", config.touch);
     } else if (!config.touch) {
@@ -1816,6 +1867,8 @@ async function runCombat(browser, config) {
     record(label, `${config.touch ? "touch" : "keyboard"} SMG hold repeats`, attacksAfterZombie - attacksBeforeZombie >= 2, `attacks ${attacksBeforeZombie}→${attacksAfterZombie}`);
     const livePlayerKills = Number(await page.locator("#game-canvas").getAttribute("data-player-kills"));
     record(label, `${config.touch ? "touch" : "keyboard"} SMG damages zombie`, livePlayerKills > before.stats.playerKills, `playerKills ${before.stats.playerKills}→${livePlayerKills}`);
+    const feedback = await page.evaluate(() => window.__stormDebug?.feedback ?? null);
+    record(label, "R23 player hits spawn floating numbers, enemy hit flashes and combo tracking", feedback?.floaters > 0 && feedback?.hitFlashes > 0 && feedback?.bestCombo >= 1, JSON.stringify(feedback));
     if (!config.touch) {
       await page.keyboard.down("s");
       await page.waitForFunction(() => Number(document.querySelector("#game-canvas")?.dataset.playerZ) <= -19, undefined, { timeout: 12_000 });
