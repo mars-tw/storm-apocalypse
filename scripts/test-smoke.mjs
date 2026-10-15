@@ -496,7 +496,8 @@ async function checkR18StaticContracts() {
       && game.includes('document.querySelector<HTMLElement>(".hud--top")')
       && game.includes('document.querySelector<HTMLElement>(".bottom-controls")')
       && game.includes("this.camera.targetScreenOffset.y")
-      && game.includes("const desiredBeta = 1.02 - safeFrame.portraitBlend * 0.2");
+      && game.includes("const desiredBeta = tacticalView ? 0.42 : 1.02 - safeFrame.portraitBlend * 0.2")
+      && game.includes("tacticalView ? 1.05 : 0.78");
     record("camera/R19", "narrow portrait framing reserves the measured HUD safe frame", framingPass, "aspect blend + top HUD + bottom controls + beta/radius/screen offset");
     const resizePass = game.includes("window.setTimeout(() => {")
       && game.includes("this.engine.resize();")
@@ -514,7 +515,7 @@ async function checkR18StaticContracts() {
     record("balance/R20", "runtime and fixed-seed simulator share the R20 combat rules", balancePass, "R19=1.08, R20=1.07; shared enemy/tower/player rule functions");
     const r22BalancePass = director.includes('r22: Object.freeze({ id: "r22", finalWaveSpawnMultiplier: 0.9, finalWaveHpMultiplier: 1.07, finalWaveEnemyBonus: 1, finalWaveDamageMultiplier: 1.075')
       && director.includes("export const ACTIVE_WAVE_BALANCE = WAVE_BALANCE_PROFILES.r22")
-      && director.includes('spawnInterval: baseInterval * (usesR22EliteCurve ? 1 : 1.08)')
+      && director.includes('spawnInterval: usesR22EliteCurve ? baseInterval - 0.027 : baseInterval * 1.08')
       && director.includes('hpMultiplier: usesR22EliteCurve ? 1.07 : 1.2')
       && !director.includes("ordinaryLateWaveHpMultiplier")
       && game.includes("this.currentWavePlan = getWavePlan(waveNumber)")
@@ -1132,8 +1133,8 @@ async function checkR12SystemMenu(page, label, fullChecks = false) {
     await page.locator("#mute-toggle").click();
     const audioState = await page.evaluate((key) => ({ debug: window.__stormAudio, saved: JSON.parse(localStorage.getItem(key) ?? "null") }), settingsKey);
     const cues = Object.keys(audioState.debug?.counts ?? {}).sort();
-    const expectedCues = ["bait", "boss", "build", "hit", "sale", "swing", "towerAlarm", "ui", "wave"].sort();
-    record(label, "volume and mute persist while all nine audio cues (R23 adds bait) remain available", audioState.saved?.masterVolume === 0.25 && audioState.saved?.muted === true && JSON.stringify(cues) === JSON.stringify(expectedCues), JSON.stringify({ saved: audioState.saved, cues }));
+    const expectedCues = ["bait", "baitAim", "baitCancel", "commission", "boss", "build", "hit", "sale", "swing", "towerAlarm", "ui", "wave"].sort();
+    record(label, "volume and mute persist while all twelve audio cues remain available", audioState.saved?.masterVolume === 0.25 && audioState.saved?.muted === true && JSON.stringify(cues) === JSON.stringify(expectedCues), JSON.stringify({ saved: audioState.saved, cues }));
     await page.locator("#mute-toggle").click();
     await page.locator("#master-volume").fill("80");
   }
@@ -1602,7 +1603,7 @@ async function checkR9UX(page, label, touch) {
   }
 
   const uiVersion = await page.locator("#app").getAttribute("data-ui-version");
-  record(label, "R24 UI version marker", uiVersion === "R24", `ui=${uiVersion}`);
+  record(label, "R25 UI version marker", uiVersion === "R25", `ui=${uiVersion}`);
 
   const tabCount = await page.locator("[data-shop-tab]").count();
   const visibleSections = await page.locator("[data-shop-section]").evaluateAll((sections) => sections.filter((section) => !section.hidden).map((section) => section.dataset.shopSection));

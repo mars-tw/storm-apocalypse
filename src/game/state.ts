@@ -46,6 +46,8 @@ export interface QuestSaveState {
 export interface SaveState {
   version: number;
   money: number;
+  carriedMeat: number;
+  displayedMeat: number;
   wave: number;
   baseHealth: number;
   stallLevel: number;
@@ -104,6 +106,8 @@ const DEFAULT_AFFINITY: Record<NamedCustomerId, number> = {
 const DEFAULT_SAVE: SaveState = {
   version: SAVE_VERSION,
   money: 35,
+  carriedMeat: 0,
+  displayedMeat: 0,
   wave: 0,
   baseHealth: 100,
   stallLevel: 1,
@@ -190,6 +194,8 @@ function migrate(input: unknown): SaveState {
   return {
     version: SAVE_VERSION,
     money,
+    carriedMeat: finite(raw.carriedMeat, 0, 0, 6),
+    displayedMeat: finite(raw.displayedMeat, 0, 0, 24),
     wave,
     baseHealth: finite(raw.baseHealth, 100, 0, 100),
     stallLevel: finite(raw.stallLevel, 1, 1, 4),
@@ -275,8 +281,6 @@ export function loadState(): RuntimeState {
   return {
     ...saved,
     requiresProtagonistSelection,
-    carriedMeat: 0,
-    displayedMeat: 0,
     waveActive: false,
     enemiesRemaining: 0,
     selectedTower: "ballista",
@@ -290,6 +294,8 @@ export function saveState(state: RuntimeState): void {
   const snapshot: SaveState = {
     version: SAVE_VERSION,
     money: state.money,
+    carriedMeat: state.carriedMeat,
+    displayedMeat: state.displayedMeat,
     wave: state.wave,
     baseHealth: state.baseHealth,
     stallLevel: state.stallLevel,

@@ -1,0 +1,482 @@
+[
+  {
+    "hp": 1.1,
+    "speed": 1,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.005,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.25
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.005,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.4
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.01,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.4
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.01,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.45
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.015,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.5166666666666667
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.015,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.45
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.02,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.02,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.06,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.06,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.08,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.08,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.1,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.1,
+    "speed": 1.1,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.65
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6333333333333333
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.005,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.43333333333333335
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.005,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.4
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.01,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.4166666666666667
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.01,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.43333333333333335
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.015,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.35
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.015,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.38333333333333336
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.02,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.38333333333333336
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.02,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.36666666666666664
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.06,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.38333333333333336
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.06,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.35
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.08,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.65
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.08,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.1,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "hp": 1.11,
+    "speed": 1.1,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  }
+]

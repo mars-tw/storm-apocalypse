@@ -1,7 +1,7 @@
 import { MusicDirector, type MusicMode } from "./music";
 import type { PlayerSettings } from "./settings";
 
-export type SoundCue = "hit" | "swing" | "build" | "sale" | "wave" | "boss" | "towerAlarm" | "ui" | "bait";
+export type SoundCue = "hit" | "swing" | "build" | "sale" | "wave" | "boss" | "towerAlarm" | "ui" | "bait" | "baitAim" | "baitCancel" | "commission";
 
 interface AudioDebugState {
   supported: boolean;
@@ -23,6 +23,9 @@ const EMPTY_COUNTS: Record<SoundCue, number> = {
   towerAlarm: 0,
   ui: 0,
   bait: 0,
+  baitAim: 0,
+  baitCancel: 0,
+  commission: 0,
 };
 
 export class ProceduralAudio {
@@ -92,6 +95,16 @@ export class ProceduralAudio {
     if (context.state === "suspended") void context.resume().catch(() => undefined);
     const at = context.currentTime + 0.008;
     switch (cue) {
+      case "baitAim":
+        this.tone("sine", 330, 440, at, 0.09, 0.07);
+        break;
+      case "baitCancel":
+        this.tone("triangle", 300, 180, at, 0.1, 0.06);
+        break;
+      case "commission":
+        // Three ascending notes: the meat shop's completed order bell.
+        for (const [index, hz] of [523.25, 659.25, 783.99].entries()) this.tone("sine", hz, hz, at + index * 0.11, 0.2, 0.09);
+        break;
       case "ui":
         this.tone("sine", 510, 690, at, 0.055, 0.08);
         break;

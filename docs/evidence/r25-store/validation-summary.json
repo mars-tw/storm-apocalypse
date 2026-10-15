@@ -1,0 +1,66 @@
+{
+  "status": "VERIFIED",
+  "generatedAt": "2026-10-15T12:51:59.039749+00:00",
+  "version": "0.3.0",
+  "baselineCommit": "7c1e9f78d74fadfc0421ebe6379d279dc1ee51e9",
+  "sourceHashes": {
+    "src/game/audio.ts": "8883c976b1b83326e9631e8c4603927e192e4068d4038776df8fa3e926772ce3",
+    "src/game/baitLayout.ts": "014c8d01f9b861181a056b2af7ff14a383d5bb1dd7b78b9fb6bd2b70a4dc7ab6",
+    "src/game/combatRules.ts": "31aefe0cdbdbe3be07357ab8640c60abc27896c55aef1e391fe35b26e260523a",
+    "src/game/content.ts": "d10bc3e69d7668738813237f82fbfaaab51594779dbb8a782cd3e81a6551ee5e",
+    "src/game/feedback.ts": "99af842371c3161dd13d64ebe95531cf158c7eaa7b5267b4febaf80d1103a1df",
+    "src/game/input.ts": "95fad1cb710592000adabf45518740a2659b7ead59d41f6a168d88f83a775225",
+    "src/game/music.ts": "d9ee41efc92c9a51be94dedc32e01edaa30c75cf784c8a599bd143edd1429c1d",
+    "src/game/patrol.ts": "bee5e89174c13b7fa633ea1764bc4434917f827e910668a151dbde3e4a1b9d0a",
+    "src/game/quality.ts": "0313ed10a7a37455b275acf0b8ceef50e530a98c8892f2b3bafac191ed99c3f8",
+    "src/game/quests.ts": "1011d19d1fb1d9d5946f65eeba72782ec005e7538b0295edba872e1560a50fcc",
+    "src/game/settings.ts": "c37f839acd5c82097da4e59f7836e65e541d3b1bb1c183d6b90e9e44ba9b7828",
+    "src/game/state.ts": "1c5d929b8ab5e4d66d2c2b995e30e9284e36f7af1f5554b51a813b533e525cba",
+    "src/game/StormGame.ts": "7962af15fd6a23e6f3c82a86c9e3c7175cdc534bcf66935959fa3e809b581821",
+    "src/game/ui.ts": "b55b922b2741b91de179e9aa5d846304e8b73690fb67b2535eb781b13c234cb7",
+    "src/game/waveDirector.ts": "14054f269ce7b9dc05c241fffd0c4710b86370d176a0a6ea989c5d0531918fed",
+    "src/game/waveSimulation.ts": "5264c295f3fa4ec26317c344614d31c76b1348d12d32da5de498b7686afd3a3e",
+    "src/game/weather.ts": "d3a0f997ea1be696a2e7cf2eea6cc5f5a3ab7565298ff083dfc55294b8790b0f",
+    "src/game/weatherProfiles.json": "b5fe6c410a4cadf6395f663a13657b84fd3cc0e04b79503d0316cd2f51f70174",
+    "src/main.ts": "2bf712da85fbca391652edd64d18da0e3a440ec092ed6250ab28d6a676d9c845",
+    "src/styles.css": "0a48f75b1ad55c6cdfbc3246520fd867bd4380cc558ed9b03dcc5e387cb663f5",
+    "package.json": "4b5bba488581f86268ea7161bc370e8a204f7c1d7bc2aa1b97d6b8e3961c6b7f",
+    "package-lock.json": "654fb5c74d776ee64be0242a2cfe56c58a7a77e721a46df47faba79e023fccb6",
+    "scripts/test-smoke.mjs": "4c99c4ed3e2022285b70eba7cc2db0ba2b0340a0d61e9a2d48e485ea998b259f",
+    "scripts/test-r25-store.mjs": "d3f142cc50e02471ae3376312cdeccbd14142295ee300a989c51eefc9f22bb65",
+    "scripts/test-r25-rules.mjs": "c7ae4f9d2fc11cb158c22f550f7a0b97926591e824d32d7d436da6f52cf0676d"
+  },
+  "checks": {
+    "build": "VERIFIED",
+    "smoke": {
+      "passed": 196,
+      "total": 196
+    },
+    "r24Mobile": {
+      "passed": 74,
+      "total": 74
+    },
+    "r24Rules": {
+      "passed": 14,
+      "total": 14
+    },
+    "r23Feedback": {
+      "passed": 7,
+      "total": 7
+    },
+    "r25Rules": {
+      "passed": 8,
+      "total": 8
+    },
+    "reviewerPath": {
+      "status": "VERIFIED",
+      "passed": 83,
+      "total": 83
+    },
+    "balanceFixedFresh": "VERIFIED - original thresholds unchanged",
+    "secretScan": "VERIFIED - zero matches",
+    "totalFunctionalChecks": 382
+  },
+  "shippingPerformance": "BLOCKED - concurrent workload, see performance-context.json",
+  "nativeBinary": "BLOCKED - native-kit is read-only and remains old build"
+}

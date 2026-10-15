@@ -1,0 +1,229 @@
+{
+  "limitation": "Calibration is not an independent beta test or unseen seed validation.",
+  "rows": [
+    {
+      "tightening": 0,
+      "seedSet": "fixed",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0,
+      "seedSet": "fresh",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.01,
+      "seedSet": "fixed",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.01,
+      "seedSet": "fresh",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.02,
+      "seedSet": "fixed",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 44,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.02,
+      "seedSet": "fresh",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 43,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.027,
+      "seedSet": "fixed",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 35,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.027,
+      "seedSet": "fresh",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 34,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.03,
+      "seedSet": "fixed",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.03,
+      "seedSet": "fresh",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.04,
+      "seedSet": "fixed",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.04,
+      "seedSet": "fresh",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.06,
+      "seedSet": "fixed",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 40,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    },
+    {
+      "tightening": 0.06,
+      "seedSet": "fresh",
+      "rates": [
+        {
+          "loadout": "maxed",
+          "wins": 39,
+          "runs": 60
+        },
+        {
+          "loadout": "general",
+          "wins": 0,
+          "runs": 60
+        }
+      ]
+    }
+  ]
+}

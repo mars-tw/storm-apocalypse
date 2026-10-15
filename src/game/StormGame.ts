@@ -38,6 +38,7 @@ import "@babylonjs/loaders/glTF";
 import type { ProceduralAudio } from "./audio";
 import { COMBAT_POSITIONS, COMBAT_TIMING, enemyAttackTimings, enemyCombatStats, enemySpawnPosition, playerAttackStats, resolvedPlayerHitDamages, towerCombatStats } from "./combatRules";
 import { BAIT_RULES, baitAttractedIndices, comboExpired, createCombo, gradeWave, pickBaitSource, registerComboKill, runAdvice, WAVE_GRADE_LABEL } from "./feedback";
+import { canClaimStarter, layoutFor, layoutObjective, LAYOUT_SAVE_KEY } from "./baitLayout";
 import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WAVE_EVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
 import { awardPatrol, baitDrag, loadPatrol, savePatrol, selectSupply, supplyEffects, type SupplyId } from "./patrol";
@@ -339,6 +340,13 @@ export class StormGame {
   private waveWallDamage = 0;
   private bait?: MeatBait;
   private baitCooldown = 0;
+  private layoutId = "center";
+  private pendingLayout = false;
+  private layoutCompleted = false;
+  private readonly layoutAttracted = new Set<ZombieActor>();
+  private layoutRing?: Mesh;
+  private layoutView = false;
+  private layoutViewUntil = 0;
   private baitsThrown = 0;
   private baitScraps = 0;
   private baitedZombies = 0;
@@ -663,6 +671,11 @@ export class StormGame {
     if (this.started) return;
     this.started = true;
     this.ui.enterGame();
+    try {
+      const saved = JSON.parse(localStorage.getItem(LAYOUT_SAVE_KEY) ?? "null");
+      this.layoutId = layoutFor(saved?.id ?? "center").id;
+      this.layoutCompleted = saved?.completed === true;
+    } catch { /* Invalid local data starts a fresh tactical card. */ }
     const protagonist = PROTAGONISTS.find((entry) => entry.id === this.state.protagonistId)!;
     this.ui.toast(`「${protagonist.openingLine}」`, "ice");
   }
@@ -670,7 +683,10 @@ export class StormGame {
   setPaused(paused: boolean): void {
     if (this.paused === paused) return;
     this.paused = paused;
-    if (paused) { this.releaseBait(false); this.previewTower(null); }
+    if (paused) {
+      this.releaseBait(false); this.previewTower(null); saveState(this.state);
+      this.audio.setMusicMode("off");
+    } else this.audio.setMusicMode(this.state.waveActive ? "night" : "day");
     this.input.setEnabled(!paused);
     this.scene.animationTimeScale = paused ? 0 : 1;
     const canvas = this.engine.getRenderingCanvas();
@@ -706,6 +722,36 @@ export class StormGame {
     this.ui.hideWorldAction();
     this.input.queueWave();
   }
+  chooseLayout(id: string, launch: boolean): void {
+    if (!this.started || this.paused || this.endShown) return;
+    const layout = layoutFor(id);
+    this.layoutId = layout.id;
+    this.layoutRing?.dispose(false, true);
+    const point = new Vector3(layout.x, this.heightAt(layout.x, layout.z), layout.z);
+    this.layoutRing = this.createWorldRing("layout-tactical-marker", point, 2.2, new Color3(1, 0.63, 0.3));
+    this.layoutRing.isPickable = false;
+    this.persistLayout();
+    if (!launch) { this.audio.play("baitAim"); return; }
+    this.layoutViewUntil = this.elapsed + 8;
+    if (this.state.waveActive) { this.throwBait(point); return; }
+    if (canClaimStarter(this.state.wave, this.state.towers)) {
+      this.state.towers.ballista = 1;
+      this.state.towerBuilt = true;
+      const tower = this.towerActors.get("ballista")!;
+      tower.root.setEnabled(true);
+      tower.pad.setEnabled(false);
+      saveState(this.state);
+      this.ui.toast("試守弩塔已領取，永久留在肉舖。手冊的狩獵與開店任務仍可繼續。", "warm");
+    }
+    if (Object.values(this.state.towers).some(Boolean) && this.state.wave < 30) {
+      this.pendingLayout = true;
+      this.tryStartWave();
+    }
+  }
+  private persistLayout(): void {
+    try { localStorage.setItem(LAYOUT_SAVE_KEY, JSON.stringify({ version: 1, id: this.layoutId, completed: this.layoutCompleted })); } catch { /* Session remains playable. */ }
+  }
+  setLayoutView(open: boolean): void { this.layoutView = open; }
   cycleWeapon(): void {
     const unlocked = WEAPONS.map((weapon) => weapon.id).filter((id) => this.state.weapons[id]);
     if (unlocked.length <= 1) {
@@ -774,6 +820,7 @@ export class StormGame {
 
   releaseBait(commit: boolean): void {
     const target = this.baitAimPosition?.clone();
+    if (target && !commit) this.audio.play("baitCancel");
     this.baitAimPosition = undefined;
     this.baitAimRing?.dispose(false, true);
     this.baitAimRing = undefined;
@@ -1594,6 +1641,11 @@ export class StormGame {
     if (this.uiUpdateTimer >= 0.1) {
       this.uiUpdateTimer = 0;
       this.ui.update(this.state);
+      const layout = layoutFor(this.layoutId);
+      this.ui.updateLayout({ id: layout.id, hint: `${layout.name}：${layout.hint}。`, active: this.state.waveActive,
+        cooldown: this.state.waveActive && this.baitCooldown > 0,
+        available: this.state.waveActive ? Boolean(pickBaitSource(this.state.carriedMeat, this.state.displayedMeat, this.baitScraps)) : this.state.wave < 30 && (canClaimStarter(this.state.wave, this.state.towers) || Object.values(this.state.towers).some(Boolean)),
+        attracted: this.layoutAttracted.size, completed: this.layoutCompleted, starter: canClaimStarter(this.state.wave, this.state.towers) });
       this.ui.updatePatrol(this.patrol, this.state.waveActive, this.state.wave + 1, {
         attracted: this.baitedZombies - this.waveAttractedStart, playerKills: this.wavePlayerKills, wallDamage: this.waveWallDamage,
       });
@@ -1985,7 +2037,7 @@ export class StormGame {
     this.state.employees[id] = level === 0 ? 1 : 2;
     if (level === 0) this.createStaff(id);
     saveState(this.state);
-    this.ui.toast(level === 0 ? `${item.name}已加入肉舖。自動化開始運轉。` : `${item.name}已升至 Lv2 · ${item.upgradeDescription}`, "warm");
+    this.ui.toast(level === 0 ? `${item.name}已加入肉舖。自動化開始運轉。` : `${item.name}已升至等級 2 · ${item.upgradeDescription}`, "warm");
     this.processQuests();
   }
 
@@ -2039,7 +2091,7 @@ export class StormGame {
     this.createAttackRing(id === "frost" ? new Color3(0.25, 0.76, 1) : id === "cannon" ? new Color3(1, 0.31, 0.08) : new Color3(0.86, 0.66, 0.32), tower.root.position);
     saveState(this.state);
     this.audio.play("build");
-    this.ui.toast(`${definition.name}${level === 0 ? "完工" : `升至 Lv.${level + 1}`}。`, "warm");
+    this.ui.toast(`${definition.name}${level === 0 ? "完工" : `升至等級 ${level + 1}`}。`, "warm");
     this.processQuests();
   }
 
@@ -2227,6 +2279,11 @@ export class StormGame {
       this.spawnTimer -= dt;
       if (this.spawnTimer <= 0) {
         this.spawnZombie(this.enemiesToSpawn);
+        if (this.pendingLayout) {
+          this.pendingLayout = false;
+          const layout = layoutFor(this.layoutId);
+          this.throwBait(new Vector3(layout.x, 0, layout.z));
+        }
         this.enemiesToSpawn -= 1;
         this.spawnTimer = this.currentWavePlan?.spawnInterval ?? Math.max(0.38, 0.86 - this.state.wave * 0.014);
       }
@@ -2531,6 +2588,7 @@ export class StormGame {
     this.releaseBait(false);
     if (awardPatrol(this.patrol, this.state.wave, { attracted: this.baitedZombies - this.waveAttractedStart, playerKills: this.wavePlayerKills, wallDamage: this.waveWallDamage })) {
       savePatrol(this.patrol);
+      this.audio.play("commission");
       this.ui.toast(`守夜委託達成 · ＋1 守夜章（共 ${this.patrol.completedWaves.length}）· 暫停 → 補給查看解鎖`, "warm");
     }
     const reward = 16 + Math.min(this.state.wave, 10) * 3 + Math.max(0, this.state.wave - 10) + (this.state.wave % 10 === 0 ? 35 : 0) + supplyEffects(this.waveSupply).bonus;
@@ -2646,7 +2704,10 @@ ${epilogue}` : ""), [
 
   private updateCamera(dt: number): void {
     const safeFrame = this.resolveCameraSafeFrame();
-    const baseTarget = this.player.root.position.add(new Vector3(0, 1.2, 0));
+    const tacticalView = !this.paused && (this.layoutView || this.elapsed < this.layoutViewUntil);
+    const canvas = this.engine.getRenderingCanvas();
+    if (canvas) canvas.dataset.tacticalView = String(tacticalView);
+    const baseTarget = tacticalView ? new Vector3(0, 0, 13) : this.player.root.position.add(new Vector3(0, 1.2, 0));
     this.cameraShake *= Math.exp(-dt * 10.5);
     const shake = this.settings.screenShake && this.cameraShake > 0.002
       ? new Vector3(Math.sin(this.elapsed * 73) * this.cameraShake, Math.sin(this.elapsed * 97) * this.cameraShake * 0.35, Math.cos(this.elapsed * 67) * this.cameraShake)
@@ -2654,14 +2715,16 @@ ${epilogue}` : ""), [
     const target = baseTarget.add(shake);
     this.camera.target.copyFrom(Vector3.Lerp(this.camera.target, target, Math.min(1, dt * 4.8)));
     const baseRadius = this.state.waveActive ? 25 : 19;
-    const desiredRadius = baseRadius + safeFrame.portraitBlend * 3;
+    const desiredRadius = tacticalView ? 30 : baseRadius + safeFrame.portraitBlend * 3;
     this.camera.radius += (desiredRadius - this.camera.radius) * Math.min(1, dt * 1.8);
-    const desiredBeta = 1.02 - safeFrame.portraitBlend * 0.2;
+    const desiredBeta = tacticalView ? 0.42 : 1.02 - safeFrame.portraitBlend * 0.2;
     this.camera.beta += (desiredBeta - this.camera.beta) * Math.min(1, dt * 3.6);
+    this.camera.alpha += ((tacticalView ? -Math.PI / 2 : -Math.PI * 0.28) - this.camera.alpha) * Math.min(1, dt * 4.8);
+    this.camera.fov += ((tacticalView ? 1.05 : 0.78) - this.camera.fov) * Math.min(1, dt * 4.8);
     const safeCenterY = (safeFrame.top + safeFrame.bottom) / 2;
     const canvasCenterY = safeFrame.canvasTop + safeFrame.height / 2;
     const verticalWorldSpan = 2 * desiredRadius * Math.tan(this.camera.fov / 2);
-    const desiredScreenOffsetY = safeFrame.portraitBlend
+    const desiredScreenOffsetY = (tacticalView ? 0 : safeFrame.portraitBlend)
       * Math.max(0, canvasCenterY - safeCenterY)
       * verticalWorldSpan / Math.max(1, safeFrame.height);
     this.camera.targetScreenOffset.y += (desiredScreenOffsetY - this.camera.targetScreenOffset.y) * Math.min(1, dt * 4.8);
@@ -3200,6 +3263,13 @@ ${epilogue}` : ""), [
     const indices = baitAttractedIndices({ x: bait.position.x, z: bait.position.z }, living);
     for (const index of indices) this.zombies[index].baitUntil = bait.expiresAt;
     this.baitedZombies += indices.length;
+    for (const index of indices) this.layoutAttracted.add(this.zombies[index]);
+    if (!this.layoutCompleted && layoutObjective(this.layoutAttracted.size)) {
+      this.layoutCompleted = true;
+      this.persistLayout();
+      this.audio.play("commission");
+      this.ui.toast("首張戰術單完成：屍群已改追鮮肉。回肉舖備貨，決定下一份肉要賣還是拿來守夜。", "warm");
+    }
     return indices.length;
   }
 

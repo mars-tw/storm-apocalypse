@@ -122,9 +122,9 @@ export const WEAPONS: readonly ShopItem<WeaponId>[] = [
 ] as const;
 
 export const EMPLOYEES: readonly ShopItem<EmployeeId>[] = [
-  { id: "hunter", name: "獵人", description: "Lv1 · 自動牧牛 · 1 傷／1.45s", price: 140, upgradePrice: 120, upgradeDescription: "攻速 1.10s · 移動更快" },
-  { id: "cashier", name: "收銀員", description: "Lv1 · 快速結帳 · 每筆 +5", price: 190, upgradePrice: 150, upgradeDescription: "結帳 0.28s · 每筆 +8" },
-  { id: "dog", name: "牧羊犬", description: "Lv1 · 自動拾肉回攤", price: 230, upgradePrice: 160, upgradeDescription: "優先鮮度 · 一次搬 2 份" },
+  { id: "hunter", name: "獵人", description: "等級 1 · 自動牧牛 · 1 傷／1.45秒", price: 140, upgradePrice: 120, upgradeDescription: "攻速 1.10秒 · 移動更快" },
+  { id: "cashier", name: "收銀員", description: "等級 1 · 快速結帳 · 每筆 +5", price: 190, upgradePrice: 150, upgradeDescription: "結帳 0.28秒 · 每筆 +8" },
+  { id: "dog", name: "牧羊犬", description: "等級 1 · 自動拾肉回攤", price: 230, upgradePrice: 160, upgradeDescription: "優先鮮度 · 一次搬 2 份" },
 ] as const;
 
 export const TOWERS: readonly ShopItem<TowerId>[] = [

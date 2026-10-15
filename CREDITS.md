@@ -25,7 +25,7 @@ CC0 素材可用於個人及商業用途，署名並非授權要求；本專案�
 
 | 來源 | 授權 | 用途 |
 | --- | --- | --- |
-| [Noto Sans TC](https://fonts.google.com/noto/specimen/Noto+Sans+TC)／[Noto Serif TC](https://fonts.google.com/noto/specimen/Noto+Serif+TC) | [SIL Open Font License 1.1](https://openfontlicense.org/) | `src/styles.css` 透過 Google Fonts 載入；分別用於介面內文及標題。repo 未內嵌字型檔，載入失敗時回退至系統繁中字型 |
+| 系統繁中字型；字型堆疊保留 Noto Sans TC／Noto Serif TC 名稱 | 系統字型由裝置提供；若裝置已有 Noto，其授權為 SIL Open Font License 1.1 | R25 移除 Google Fonts 外連，完全使用裝置已有的字型與 serif／sans-serif 回退。repo 未內嵌、未下載字型檔 |
 
 ## 程式框架與開發工具
 
@@ -47,6 +47,7 @@ CC0 素材可用於個人及商業用途，署名並非授權要求；本專案�
 - `public/images/vfx/r13/`：R13 以 `gpt-image-2` 生成 8 張 opaque master，經本機 chroma-key 去背、despill、edge contract 與 Lanczos runtime resize 產生的原創 RGBA 戰鬥 VFX；prompt、hash、mask 與 alpha QA 記於同目錄 manifest 及 `docs/evidence/R13_art/`。
 - `public/favicon.svg`：R12 自製北境閃電圖示，使用 repo 色票與純 SVG 路徑。
 - `src/game/audio.ts`：R12 以 WebAudio oscillator、濾波 noise 與 gain envelope 即時合成八類遊戲音效；不載入外部音檔。
+- R25 另加入誘餌選位 `baitAim`、取消 `baitCancel`、守夜委託完成 `commission` 三種原創合成提示音；使用正弦波／三角波與獨立音高包絡。沒有錄音或外部音訊服務。
 - `src/game/music.ts`：R23 白晝／夜襲配樂導演。執行期優先載入 `public/audio/bgm-day.ogg`、`bgm-night.ogg`；檔案不存在時以 WebAudio 三角波和弦墊、風聲濾波 noise、低鼓與 hi-hat 即時合成程序化配樂（原創，無外部音檔）。本機 AI 派工器 `music`（ace_step）生成檔的來源與狀態記於 `docs/R23_FUN_AND_POLISH_REPORT.md`。
 - `docs/evidence/R8/`：上述模型與 UI 的 turntable、角色陣容、主選單及遊戲畫面稽核證據。
 

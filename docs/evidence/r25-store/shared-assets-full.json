@@ -1,0 +1,27 @@
+{
+  "status": "VERIFIED",
+  "time": "2026-10-15T12:30:49.727079+00:00",
+  "ownFiles": 130,
+  "peerFiles": {
+    "rift-survivors": 221,
+    "doomsday-shooter": 106,
+    "tower-defense": 179,
+    "skill": 132,
+    "pixel-idle-farm-skill": 297,
+    "village-siege": 359,
+    "seven-district-reckoning": 521,
+    "rift-forge-3d": 3,
+    "taiwan-island-drive": 204,
+    "taiwan-train-math": 203,
+    "island-flight-school": 20,
+    "taiwan-train-school": 16,
+    "夜行列車_重製企劃_20261002": 0
+  },
+  "duplicates": [],
+  "limitation": "Exact hashes do not prove visual or conceptual uniqueness. Read-only tracked-runtime scan; sibling repos are concurrently mutable.",
+  "nightTrainReadOnly": {
+    "path": "C:\\Users\\digimkt\\Desktop\\遊戲\\夜行列車_重製企劃_20261002",
+    "gitRuntimeAvailable": false,
+    "indexSha256": "90d7a3665f461e124236623219b285f1ed34b0c11cc45681abd09117f5a00777"
+  }
+}

@@ -1,0 +1,1765 @@
+{
+  "status": "VERIFIED",
+  "results": [
+    {
+      "name": "iphone-se cold start has no injected save",
+      "pass": true
+    },
+    {
+      "name": "iphone-se layout selection saves without spending",
+      "pass": true
+    },
+    {
+      "name": "iphone-se route choices and pause reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "[data-layout=\"west\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"center\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"east\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#layout-launch",
+          "width": 302,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "iphone-se no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "iphone-se touch hint never stretches into a vertical panel",
+      "pass": true,
+      "detail": {
+        "x": 80.9140625,
+        "y": 168,
+        "width": 213.171875,
+        "height": 37
+      }
+    },
+    {
+      "name": "iphone-se real enemies attracted by authored layout",
+      "pass": true,
+      "detail": {
+        "feedback": {
+          "towerPreview": null,
+          "baitAim": null,
+          "baitPosition": {
+            "x": 0,
+            "z": 12
+          },
+          "baitScraps": 0,
+          "patrolStamps": 0,
+          "supply": "standard",
+          "waveEvent": "standard",
+          "enemyTypes": [
+            "walker"
+          ],
+          "hitStops": 0,
+          "hitFlashes": 0,
+          "floaters": 2,
+          "combo": 0,
+          "bestCombo": 0,
+          "baitsThrown": 1,
+          "baitedZombies": 2,
+          "baitActive": true,
+          "baitCooldown": 8.12,
+          "beacon": "none",
+          "fadedOccluders": 0,
+          "lastWaveGrade": ""
+        },
+        "audio": {
+          "supported": true,
+          "unlocked": true,
+          "muted": false,
+          "effectiveVolume": 0.72,
+          "lastCue": "commission",
+          "counts": {
+            "hit": 0,
+            "swing": 0,
+            "build": 0,
+            "sale": 0,
+            "wave": 1,
+            "boss": 0,
+            "towerAlarm": 0,
+            "ui": 4,
+            "bait": 1,
+            "baitAim": 2,
+            "baitCancel": 0,
+            "commission": 1
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          }
+        }
+      }
+    },
+    {
+      "name": "iphone-se dedicated layout and commission sounds are triggered",
+      "pass": true,
+      "detail": {
+        "hit": 0,
+        "swing": 0,
+        "build": 0,
+        "sale": 0,
+        "wave": 1,
+        "boss": 0,
+        "towerAlarm": 0,
+        "ui": 4,
+        "bait": 1,
+        "baitAim": 2,
+        "baitCancel": 0,
+        "commission": 1
+      }
+    },
+    {
+      "name": "iphone-se starter tower and goal persisted",
+      "pass": true
+    },
+    {
+      "name": "iphone-se signature objective within three minutes",
+      "pass": true,
+      "detail": {
+        "elapsedMs": 7186,
+        "limitation": "並發載量測，僅供參考"
+      }
+    },
+    {
+      "name": "iphone-se layout collapses to reveal real combat",
+      "pass": true
+    },
+    {
+      "name": "iphone-se first wave naturally completed",
+      "pass": true,
+      "detail": {
+        "version": 5,
+        "money": 89,
+        "carriedMeat": 0,
+        "displayedMeat": 0,
+        "wave": 1,
+        "baseHealth": 100,
+        "stallLevel": 1,
+        "towerBuilt": true,
+        "bestWave": 1,
+        "weapon": "machete",
+        "weapons": {
+          "machete": true,
+          "axe": false,
+          "smg": false
+        },
+        "protagonistId": "butcher_matron",
+        "employees": {
+          "hunter": 0,
+          "cashier": 0,
+          "dog": 0
+        },
+        "customerAffinity": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "customerRewardsClaimed": [],
+        "customerAffinityWave": 0,
+        "customerAffinityGained": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "pasture2Unlocked": false,
+        "towers": {
+          "ballista": 1,
+          "frost": 0,
+          "cannon": 0
+        },
+        "quest": {
+          "chapter": 1,
+          "completed": [],
+          "unlocks": [],
+          "loop": {
+            "id": "tower-kills",
+            "wave": 1,
+            "progress": 3,
+            "target": 3,
+            "reward": 23,
+            "completed": true,
+            "claimed": true
+          }
+        },
+        "stats": {
+          "pastureVisited": false,
+          "cowsKilled": 0,
+          "meatCollected": 0,
+          "meatDeposited": 0,
+          "sales": 0,
+          "totalEarned": 54,
+          "zombiesKilled": 6,
+          "playerKills": 0,
+          "towerKills": 6,
+          "damageDealt": 18,
+          "damageTaken": 0,
+          "wavesCleared": 1,
+          "campaignWins": 0
+        },
+        "lastSavedAt": 1792068602152
+      }
+    },
+    {
+      "name": "iphone-se pause freezes simulation",
+      "pass": true
+    },
+    {
+      "name": "iphone-se menu has working return route",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 156.5,
+          "height": 103,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "iphone-se resume restores simulation",
+      "pass": true
+    },
+    {
+      "name": "iphone-se reopen keeps wave, money, tower and tactical goal",
+      "pass": true
+    },
+    {
+      "name": "browser freeze and restore retain progress and usable pause",
+      "pass": true
+    },
+    {
+      "name": "iphone-se no runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "iphone-store cold start has no injected save",
+      "pass": true
+    },
+    {
+      "name": "iphone-store layout selection saves without spending",
+      "pass": true
+    },
+    {
+      "name": "iphone-store route choices and pause reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "[data-layout=\"west\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"center\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"east\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#layout-launch",
+          "width": 302,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "iphone-store no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "iphone-store touch hint never stretches into a vertical panel",
+      "pass": true,
+      "detail": {
+        "x": 108.4140625,
+        "y": 168,
+        "width": 213.171875,
+        "height": 37
+      }
+    },
+    {
+      "name": "iphone-store real enemies attracted by authored layout",
+      "pass": true,
+      "detail": {
+        "feedback": {
+          "towerPreview": null,
+          "baitAim": null,
+          "baitPosition": {
+            "x": 0,
+            "z": 12
+          },
+          "baitScraps": 0,
+          "patrolStamps": 0,
+          "supply": "standard",
+          "waveEvent": "standard",
+          "enemyTypes": [
+            "walker"
+          ],
+          "hitStops": 0,
+          "hitFlashes": 0,
+          "floaters": 2,
+          "combo": 0,
+          "bestCombo": 0,
+          "baitsThrown": 1,
+          "baitedZombies": 2,
+          "baitActive": true,
+          "baitCooldown": 7.82,
+          "beacon": "none",
+          "fadedOccluders": 0,
+          "lastWaveGrade": ""
+        },
+        "audio": {
+          "supported": true,
+          "unlocked": true,
+          "muted": false,
+          "effectiveVolume": 0.72,
+          "lastCue": "commission",
+          "counts": {
+            "hit": 0,
+            "swing": 0,
+            "build": 0,
+            "sale": 0,
+            "wave": 1,
+            "boss": 0,
+            "towerAlarm": 0,
+            "ui": 4,
+            "bait": 1,
+            "baitAim": 2,
+            "baitCancel": 0,
+            "commission": 1
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          }
+        }
+      }
+    },
+    {
+      "name": "iphone-store dedicated layout and commission sounds are triggered",
+      "pass": true,
+      "detail": {
+        "hit": 0,
+        "swing": 0,
+        "build": 0,
+        "sale": 0,
+        "wave": 1,
+        "boss": 0,
+        "towerAlarm": 0,
+        "ui": 4,
+        "bait": 1,
+        "baitAim": 2,
+        "baitCancel": 0,
+        "commission": 1
+      }
+    },
+    {
+      "name": "iphone-store starter tower and goal persisted",
+      "pass": true
+    },
+    {
+      "name": "iphone-store signature objective within three minutes",
+      "pass": true,
+      "detail": {
+        "elapsedMs": 6565,
+        "limitation": "並發載量測，僅供參考"
+      }
+    },
+    {
+      "name": "iphone-store layout collapses to reveal real combat",
+      "pass": true
+    },
+    {
+      "name": "iphone-store first wave naturally completed",
+      "pass": true,
+      "detail": {
+        "version": 5,
+        "money": 89,
+        "carriedMeat": 0,
+        "displayedMeat": 0,
+        "wave": 1,
+        "baseHealth": 100,
+        "stallLevel": 1,
+        "towerBuilt": true,
+        "bestWave": 1,
+        "weapon": "machete",
+        "weapons": {
+          "machete": true,
+          "axe": false,
+          "smg": false
+        },
+        "protagonistId": "butcher_matron",
+        "employees": {
+          "hunter": 0,
+          "cashier": 0,
+          "dog": 0
+        },
+        "customerAffinity": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "customerRewardsClaimed": [],
+        "customerAffinityWave": 0,
+        "customerAffinityGained": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "pasture2Unlocked": false,
+        "towers": {
+          "ballista": 1,
+          "frost": 0,
+          "cannon": 0
+        },
+        "quest": {
+          "chapter": 1,
+          "completed": [],
+          "unlocks": [],
+          "loop": {
+            "id": "tower-kills",
+            "wave": 1,
+            "progress": 3,
+            "target": 3,
+            "reward": 23,
+            "completed": true,
+            "claimed": true
+          }
+        },
+        "stats": {
+          "pastureVisited": false,
+          "cowsKilled": 0,
+          "meatCollected": 0,
+          "meatDeposited": 0,
+          "sales": 0,
+          "totalEarned": 54,
+          "zombiesKilled": 6,
+          "playerKills": 0,
+          "towerKills": 6,
+          "damageDealt": 18,
+          "damageTaken": 0,
+          "wavesCleared": 1,
+          "campaignWins": 0
+        },
+        "lastSavedAt": 1792068615053
+      }
+    },
+    {
+      "name": "iphone-store pause freezes simulation",
+      "pass": true
+    },
+    {
+      "name": "iphone-store menu has working return route",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 184,
+          "height": 103,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "iphone-store resume restores simulation",
+      "pass": true
+    },
+    {
+      "name": "iphone-store reopen keeps wave, money, tower and tactical goal",
+      "pass": true
+    },
+    {
+      "name": "iphone-store no runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "ipad-13-store cold start has no injected save",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store layout selection saves without spending",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store route choices and pause reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "[data-layout=\"west\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"center\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"east\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#layout-launch",
+          "width": 302,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "ipad-13-store no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store touch hint never stretches into a vertical panel",
+      "pass": true,
+      "detail": {
+        "x": 409.4140625,
+        "y": 168,
+        "width": 213.171875,
+        "height": 37
+      }
+    },
+    {
+      "name": "ipad-13-store real enemies attracted by authored layout",
+      "pass": true,
+      "detail": {
+        "feedback": {
+          "towerPreview": null,
+          "baitAim": null,
+          "baitPosition": {
+            "x": 0,
+            "z": 12
+          },
+          "baitScraps": 0,
+          "patrolStamps": 0,
+          "supply": "standard",
+          "waveEvent": "standard",
+          "enemyTypes": [
+            "walker"
+          ],
+          "hitStops": 0,
+          "hitFlashes": 0,
+          "floaters": 2,
+          "combo": 0,
+          "bestCombo": 0,
+          "baitsThrown": 1,
+          "baitedZombies": 2,
+          "baitActive": true,
+          "baitCooldown": 7.97,
+          "beacon": "none",
+          "fadedOccluders": 0,
+          "lastWaveGrade": ""
+        },
+        "audio": {
+          "supported": true,
+          "unlocked": true,
+          "muted": false,
+          "effectiveVolume": 0.72,
+          "lastCue": "commission",
+          "counts": {
+            "hit": 0,
+            "swing": 0,
+            "build": 0,
+            "sale": 0,
+            "wave": 1,
+            "boss": 0,
+            "towerAlarm": 0,
+            "ui": 4,
+            "bait": 1,
+            "baitAim": 2,
+            "baitCancel": 0,
+            "commission": 1
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          }
+        }
+      }
+    },
+    {
+      "name": "ipad-13-store dedicated layout and commission sounds are triggered",
+      "pass": true,
+      "detail": {
+        "hit": 0,
+        "swing": 0,
+        "build": 0,
+        "sale": 0,
+        "wave": 1,
+        "boss": 0,
+        "towerAlarm": 0,
+        "ui": 4,
+        "bait": 1,
+        "baitAim": 2,
+        "baitCancel": 0,
+        "commission": 1
+      }
+    },
+    {
+      "name": "ipad-13-store starter tower and goal persisted",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store signature objective within three minutes",
+      "pass": true,
+      "detail": {
+        "elapsedMs": 7058,
+        "limitation": "並發載量測，僅供參考"
+      }
+    },
+    {
+      "name": "ipad-13-store layout collapses to reveal real combat",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store first wave naturally completed",
+      "pass": true,
+      "detail": {
+        "version": 5,
+        "money": 89,
+        "carriedMeat": 0,
+        "displayedMeat": 0,
+        "wave": 1,
+        "baseHealth": 100,
+        "stallLevel": 1,
+        "towerBuilt": true,
+        "bestWave": 1,
+        "weapon": "machete",
+        "weapons": {
+          "machete": true,
+          "axe": false,
+          "smg": false
+        },
+        "protagonistId": "butcher_matron",
+        "employees": {
+          "hunter": 0,
+          "cashier": 0,
+          "dog": 0
+        },
+        "customerAffinity": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "customerRewardsClaimed": [],
+        "customerAffinityWave": 0,
+        "customerAffinityGained": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "pasture2Unlocked": false,
+        "towers": {
+          "ballista": 1,
+          "frost": 0,
+          "cannon": 0
+        },
+        "quest": {
+          "chapter": 1,
+          "completed": [],
+          "unlocks": [],
+          "loop": {
+            "id": "tower-kills",
+            "wave": 1,
+            "progress": 3,
+            "target": 3,
+            "reward": 23,
+            "completed": true,
+            "claimed": true
+          }
+        },
+        "stats": {
+          "pastureVisited": false,
+          "cowsKilled": 0,
+          "meatCollected": 0,
+          "meatDeposited": 0,
+          "sales": 0,
+          "totalEarned": 54,
+          "zombiesKilled": 6,
+          "playerKills": 0,
+          "towerKills": 6,
+          "damageDealt": 18,
+          "damageTaken": 0,
+          "wavesCleared": 1,
+          "campaignWins": 0
+        },
+        "lastSavedAt": 1792068629219
+      }
+    },
+    {
+      "name": "ipad-13-store pause freezes simulation",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store menu has working return route",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 283,
+          "height": 88,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "ipad-13-store resume restores simulation",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store reopen keeps wave, money, tower and tactical goal",
+      "pass": true
+    },
+    {
+      "name": "ipad-13-store no runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "ipad-landscape cold start has no injected save",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape layout selection saves without spending",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape route choices and pause reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "[data-layout=\"west\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"center\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"east\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#layout-launch",
+          "width": 302,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "ipad-landscape no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape touch hint never stretches into a vertical panel",
+      "pass": true,
+      "detail": {
+        "x": 581.4140625,
+        "y": 168,
+        "width": 213.171875,
+        "height": 37
+      }
+    },
+    {
+      "name": "ipad-landscape real enemies attracted by authored layout",
+      "pass": true,
+      "detail": {
+        "feedback": {
+          "towerPreview": null,
+          "baitAim": null,
+          "baitPosition": {
+            "x": 0,
+            "z": 12
+          },
+          "baitScraps": 0,
+          "patrolStamps": 0,
+          "supply": "standard",
+          "waveEvent": "standard",
+          "enemyTypes": [
+            "walker"
+          ],
+          "hitStops": 0,
+          "hitFlashes": 0,
+          "floaters": 2,
+          "combo": 0,
+          "bestCombo": 0,
+          "baitsThrown": 1,
+          "baitedZombies": 2,
+          "baitActive": true,
+          "baitCooldown": 8.03,
+          "beacon": "none",
+          "fadedOccluders": 0,
+          "lastWaveGrade": ""
+        },
+        "audio": {
+          "supported": true,
+          "unlocked": true,
+          "muted": false,
+          "effectiveVolume": 0.72,
+          "lastCue": "commission",
+          "counts": {
+            "hit": 0,
+            "swing": 0,
+            "build": 0,
+            "sale": 0,
+            "wave": 1,
+            "boss": 0,
+            "towerAlarm": 0,
+            "ui": 4,
+            "bait": 1,
+            "baitAim": 2,
+            "baitCancel": 0,
+            "commission": 1
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          }
+        }
+      }
+    },
+    {
+      "name": "ipad-landscape dedicated layout and commission sounds are triggered",
+      "pass": true,
+      "detail": {
+        "hit": 0,
+        "swing": 0,
+        "build": 0,
+        "sale": 0,
+        "wave": 1,
+        "boss": 0,
+        "towerAlarm": 0,
+        "ui": 4,
+        "bait": 1,
+        "baitAim": 2,
+        "baitCancel": 0,
+        "commission": 1
+      }
+    },
+    {
+      "name": "ipad-landscape starter tower and goal persisted",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape signature objective within three minutes",
+      "pass": true,
+      "detail": {
+        "elapsedMs": 5599,
+        "limitation": "並發載量測，僅供參考"
+      }
+    },
+    {
+      "name": "ipad-landscape layout collapses to reveal real combat",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape first wave naturally completed",
+      "pass": true,
+      "detail": {
+        "version": 5,
+        "money": 89,
+        "carriedMeat": 0,
+        "displayedMeat": 0,
+        "wave": 1,
+        "baseHealth": 100,
+        "stallLevel": 1,
+        "towerBuilt": true,
+        "bestWave": 1,
+        "weapon": "machete",
+        "weapons": {
+          "machete": true,
+          "axe": false,
+          "smg": false
+        },
+        "protagonistId": "butcher_matron",
+        "employees": {
+          "hunter": 0,
+          "cashier": 0,
+          "dog": 0
+        },
+        "customerAffinity": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "customerRewardsClaimed": [],
+        "customerAffinityWave": 0,
+        "customerAffinityGained": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "pasture2Unlocked": false,
+        "towers": {
+          "ballista": 1,
+          "frost": 0,
+          "cannon": 0
+        },
+        "quest": {
+          "chapter": 1,
+          "completed": [],
+          "unlocks": [],
+          "loop": {
+            "id": "tower-kills",
+            "wave": 1,
+            "progress": 3,
+            "target": 3,
+            "reward": 23,
+            "completed": true,
+            "claimed": true
+          }
+        },
+        "stats": {
+          "pastureVisited": false,
+          "cowsKilled": 0,
+          "meatCollected": 0,
+          "meatDeposited": 0,
+          "sales": 0,
+          "totalEarned": 54,
+          "zombiesKilled": 6,
+          "playerKills": 0,
+          "towerKills": 6,
+          "damageDealt": 18,
+          "damageTaken": 0,
+          "wavesCleared": 1,
+          "campaignWins": 0
+        },
+        "lastSavedAt": 1792068640802
+      }
+    },
+    {
+      "name": "ipad-landscape pause freezes simulation",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape menu has working return route",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 283,
+          "height": 88,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "ipad-landscape resume restores simulation",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape reopen keeps wave, money, tower and tactical goal",
+      "pass": true
+    },
+    {
+      "name": "ipad-landscape no runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "ipad-classic cold start has no injected save",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic layout selection saves without spending",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic route choices and pause reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "[data-layout=\"west\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"center\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-layout=\"east\"]",
+          "width": 98,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#layout-launch",
+          "width": 302,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "ipad-classic no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic touch hint never stretches into a vertical panel",
+      "pass": true,
+      "detail": {
+        "x": 277.4140625,
+        "y": 168,
+        "width": 213.171875,
+        "height": 37
+      }
+    },
+    {
+      "name": "ipad-classic real enemies attracted by authored layout",
+      "pass": true,
+      "detail": {
+        "feedback": {
+          "towerPreview": null,
+          "baitAim": null,
+          "baitPosition": {
+            "x": 0,
+            "z": 12
+          },
+          "baitScraps": 0,
+          "patrolStamps": 0,
+          "supply": "standard",
+          "waveEvent": "standard",
+          "enemyTypes": [
+            "walker"
+          ],
+          "hitStops": 0,
+          "hitFlashes": 0,
+          "floaters": 2,
+          "combo": 0,
+          "bestCombo": 0,
+          "baitsThrown": 1,
+          "baitedZombies": 2,
+          "baitActive": true,
+          "baitCooldown": 7.8,
+          "beacon": "none",
+          "fadedOccluders": 0,
+          "lastWaveGrade": ""
+        },
+        "audio": {
+          "supported": true,
+          "unlocked": true,
+          "muted": false,
+          "effectiveVolume": 0.72,
+          "lastCue": "commission",
+          "counts": {
+            "hit": 0,
+            "swing": 0,
+            "build": 0,
+            "sale": 0,
+            "wave": 1,
+            "boss": 0,
+            "towerAlarm": 0,
+            "ui": 4,
+            "bait": 1,
+            "baitAim": 2,
+            "baitCancel": 0,
+            "commission": 1
+          },
+          "music": {
+            "mode": "night",
+            "day": "file",
+            "night": "file",
+            "volume": 0.336
+          }
+        }
+      }
+    },
+    {
+      "name": "ipad-classic dedicated layout and commission sounds are triggered",
+      "pass": true,
+      "detail": {
+        "hit": 0,
+        "swing": 0,
+        "build": 0,
+        "sale": 0,
+        "wave": 1,
+        "boss": 0,
+        "towerAlarm": 0,
+        "ui": 4,
+        "bait": 1,
+        "baitAim": 2,
+        "baitCancel": 0,
+        "commission": 1
+      }
+    },
+    {
+      "name": "ipad-classic starter tower and goal persisted",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic signature objective within three minutes",
+      "pass": true,
+      "detail": {
+        "elapsedMs": 5918,
+        "limitation": "並發載量測，僅供參考"
+      }
+    },
+    {
+      "name": "ipad-classic layout collapses to reveal real combat",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic first wave naturally completed",
+      "pass": true,
+      "detail": {
+        "version": 5,
+        "money": 89,
+        "carriedMeat": 0,
+        "displayedMeat": 0,
+        "wave": 1,
+        "baseHealth": 100,
+        "stallLevel": 1,
+        "towerBuilt": true,
+        "bestWave": 1,
+        "weapon": "machete",
+        "weapons": {
+          "machete": true,
+          "axe": false,
+          "smg": false
+        },
+        "protagonistId": "butcher_matron",
+        "employees": {
+          "hunter": 0,
+          "cashier": 0,
+          "dog": 0
+        },
+        "customerAffinity": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "customerRewardsClaimed": [],
+        "customerAffinityWave": 0,
+        "customerAffinityGained": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "pasture2Unlocked": false,
+        "towers": {
+          "ballista": 1,
+          "frost": 0,
+          "cannon": 0
+        },
+        "quest": {
+          "chapter": 1,
+          "completed": [],
+          "unlocks": [],
+          "loop": {
+            "id": "tower-kills",
+            "wave": 1,
+            "progress": 3,
+            "target": 3,
+            "reward": 23,
+            "completed": true,
+            "claimed": true
+          }
+        },
+        "stats": {
+          "pastureVisited": false,
+          "cowsKilled": 0,
+          "meatCollected": 0,
+          "meatDeposited": 0,
+          "sales": 0,
+          "totalEarned": 54,
+          "zombiesKilled": 6,
+          "playerKills": 0,
+          "towerKills": 6,
+          "damageDealt": 18,
+          "damageTaken": 0,
+          "wavesCleared": 1,
+          "campaignWins": 0
+        },
+        "lastSavedAt": 1792068652302
+      }
+    },
+    {
+      "name": "ipad-classic pause freezes simulation",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic menu has working return route",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 283,
+          "height": 88,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "ipad-classic resume restores simulation",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic reopen keeps wave, money, tower and tactical goal",
+      "pass": true
+    },
+    {
+      "name": "ipad-classic no runtime errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "built package offline plays signature objective using local files",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "runtime requests stay on local game origin",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "requests": [
+    "http://127.0.0.1:5195/storm-apocalypse/?smoke=1",
+    "http://127.0.0.1:5195/storm-apocalypse/@vite/client",
+    "http://127.0.0.1:5195/storm-apocalypse/index.html?html-proxy&index=0.js",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/vite/dist/client/env.mjs",
+    "http://127.0.0.1:5195/storm-apocalypse/src/main.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/styles.css",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/audio.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/settings.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/StormGame.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/state.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/ui.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/music.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/content.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/feedback.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/quests.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/waveDirector.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/combatRules.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/patrol.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/@babylonjs_core.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/@babylonjs_loaders_glTF.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/baitLayout.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/input.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/quality.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/weather.ts",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/@babylonjs_core_Maths_math__vector.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/src/game/weatherProfiles.json?import",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/typeStore-B_6iu0Wj.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/math.vector.pure-C9FE9GHO.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/math.color.pure-D6ahKduh.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/logger-BcrUU1RW.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/tools.pure-DNoM3VTA.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/animation.pure-DgdGK3bD.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/lazy-BceJrgCc.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/fileTools.pure-BnRjUAVW.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/guid-N63C7CX_.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/abstractEngine.pure-DrLutuES.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/buffer.pure-DIU9k3Qd.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/material.pure-nGdWP-VS.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/texture.pure-zxmmIvpF.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/renderTargetTexture.pure-DRYyAe6k.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/sphericalPolynomial.pure-0tlsI0Nk.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphBlock-07FsloBg.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/devTools-CGEJIhrn.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/webRequest-DNgJDQjf.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/domManagement-6VK99m7E.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/precisionDate-BVaGKhjp.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/timingTools-CTisXca_.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/tools.functions-DFmBikQS.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/decorators-DExTs2iI.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/math.size-tNPXo8kx.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/halfFloat-ZPnvq6QW.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/thinEngine.pure-RFV6opcU.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/shaderStore-CeBEoMrR.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/internalTexture-bmqKk2vM.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/uniformBuffer-DmNnkcxj.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/math.plane-B0ME7N1U.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/materialHelper.functions-Cnnm_mGm.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/drawWrapper-B49dmvGA.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/sceneComponent-DeOaTRk0.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/lightConstants-5fNseHbB.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/floatingOriginMatrixOverrides-C-XqO6Fq.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/scene.pure-CaZkTxpi.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pointerEvents-FL4tTffY.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/keyboardEvents-krnh_uvT.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/perfCounter-Ds-MEsNT.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/effectRenderer.pure-DESr4kGX.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/spatialWebAudio-BItz5gMr.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/webAudioBaseSubGraph-B21gUgdc.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/abstractSoundSource-CV6Lzlk2.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/abstractSoundInstance-D_HqRKU3.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/rgbdTextureTools-DYqr-_C5.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/imageProcessing-C5c2JaAt.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/dumpTools.pure-BtFPOJtH.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphAssetsContext-D5Q5oW4P.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphExecutionBlock-DNrBoMiC.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphAsyncExecutionBlock-CjFAAAoN.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/uniqueIdGenerator-Cx26xVST.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphExecutionBlockWithOutSignal-Twy3E3qe.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/animationGroup-Ck9iUVUj.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/easing-DdY-ZWlI.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphVectorMathBlocks-1bz0saiC.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbrMaterial.pure-DGKBUC0f.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/gaussianSplattingFragmentDeclaration-BWyk3Lxw.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bakedVertexAnimation-DcaglgZm.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/gaussianSplattingFragmentDeclaration-Btb9sOp3.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bakedVertexAnimation-BHQy3Vpp.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/webgpuPerfCounter-B1oOv5kk.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphJsonPointerParserBlock-CnTLYKHp.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphConsoleLogBlock-CJs2EYK8.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphBranchBlock-CaMEBjPE.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphDoNBlock-DDSKtmyM.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphForLoopBlock-UYtQgQG4.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphThrottleBlock-CFMlSDmJ.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphMultiGateBlock-CW_2oZah.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSwitchBlock-By8itqbF.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphWaitAllBlock-i_YxFYU6.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphCounterBlock-refFw1q2.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphWhileLoopBlock-C6rdg5Cn.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphDebounceBlock-DXDnhGGq.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphFlipFlopBlock-Dr5r_LOt.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSequenceBlock-BbEUzbQD.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSetDelayBlock-DDkqsWkn.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphCancelDelayBlock-O66nLjIZ.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphPlayAnimationBlock-DSyS3GD6.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphStopAnimationBlock-Bmjnw1c7.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphPauseAnimationBlock-BXlGlrjO.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphInterpolationBlock-jJpOXMKk.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphEasingBlock-RzcW45F_.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphBezierCurveEasingBlock-bQ2jCAbb.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphApplyForceBlock-D0jlNqPt.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphApplyImpulseBlock-D3hKaMxj.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSetLinearVelocityBlock-CEeyKr8U.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSetAngularVelocityBlock-BNdxdvHT.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSetPhysicsMotionTypeBlock-DibU7Oqc.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphPlaySoundBlock-4esDtEeg.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphStopSoundBlock-YxwOutce.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphPauseSoundBlock-ChM_aLjL.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSetSoundVolumeBlock-CQfyDrQR.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphConditionalDataBlock-DAK4P7FX.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphGetVariableBlock-DpthWcU5.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSetVariableBlock-Bcy8yvAe.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphTransformCoordinatesSystemBlock-BF5kaJPi.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphGetPropertyBlock-BOwPigki.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSetPropertyBlock-CpQLpV9Q.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphConstantBlock-B2YO2n8N.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphGetAssetBlock-LlJtMDzV.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphDataSwitchBlock-DvhC2Yqd.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphIsKeyPressedBlock-B9bu5RZn.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphMathBlocks-wiFETO-j.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphMathCombineExtractBlocks-CpnWcs9f.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphMatrixMathBlocks-wzvvhA-n.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphTypeToTypeBlocks-7jBnP7ft.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphContextBlock-w730sAFZ.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphArrayIndexBlock-drsmLJAT.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphCodeExecutionBlock-B57xERyS.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphIndexOfBlock-4Whm_dO2.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphFunctionReferenceBlock-B474YE2k.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphGetLinearVelocityBlock-C-K383q2.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphGetAngularVelocityBlock-BUMQX4rK.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphGetPhysicsMassPropertiesBlock-Bvs9-nqA.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphGetSoundVolumeBlock-CKU571Qy.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphIsSoundPlayingBlock-zwwt7_h4.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphMeshPickEventBlock-CFT7AFl9.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSceneReadyEventBlock-9PjC4xys.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphReceiveCustomEventBlock-B5GpPi6Z.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSendCustomEventBlock-Cj6RRBpN.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSceneTickEventBlock-CneJM-0R.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphPointerOutEventBlock-Bw-uwaNb.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphPointerOverEventBlock-B0EveVHW.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphPhysicsCollisionEventBlock-huYRK1oX.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphSoundEndedEventBlock-CPlDIpzO.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphKeyboardEventBlock-CyamccWs.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphKeyDownEventBlock-BQQ9ghqs.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphKeyUpEventBlock-DOdPAUr9.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/brdfTextureTools-B4Ywgiuj.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrMaterial.pure-CRamyf67.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/helperFunctions-DX-Cb6hT.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/clipPlaneFragment-Xows76FH.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/clipPlaneVertex-Cb3MdZMS.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/helperFunctions-CO9naO2M.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/clipPlaneFragment-DdmzRldL.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/clipPlaneVertex-Dc7J8XGY.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/sceneUboDeclaration-NlmTnzfm.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/meshUboDeclaration-CRBT15gh.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbr.vertex-CRUuIhph.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/meshVertexDeclaration-CeqWcdzD.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/sceneUboDeclaration-BmX03VLw.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/meshUboDeclaration-2pQXNe9J.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/decalFragment-BwTlNX1a.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/oitFragment-BX5u2M73.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/iesTextureLoader-DfEJYcya.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/cubemapToSphericalPolynomial-CTF6ApZn.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/hdrTextureLoader-COKTPB-N.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/backgroundUboDeclaration-Q4E9b_2B.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/logDepthVertex-miQ_yPtg.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/vertexColorMixing-Dlf9NxS2.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/logDepthDeclaration-BX_AslWy.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/samplerFragmentDeclaration-CPa3U3x9.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/default.fragment-DZ8mf3Xa.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/fogFragment-Do-6wPLd.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/decalFragment-ClTvvSC1.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/backgroundUboDeclaration-BWo-IC0X.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/logDepthVertex-D9n40CpV.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/samplerVertexImplementation-CLyWrd9c.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/logDepthDeclaration-BfcHDDEF.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/samplerFragmentDeclaration-CpNJb6sb.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/oitFragment-DB9hW_7b.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/default.fragment-CyablHRN.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/fogFragment-CqyvMGIA.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/envTextureLoader-Bm-S1oaa.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrBRDFFunctions-DbcETpY_.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbr.vertex-B3UFdfty.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrDebug-CflL2NZK.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbr.fragment-BLbNGhGx.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bumpFragment-CxXpjPKu.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbr.vertex-CRuYYPB7.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrBRDFFunctions-ORIauv0c.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbr.fragment-NT0dRR6y.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrDebug-BF8vOvxw.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bumpFragment-Dta7cbXc.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbr.vertex-BEFf4cQn.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbr.fragment-BnuJ_iej.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbrSubsurfaceLayerData-Bo205Fe9.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbr.fragment-D8_bom4P.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/exrTextureLoader-C95s3D0U.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/ddsTextureLoader-D1jm8G9n.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/ktxTextureLoader-Czbr6tID.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/tgaTextureLoader-BHDO492P.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/basisTextureLoader-BNeN5EKH.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/procedural.vertex-CQe-vebX.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/procedural.vertex-C4JCpVKV.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/gaussianSplatting-BVJlqQTJ.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/gaussianSplattingUboDeclaration-CP6Zd-ud.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/postprocess.vertex-DThqC2qe.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/postprocess.vertex-D31apLmm.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/default.vertex-DdNzj9ka.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/default.vertex-DuwZizxq.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/mesh.vertexData.functions-CBtjkHbk.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/lodCube.fragment-CRUuvLpn.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/lod.fragment-0BoftBah.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/lodCube.fragment-RsvyyjFu.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/lod.fragment-2RDA7mQu.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/dumpTools-DIjapH5d.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/rgbdDecode.fragment-BoKlQ-rX.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/rgbdEncode.fragment-BNzNs4df.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/rgbdDecode.fragment-DrcvYoc3.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/rgbdEncode.fragment-BbZCLvax.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/screenSpaceRayTrace-BdXTrT4L.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/screenSpaceRayTrace-C51xj67L.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/kernelBlurVaryingDeclaration-E6WONAiq.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/kernelBlurVaryingDeclaration-UV-XX1cM.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pass.fragment-BmTwnSU8.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/passCube.fragment-ChcmZxMl.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pass.fragment-Dm8KK-Rc.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/passCube.fragment-DwNrx3Ur.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/geometry.fragment-wKrTiiU0.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/geometry.vertex-bgxyrdJa.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/geometry.fragment-SSgrrUQN.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/geometry.vertex-DlL6FGl9.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/boundingBoxRendererUboDeclaration-C56XfjpA.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphBinaryOperationBlock-COOccpH9.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphUnaryOperationBlock-DoMrjoR4.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/flowGraphCachedOperationBlock-BoEZWAKl.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/mainUVVaryingDeclaration-DtfWKYwO.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/harmonicsFunctions-BiMUKp-t.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbrUboDeclaration-Cw3CK0EH.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/mainUVVaryingDeclaration-B0C8YVPV.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/defaultUboDeclaration-BjtbTdal.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/defaultUboDeclaration-BbDYU6WG.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrUboDeclaration-Bo55vl2P.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bumpVertexDeclaration-q1kKdBkw.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bumpVertex-pyLFEFhN.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/harmonicsFunctions-B5k7JGbq.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbrUboDeclaration-qdzL8ayb.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrUboDeclaration-BPQQjoHd.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrIBLFunctions-Cr25DUad.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bumpVertexDeclaration-CgF5zh0j.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/bumpVertex-Dm7Jrqir.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/pbrIBLFunctions-DX8xpiGq.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/openpbrSubsurfaceLayerData-Bg-vTtTf.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/node_modules/.vite/deps/noise.fragment-CCotaDWG.js?v=88ab353d",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/chrome/panel-9s.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/chrome/button-9s.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/atlas/ui-atlas-low.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/chrome/danger-button-9s.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/background/menu-background-low.png?v=b6fc1241",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/zombies/zombie-ash.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/zombies/zombie-frost.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/zombies/zombie-rust.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-butcher-matron-low.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-vet-sniper-low.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-mech-youth-low.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/snow-burst-a.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/snow-burst-b.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/wood-splinter-a.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/wood-splinter-b.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/health-warning-a.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/health-warning-b.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/impact-decal-a.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/vfx/r13/impact-decal-b.png",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/cow-brown.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/cow-strong.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/pine-sentinel.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/pine-windswept.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/pine-young.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/rock-shelf.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/rock-spire.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/fence-rail.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/fence-gate.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/snowhouse-shell.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/snowhouse-door.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/world/snowhouse-window.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/holiday/cabin-wreath.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/holiday/lantern.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/tower/arrow.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/holiday/Textures/colormap.png",
+    "http://127.0.0.1:5195/storm-apocalypse/models/tower/Textures/colormap.png",
+    "blob:http://127.0.0.1:5195/52694ad8-4562-4087-9bf6-a7cefe815eb9",
+    "blob:http://127.0.0.1:5195/3b6180b3-130a-4144-a73e-7c6726b9ac8e",
+    "http://127.0.0.1:5195/storm-apocalypse/models/campfire-stones.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/butcher-stall.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/cash-register.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/doghouse.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/tower-ballista.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/tower-frost.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/tower-cannon.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/weapons/machete.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/weapons/axe.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/weapons/smg.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/meat-slice.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/coin.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/boss-zombie.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/staff-hunter.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/staff-cashier.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/staff-shepherd-dog.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/customer-traveler.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/customer-forager.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/customer-refugee.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/protagonist-butcher-matron.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/protagonist-vet-sniper.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/protagonist-mech-youth.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/npc-lao-zhou.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/npc-nurse-lin.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/npc-kid-bao.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/models/custom/characters/npc-scout-he.glb",
+    "http://127.0.0.1:5195/storm-apocalypse/audio/bgm-day.ogg",
+    "http://127.0.0.1:5195/storm-apocalypse/audio/bgm-night.ogg",
+    "blob:http://127.0.0.1:5195/61712410-ac92-4f9b-a190-828e6ae43264",
+    "blob:http://127.0.0.1:5195/43717310-c76b-4446-befb-59d889f12216",
+    "blob:http://127.0.0.1:5195/1d9b9ba6-385a-4ac9-88bd-743841e632f9",
+    "blob:http://127.0.0.1:5195/5c8b42ab-f7a8-4d65-a764-addb3b727b47",
+    "blob:http://127.0.0.1:5195/d41caff5-0e03-4519-b5d7-05411bb37458",
+    "blob:http://127.0.0.1:5195/53e6bbf8-5506-42da-8a59-00cd1e192a57",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-butcher-matron-medium.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-vet-sniper-medium.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-mech-youth-medium.png",
+    "blob:http://127.0.0.1:5195/9c7f2686-ea91-4eed-b188-c9d95a00b5cb",
+    "blob:http://127.0.0.1:5195/77909c04-9b96-4192-97e1-88f87c9e1cfa",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/background/menu-background-medium.png?v=c0af4d6e",
+    "blob:http://127.0.0.1:5195/41e9541d-9fd6-46b3-bac6-b137d7790cec",
+    "blob:http://127.0.0.1:5195/d5ff62d1-b4d4-481b-8cb9-f93c9021afb9",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/atlas/ui-atlas-high.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-butcher-matron.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-vet-sniper.png",
+    "http://127.0.0.1:5195/storm-apocalypse/images/characters/protagonist-mech-youth.png",
+    "blob:http://127.0.0.1:5195/480e8995-5fe2-48c3-beec-148bb96a2b01",
+    "blob:http://127.0.0.1:5195/56dfb7c7-1ffa-4e67-93c3-bc8e3f87c95e",
+    "http://127.0.0.1:5195/storm-apocalypse/images/ui/background/menu-background.png?v=a24f01ac",
+    "blob:http://127.0.0.1:5195/020d003e-d23f-49ec-a07c-8ec12edccea4",
+    "blob:http://127.0.0.1:5195/30a71b7f-1613-4d6d-a7c2-b5724076a014",
+    "blob:http://127.0.0.1:5195/7048c6c1-bfc4-40d3-9571-3c68d650f204",
+    "blob:http://127.0.0.1:5195/87a8dcf3-d4b1-4a62-8e74-b1d27ebc4911",
+    "blob:http://127.0.0.1:5195/44f8f63e-120a-4dfb-af2f-1bbf3515aec6",
+    "blob:http://127.0.0.1:5195/e4be7f0c-1eed-452d-9da6-7e4a25f3047d"
+  ]
+}

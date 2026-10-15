@@ -1,0 +1,6 @@
+{
+  "status": "BLOCKED",
+  "label": "並發載量測，僅供參考",
+  "reason": "Shared workstation, concurrent lanes; final shipping performance requires idle-machine and physical-device measurement. Raw gate values preserved.",
+  "rawReport": "performance-raw.json"
+}

@@ -1,7 +1,7 @@
 # 暴風啟示錄 Storm Apocalypse
 
 [![Deploy Pages](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml/badge.svg)](https://github.com/mars-tw/storm-apocalypse/actions/workflows/deploy.yml)
-[![Version](https://img.shields.io/badge/version-0.2.15-c66b3d)](package.json)
+[![Version](https://img.shields.io/badge/version-0.3.0-c66b3d)](package.json)
 [![License: MIT](https://img.shields.io/badge/License-MIT-79c3d2.svg)](LICENSE)
 
 在永夜暴雪中狩獵、經營最後一間肉舖，建立防線並在三十次鐘聲裡守住僅存的燈火。《暴風啟示錄》是一款可直接在瀏覽器遊玩的 3D 經營 × 動作 × 塔防遊戲。
@@ -25,6 +25,7 @@
 - **R19 直向戰鬥安全框**：極窄手機直向鏡頭依實際上下 HUD 保留可視區，角色姿勢與命中方向不再被底部控制或圍欄遮蔽；旋轉時 Babylon resize 改為穩定後單次重建。
 - **R20 終波平衡回歸**：固定 seed 無頭模擬與遊戲共用敵人、武器、塔、彈道及 impact 規則；第 30 波 HP 乘數由 1.08 收斂至 1.07，保留站位差異與一般配置壓力。
 - **R21 模擬保真修正**：固定 seed 模擬改用 60 Hz 與分數餘量生成時鐘，移除被量化假象誤導的 W27–30 HP 調整，並以一般 15–40%、滿配 50–70% 的終波區間誠實守門。
+- **R25 鮮肉佈局**：開場選西側、中央或東側落點，領取一次性的試守弩塔，從俯視鏡頭觀察真正改追鮮肉的敵人。首次引來兩隻不同敵人完成戰術單，本機保存；原有狩獵、開店與守夜手冊繼續保留。背包與貨架的肉也會存檔。商店草稿、逐款區隔與隱私稽核見 [R25 報告](docs/CODEX_RESPONSE_R25_STORE.md)；尚未建立新原生包或送審。
 - **R24 手機操作與守夜補給**：塔快捷列先選位、預覽射程，再確認扣款；誘餌輕點快投或拖曳瞄準，放開投擲，取消不扣肉。第 3 波「飢餓快襲」與第 7 波「蠻屍搬貨隊」使用既有敵種組成戰術編隊。每波首次完成委託可得守夜章，累計 1／3／5 枚解鎖誘餌袋／修繕箱／賞金證；從「暫停 → 補給」選擇，重開戰役保留。命中浮字、連斬、評級戰報、目標信標與晝夜配樂持續保留。
 - **事件波導演**：白幕突襲與精英壓境會改變敵人組成、血量、速度及出生節奏，不再只有固定數量公式。
 - **品質分檔**：依裝置能力自動套用低／中／高畫質，也可在設定中手動選擇自動／高／中／低；動態降級仍會保護幀率。
@@ -50,7 +51,7 @@
 - Playwright（桌機、觸控、動畫契約與戰鬥 smoke 測試）
 - GitHub Actions + GitHub Pages
 
-目前版本為 **0.2.15**，與 [`package.json`](package.json) 及 lockfile 一致。
+目前版本為 **0.3.0**，與 [`package.json`](package.json) 及 lockfile 一致。
 
 ## 本地開發
 

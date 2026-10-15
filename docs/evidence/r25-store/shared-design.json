@@ -1,0 +1,138 @@
+[
+  {
+    "repo": "rift-survivors",
+    "evidence": {
+      "engine": "Godot",
+      "features": [
+        "config/features=PackedStringArray(\"4.2\")"
+      ]
+    }
+  },
+  {
+    "repo": "doomsday-shooter",
+    "evidence": {
+      "dependencies": {},
+      "name": "ashes-convoy",
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "tower-defense",
+    "evidence": {
+      "dependencies": {},
+      "name": "tower-defense-skill",
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "skill",
+    "evidence": {
+      "dependencies": {},
+      "name": "web-card-game-skill",
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "pixel-idle-farm-skill",
+    "evidence": {
+      "dependencies": {},
+      "name": "pixel-idle-farm",
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "village-siege",
+    "evidence": {
+      "dependencies": {},
+      "name": "village-siege"
+    }
+  },
+  {
+    "repo": "seven-district-reckoning",
+    "evidence": {
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "rift-forge-3d",
+    "evidence": {}
+  },
+  {
+    "repo": "taiwan-island-drive",
+    "evidence": {
+      "dependencies": {
+        "@capacitor-community/text-to-speech": "8.0.2",
+        "@capacitor/android": "8.5.2",
+        "@capacitor/app": "8.1.2",
+        "@capacitor/core": "8.5.2",
+        "@capacitor/ios": "8.5.2",
+        "@capacitor/motion": "8.0.1",
+        "@capacitor/preferences": "8.0.1",
+        "@fontsource/barlow-condensed": "^5.3.0",
+        "three": "0.186.1"
+      },
+      "name": "taiwan-island-drive",
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "taiwan-train-math",
+    "evidence": {
+      "dependencies": {
+        "@capacitor/android": "8.5.2",
+        "@capacitor/app": "8.1.2",
+        "@capacitor/browser": "8.0.5",
+        "@capacitor/core": "8.5.2",
+        "@capacitor/ios": "8.5.2",
+        "@capacitor/preferences": "8.0.1"
+      },
+      "name": "taiwan-train-math",
+      "fonts": [
+        "\"Noto Sans TC\", \"Microsoft JhengHei\", system-ui, sans-serif",
+        "var(--serif)",
+        "var(--serif)"
+      ],
+      "sameSelectors": [
+        "\n.setting-row ",
+        "\nbody ",
+        "\nbutton "
+      ],
+      "selectorJaccard": 0.0030737704918032786,
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "island-flight-school",
+    "evidence": {
+      "dependencies": {
+        "@fontsource/barlow-condensed": "^5.3.0",
+        "three": "0.186.1"
+      },
+      "name": "island-flight-school",
+      "fonts": [
+        "\"Segoe UI\",\"Noto Sans TC\",sans-serif",
+        "\"Barlow Condensed\",sans-serif",
+        "\"Barlow Condensed\",sans-serif"
+      ],
+      "sameSelectors": [],
+      "selectorJaccard": 0.0,
+      "bootLoaderSame": false
+    }
+  },
+  {
+    "repo": "taiwan-train-school",
+    "evidence": {
+      "dependencies": {
+        "three": "0.186.1",
+        "@fontsource/barlow-condensed": "^5.3.0"
+      },
+      "name": "taiwan-train-school",
+      "fonts": [
+        "'Noto Sans TC','Microsoft JhengHei',sans-serif"
+      ],
+      "sameSelectors": [],
+      "selectorJaccard": 0.0,
+      "bootLoaderSame": false
+    }
+  }
+]

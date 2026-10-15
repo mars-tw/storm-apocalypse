@@ -1,0 +1,34 @@
+[
+  {
+    "name": "starter grants only at fresh wave with no existing tower",
+    "pass": true
+  },
+  {
+    "name": "invalid layout safely selects center; every route has a distinct world point",
+    "pass": true
+  },
+  {
+    "name": "tactical goal requires two actual attraction events",
+    "pass": true
+  },
+  {
+    "name": "reopen preserves meat, tower, resources and selected protagonist",
+    "pass": true
+  },
+  {
+    "name": "legacy save without inventory migrates to empty without discarding progress",
+    "pass": true
+  },
+  {
+    "name": "corrupt inventory is bounded and malformed JSON remains playable",
+    "pass": true
+  },
+  {
+    "name": "storage failure does not stop gameplay saves",
+    "pass": true
+  },
+  {
+    "name": "tighter elite column applies to all elite waves with unchanged HP budget and boss",
+    "pass": true
+  }
+]

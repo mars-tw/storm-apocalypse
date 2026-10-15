@@ -1,0 +1,41 @@
+{
+  "status": "VERIFIED",
+  "screenshots": [
+    {
+      "file": "docs/store/screenshots/ipad-13-store-01-layout.png",
+      "width": 2064,
+      "height": 2752,
+      "sha256": "b1f30304bde4edf51cf2172425b253c941bbd43ef34e1feb08f95cbdb21c5952"
+    },
+    {
+      "file": "docs/store/screenshots/ipad-13-store-02-lured.png",
+      "width": 2064,
+      "height": 2752,
+      "sha256": "4f4f50a2ef99ea53bf584f13ea1d0aacb7be6216ac76d0ee5760850f3aa7a04f"
+    },
+    {
+      "file": "docs/store/screenshots/ipad-13-store-03-supply.png",
+      "width": 2064,
+      "height": 2752,
+      "sha256": "0f2203e8f9d154a8f07ace9338ef465635169168a25f9ff72dfb03ca43e89771"
+    },
+    {
+      "file": "docs/store/screenshots/iphone-store-01-layout.png",
+      "width": 1290,
+      "height": 2796,
+      "sha256": "eb660df93a2b37502618828c12dc165b5eac5986173b9900037e749019e13fef"
+    },
+    {
+      "file": "docs/store/screenshots/iphone-store-02-lured.png",
+      "width": 1290,
+      "height": 2796,
+      "sha256": "b7b53ff098cb7759ca722ed027d436d9c8d560381d8efc60c60fc4880266fcee"
+    },
+    {
+      "file": "docs/store/screenshots/iphone-store-03-supply.png",
+      "width": 1290,
+      "height": 2796,
+      "sha256": "ae010f18561dffc2aed2d2ea53fde1dee6cf1dd6e3a540f28d05595f7deb3705"
+    }
+  ]
+}

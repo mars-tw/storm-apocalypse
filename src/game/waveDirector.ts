@@ -93,7 +93,9 @@ export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_W
       forecast: "蠻屍隊列 · 高生命",
       announcement: "精英蠻屍護住屍群中央，準備集火",
       enemyCount: usesR22EliteCurve ? baseCount : Math.min(42, baseCount + 2),
-      spawnInterval: baseInterval * (usesR22EliteCurve ? 1 : 1.08),
+      // Elite escorts arrive in a tighter column at every elite encounter.
+      // Keep the HP budget below the following boss rather than inflating W29 HP.
+      spawnInterval: usesR22EliteCurve ? baseInterval - 0.027 : baseInterval * 1.08,
       hpMultiplier: usesR22EliteCurve ? 1.07 : 1.2,
       speedMultiplier: usesR22EliteCurve ? 1 : 0.94,
       damageMultiplier: 1,

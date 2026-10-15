@@ -1,0 +1,20 @@
+{
+  "round": "R25",
+  "version": "0.3.0",
+  "newRasterAssets": [],
+  "imageGeneration": {
+    "status": "BLOCKED",
+    "requiredModelSlug": "gpt-image-2",
+    "observedModelSlug": null,
+    "reason": "Available image tool does not expose selectable or verifiable model slug; no generation or service dispatch attempted in this local-only round."
+  },
+  "missing": ["exclusive meat-bait icon", "exclusive patrol-commission icon"],
+  "retainedAssets": "CREDITS.md and historical R8/R13/R15 manifests retain their own provenance; no claim of new art generation.",
+  "tacticalMarkers": {"status": "EXECUTED", "type": "world-space operation markers, not new artwork or characters"},
+  "soundCues": [
+    {"id": "baitAim", "status": "EXECUTED", "source": "src/game/audio.ts", "method": "local WebAudio sine sweep 330 to 440 Hz"},
+    {"id": "baitCancel", "status": "EXECUTED", "source": "src/game/audio.ts", "method": "local WebAudio triangle sweep 300 to 180 Hz"},
+    {"id": "commission", "status": "EXECUTED", "source": "src/game/audio.ts", "method": "local WebAudio three ascending sine notes, 523.25/659.25/783.99 Hz"}
+  ],
+  "animation": "Existing skeletal actors and separate physics roots retained. No whole-sprite bobbing substituted for locomotion or impact animation."
+}

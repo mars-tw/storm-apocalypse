@@ -1,0 +1,170 @@
+[
+  {
+    "damage": 1,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.025,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.025,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.05,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.05,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.075,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.075,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.1,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.1,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.125,
+    "set": "fixed",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  },
+  {
+    "damage": 1.125,
+    "set": "fresh",
+    "rates": [
+      {
+        "loadout": "maxed",
+        "rate": 0.6666666666666666
+      },
+      {
+        "loadout": "general",
+        "rate": 0
+      }
+    ]
+  }
+]

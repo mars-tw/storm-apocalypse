@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;900&family=Noto+Serif+TC:wght@700;900&display=swap");
-
 :root {
   color: #f4f7f7;
   font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
@@ -21,6 +19,28 @@
 html, body, #app, #game-canvas { width: 100%; height: 100%; min-height: 100dvh; margin: 0; overflow: hidden; }
 body { background: #07111a; touch-action: none; user-select: none; }
 button { min-height: 44px; color: inherit; border: 0; font: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+/* Meat-shop order card: functional typography and route controls, no placeholder artwork. */
+.bait-layout { position:fixed; z-index:19; top:124px; right:16px; width:min(328px,calc(100vw - 24px)); pointer-events:auto; color:#f3e4c5; background:#231d19; border:1px solid #ac8050; border-top:4px solid #c97542; box-shadow:0 8px 24px #0008; font-size:12px; line-height:1.5; }
+.bait-layout summary { min-height:44px; padding:12px; cursor:pointer; font-weight:700; letter-spacing:.08em; }
+.bait-layout__body { padding:0 12px 12px; }
+.bait-layout p { margin:6px 0; color:#d9c5a7; }
+.bait-layout__choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
+.bait-layout button { padding:6px; border:1px solid #94704c; background:#342a22; color:#f7e9d2; cursor:pointer; font-size:12px; }
+.bait-layout button[aria-pressed="true"] { border:2px solid #ffb67d; background:#6b3523; }
+.bait-layout button:disabled { opacity:.55; cursor:default; }
+#layout-launch { width:100%; background:#9c4c2c; font-weight:700; }
+#layout-progress { display:block; margin-top:8px; border-top:1px dashed #a48660; padding-top:6px; }
+.is-modal-hidden .bait-layout { display:none; }
+.bait-layout:not([open]) { width:230px; }
+.bait-layout:not([open]) .bait-layout__body { display:none; }
+.game-ui:has(.bait-layout[open]) .toast-host { visibility:hidden; }
+#game-canvas[data-tactical-view="true"] ~ #app .toast-host { visibility:hidden; }
+.is-prep-modal .bait-layout,
+.game-ui:has(.command-panel.is-open) .bait-layout,
+.game-ui:has(.quest-panel.is-open) .bait-layout,
+.game-ui:has(.world-action-popover:not([hidden])) .bait-layout { visibility:hidden; }
+@media(max-height:500px) { .bait-layout { top:72px; width:300px; } .bait-layout__body { max-height:calc(100dvh - 155px); overflow:auto; } }
+@media(max-width:540px) { .bait-layout { top:116px; right:12px; } .bait-layout:not([open]) { width:230px; } .bait-layout__body { max-height:calc(100dvh - 300px); overflow:auto; } }
 button:focus-visible { outline: 2px solid var(--ice); outline-offset: 2px; }
 button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .asset-icon { display:block; flex:0 0 auto; width:52px; height:52px; overflow:hidden; background-image:var(--ui-atlas); background-repeat:no-repeat; background-size:400% 300%; background-position:var(--icon-x,0) var(--icon-y,0); filter:drop-shadow(0 5px 8px rgba(0,0,0,.38)); }
@@ -508,7 +528,8 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .toast em { margin-left:auto; padding:1px 7px; color:#07141d; font:800 11px/1.4 "Noto Sans TC",sans-serif; font-style:normal; border-radius:9px; background:var(--gold); }
 .toast.is-bumped { animation:toast-bump .28s ease-out; }
 @keyframes toast-bump { 40% { transform:scale(1.04); } }
-.context-prompt { bottom:150px; }
+.context-prompt { bottom:150px; height:max-content; }
+#resume-button { color:#f4e9d4; text-shadow:0 1px 2px #000; }
 .context-prompt kbd, .context-prompt span { font-size:11px; }
 
 .floater-layer { position:fixed; inset:0; z-index:31; overflow:hidden; pointer-events:none; }

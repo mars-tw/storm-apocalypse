@@ -144,6 +144,8 @@ export class UiController {
   private comboShown = 0;
   private baitSignature = "";
 
+  onLayout: (id: string, launch: boolean) => void = () => undefined;
+  onLayoutView: (open: boolean) => void = () => undefined;
   onStart: () => void = () => undefined;
   onAttackStart: () => void = () => undefined;
   onAttackEnd: () => void = () => undefined;
@@ -179,7 +181,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R24";
+    root.dataset.uiVersion = "R25";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -188,12 +190,12 @@ export class UiController {
     };
     const selectionCards = PROTAGONISTS.map((protagonist) => `
       <button class="character-card${protagonist.id === this.selectedProtagonist ? " is-selected" : ""}" type="button" data-protagonist="${protagonist.id}" aria-pressed="${protagonist.id === this.selectedProtagonist}">
-        <span class="character-card__portrait"><picture><source media="(max-width:540px)" srcset="${import.meta.env.BASE_URL}${protagonist.portrait.replace(".png", "-low.png")}"><source media="(max-width:1100px)" srcset="${import.meta.env.BASE_URL}${protagonist.portrait.replace(".png", "-medium.png")}"><img src="${import.meta.env.BASE_URL}${protagonist.portrait}" width="512" height="768" alt="${protagonist.name} Blender 英雄立繪"></picture></span>
+        <span class="character-card__portrait"><picture><source media="(max-width:540px)" srcset="${import.meta.env.BASE_URL}${protagonist.portrait.replace(".png", "-low.png")}"><source media="(max-width:1100px)" srcset="${import.meta.env.BASE_URL}${protagonist.portrait.replace(".png", "-medium.png")}"><img src="${import.meta.env.BASE_URL}${protagonist.portrait}" width="512" height="768" alt="${protagonist.name}角色立繪"></picture></span>
         <span class="character-card__copy"><small>${protagonist.runSummary}</small><b>${protagonist.name}</b><q>「${protagonist.persona}」</q><span class="character-card__skill">${icon(skillIcons[protagonist.id])}<span><em>${protagonist.passive}</em><i>${protagonist.passiveDescription}</i></span></span></span>
       </button>`).join("");
     const introContent = this.requiresProtagonistSelection ? `
       <div class="character-select" id="character-select">
-        <div class="character-select__head"><span>新戰役 · 選擇守燈人</span><h1>誰來走進<span>暴風</span>？</h1><p>三條路都能守到第三十次鐘聲。確認後，本局不可換角。</p></div>
+        <div class="character-select__head"><span>暴風啟示錄 · 鮮肉佈局</span><h1>用一塊肉，<span>改變屍群路線</span></h1><p>選好守燈人，先試守一波：選落點、引怪，再回肉舖備貨。確認後，本局不可換角。</p></div>
         <div class="character-grid" role="radiogroup" aria-label="選擇主角">${selectionCards}</div>
         <div class="loader"><i><em id="loading-bar"></em></i><span id="loading-text">喚醒風雪…</span></div>
         <button class="start-button start-button--confirm" id="start-button" disabled><span>確認屠夫老闆娘</span><small>寫入存檔 · ${startHint}</small></button>
@@ -211,6 +213,21 @@ export class UiController {
     root.innerHTML = `
       <div class="game-ui is-modal-hidden" id="game-ui" inert aria-hidden="true">
       <div class="vignette"></div>
+      <details class="bait-layout" id="bait-layout" ${state.wave === 0 && Object.values(state.towers).every(level => level === 0) ? "open" : ""}>
+        <summary>肉舖戰術單 · 鮮肉佈局</summary>
+        <div class="bait-layout__body">
+          <b>先決定屍群在哪裡停步</b>
+          <p>選落點，再開波。第一份邊角料免費；後續誘餌會用背包或貨架的肉。巨屍不吃誘餌。</p>
+          <div class="bait-layout__choices" role="group" aria-label="誘餌落點">
+            <button type="button" data-layout="west" aria-pressed="false">西側攔截</button>
+            <button type="button" data-layout="center" aria-pressed="true">中央聚攏</button>
+            <button type="button" data-layout="east" aria-pressed="false">東側繞行</button>
+          </div>
+          <p id="layout-hint">中央聚攏：集中兩側屍群，交給弩塔集火。</p>
+          <button type="button" id="layout-launch">${state.wave === 0 && !Object.values(state.towers).some(Boolean) ? "領試守弩塔，依佈局開波" : "依此佈局開波"}</button>
+          <output id="layout-progress" aria-live="polite">首個目標：用誘餌引來 2 隻敵人。</output>
+        </div>
+      </details>
       <header class="hud hud--top">
         <div class="brand-mark"><span class="brand-mark__sigil">✦</span><span><b>暴風啟示錄</b><small>STORM APOCALYPSE</small></span></div>
         <div class="resources">
@@ -307,7 +324,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R24 · 手機瞄準／戰術波／守夜補給 · 本機存檔</p>
+              <p class="system-note">鮮肉佈局 · 守夜委託 · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
@@ -450,6 +467,18 @@ export class UiController {
     }
     bindImmediate(this.weaponButton, () => this.onWeaponCycle());
     this.bindBaitGesture();
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-layout]")) {
+      button.addEventListener("click", () => this.onLayout(button.dataset.layout!, false));
+    }
+    root.querySelector("#layout-launch")!.addEventListener("click", () => {
+      const id = root.querySelector<HTMLElement>('[data-layout][aria-pressed="true"]')!.dataset.layout!;
+      this.onLayout(id, true);
+      root.querySelector<HTMLDetailsElement>("#bait-layout")!.open = false;
+    });
+    root.querySelector<HTMLDetailsElement>("#bait-layout")!.addEventListener("toggle", event => this.onLayoutView((event.target as HTMLDetailsElement).open));
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden && this.modalState === null) this.setSystemMenuOpen(true);
+    });
     get<HTMLButtonElement>("world-action-cancel").addEventListener("click", () => this.hideWorldAction());
     this.worldActionButton.addEventListener("click", () => {
       if (!this.activeWorldAction) return;
@@ -846,7 +875,7 @@ export class UiController {
     this.meat.textContent = `${state.carriedMeat} / 6`;
     this.stock.textContent = `${state.displayedMeat} / ${state.stallLevel * 6}`;
     this.wave.textContent = state.waveActive ? `夜襲 · ${state.wave + 1} / 30 · ${state.enemiesRemaining} 敵` : `黎明 · ${state.wave} / 30`;
-    this.performance.textContent = `${state.quality}畫質 · ${Math.round(state.currentFps || 0)} FPS · ${state.drawCalls} DC`;
+    this.performance.textContent = `${state.quality}畫質`;
     const protagonist = PROTAGONISTS.find((entry) => entry.id === state.protagonistId)!;
     this.protagonistStatus.textContent = `${protagonist.name} · ${protagonist.passive}`;
     this.protagonistStatus.title = protagonist.passiveDescription;
@@ -912,8 +941,8 @@ export class UiController {
     const cost = maxed ? 0 : towerCostForState(state, id, level);
     const shortfall = Math.max(0, cost - state.money);
     return {
-      title: level > 0 ? `${definition.name} Lv.${level}` : definition.name,
-      detail: maxed ? "塔基已滿級" : level === 0 ? definition.description : `${definition.description} · 升至 Lv.${level + 1}`,
+      title: level > 0 ? `${definition.name} 等級 ${level}` : definition.name,
+      detail: maxed ? "塔基已滿級" : level === 0 ? definition.description : `${definition.description} · 升至等級 ${level + 1}`,
       label: maxed
         ? "滿級"
         : locked
@@ -937,8 +966,8 @@ export class UiController {
     const cost = maxed ? 0 : level === 0 ? definition.price : definition.upgradePrice ?? 0;
     const shortfall = Math.max(0, cost - state.money);
     return {
-      title: level > 0 ? `${definition.name} Lv.${level}` : definition.name,
-      detail: maxed ? definition.upgradeDescription ?? "已滿級" : level === 0 ? definition.description : `升至 Lv2：${definition.upgradeDescription}`,
+      title: level > 0 ? `${definition.name} 等級 ${level}` : definition.name,
+      detail: maxed ? definition.upgradeDescription ?? "已滿級" : level === 0 ? definition.description : `升至等級 2：${definition.upgradeDescription}`,
       label: maxed
         ? "滿級"
         : locked
@@ -990,7 +1019,7 @@ export class UiController {
       if (!button || !title || !status) continue;
       this.applyActionState(button, action);
       button.dataset.level = state.towers[item.id].toString();
-      title.textContent = state.towers[item.id] > 0 ? `Lv.${state.towers[item.id]}` : item.name;
+      title.textContent = state.towers[item.id] > 0 ? `等級 ${state.towers[item.id]}` : item.name;
       status.textContent = action.label;
       button.setAttribute("aria-label", `${action.title}，${action.label}`);
     }
@@ -1081,9 +1110,9 @@ export class UiController {
       const price = level === 0 ? item.price : item.upgradePrice ?? 0;
       const lockChapter = level === 0 ? SHOP_UNLOCK_CHAPTER.employeeShop : SHOP_UNLOCK_CHAPTER.employeeUpgrade;
       const lock = level < 2 && !hasCompletedChapter(state, lockChapter) ? `🔒 完成手冊第 ${lockChapter} 章解鎖` : undefined;
-      const text = level === 0 ? `雇用 · ✦ ${price}` : level === 1 ? `升級 Lv2 · ✦ ${price}` : "已滿級 Lv2";
+      const text = level === 0 ? `雇用 · ✦ ${price}` : level === 1 ? `升至等級 2 · ✦ ${price}` : "已滿級（等級 2）";
       const description = this.commandPanel.querySelector<HTMLElement>(`[data-description="employee-${id}"]`);
-      if (description) description.textContent = level === 0 ? item.description : level === 1 ? `升至 Lv2：${item.upgradeDescription}` : `Lv2 · ${item.upgradeDescription}`;
+      if (description) description.textContent = level === 0 ? item.description : level === 1 ? `升至等級 2：${item.upgradeDescription}` : `等級 2 · ${item.upgradeDescription}`;
       set(`employee-${id}`, text, level >= 2 || state.money < price || state.waveActive, level > 0, lock);
     }
     const pastureLock = !state.pasture2Unlocked && !hasCompletedChapter(state, SHOP_UNLOCK_CHAPTER.pasture2) ? `🔒 完成手冊第 ${SHOP_UNLOCK_CHAPTER.pasture2} 章解鎖` : undefined;
@@ -1206,6 +1235,16 @@ export class UiController {
     this.comboBadge.classList.remove("is-pop");
     void this.comboBadge.offsetWidth;
     this.comboBadge.classList.add("is-pop");
+  }
+
+  updateLayout(data: { id: string; hint: string; active: boolean; cooldown: boolean; available: boolean; attracted: number; completed: boolean; starter: boolean }): void {
+    for (const button of this.root.querySelectorAll<HTMLButtonElement>("[data-layout]")) button.setAttribute("aria-pressed", String(button.dataset.layout === data.id));
+    this.root.querySelector("#layout-hint")!.textContent = data.hint;
+    const launch = this.root.querySelector<HTMLButtonElement>("#layout-launch")!;
+    launch.disabled = !data.available || data.cooldown;
+    launch.textContent = data.active ? data.cooldown ? "誘餌冷卻中" : "投下鮮肉" : data.starter ? "領試守弩塔，依佈局開波" : "依此佈局開波";
+    this.root.querySelector("#layout-progress")!.textContent = data.completed ? "首張戰術單完成 · 已引來至少 2 隻，紀錄已存。" : `首個目標：引來 2 隻敵人（${Math.min(2, data.attracted)}／2）。`;
+    this.root.querySelector("#bait-layout summary")!.textContent = data.completed ? "鮮肉佈局 · 首張戰術單完成" : `鮮肉佈局 · 引怪 ${Math.min(2, data.attracted)}／2`;
   }
 
   setBaitState(bait: { visible: boolean; cooldown: number; meat: number }): void {

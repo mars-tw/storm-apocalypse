@@ -1,0 +1,16 @@
+{
+  "status": "VERIFIED",
+  "results": [
+    {
+      "name": "built package offline plays signature objective using local files",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "runtime requests stay on local game origin",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "requests": []
+}

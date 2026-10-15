@@ -1,0 +1,26 @@
+{
+  "status": "VERIFIED",
+  "root": "C:\\Users\\digimkt\\Desktop\\\u904a\u6232\\game-store-publisher\\native-kit\\apps\\storm-apocalypse",
+  "files": [
+    {
+      "file": "package.json",
+      "sha256": "c66ec10f5908d0331b7681264dff926da5492b63f2180d9cc85753f7f89bc91f"
+    },
+    {
+      "file": "capacitor.config.json",
+      "sha256": "9e664e416695de84bad59ac61877ddcb84deeb550502b29b42225338f14011d8"
+    },
+    {
+      "file": "ios/App/App/PrivacyInfo.xcprivacy",
+      "sha256": "6452295a6ad29254c92c668038f2c6a2cfd440c07cda81f814e996ac215b8415"
+    },
+    {
+      "file": "ios/App/App.xcodeproj/project.pbxproj",
+      "sha256": "95529edd56c5bd17bc26470decc444ba3c0d57f09acce97c49a9b6273bf499e6"
+    },
+    {
+      "file": "android/app/src/main/AndroidManifest.xml",
+      "sha256": "a91441960aad37b4887a4493f02acc5c2a085d1e7a1e144db260a66c8fcfeb73"
+    }
+  ]
+}

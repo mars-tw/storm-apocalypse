@@ -41,6 +41,8 @@ async function bootstrap(): Promise<void> {
   ui.onTowerAction = (id) => game.towerAction(id);
   ui.onWeaponCycle = () => game.cycleWeapon();
   ui.onBait = () => game.requestBait();
+  ui.onLayout = (id, launch) => game.chooseLayout(id, launch);
+  ui.onLayoutView = open => game.setLayoutView(open);
   ui.onBaitAim = (dx, dy, active) => game.aimBait(dx, dy, active);
   ui.onBaitRelease = (commit) => game.releaseBait(commit);
   ui.onTowerPreview = (id) => game.previewTower(id);
