@@ -1,7 +1,7 @@
 {
   "name": "storm-apocalypse",
   "private": true,
-  "version": "0.2.14",
+  "version": "0.2.15",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -11,6 +11,8 @@
     "sim:r21-candidates": "node scripts/analyze-r21-hp-candidates.mjs",
     "test:simulation-fidelity": "node scripts/test-wave-simulation-fidelity.mjs",
     "test:r23-feedback": "node scripts/test-r23-feedback.mjs",
+    "test:r24-rules": "node scripts/test-r24-rules.mjs",
+    "test:r24-mobile": "node scripts/test-r24-mobile.mjs",
     "test:smoke": "node scripts/test-smoke.mjs",
     "test:smoke:headed": "node scripts/test-smoke.mjs --headed",
     "preview": "vite preview --host 0.0.0.0"

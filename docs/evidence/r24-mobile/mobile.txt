@@ -1,0 +1,74 @@
+PASS 390x844 tower preview does not spend money
+PASS 390x844 tower confirm, cancel and pause are reachable
+PASS 390x844 cancelling tower preserves money
+PASS 390x844 tower preview switches without spending
+PASS 390x844 confirming builds exactly one level
+PASS 390x844 confirmation closes after purchase
+PASS 390x844 unavailable supplies remain locked
+PASS 390x844 supply menu can always return
+PASS 390x844 all new supply text fits the panel
+PASS 390x844 new wave actually spawns runners
+PASS 390x844 second touch does not end active aim
+PASS 390x844 touchcancel spends no bait or cooldown
+PASS 390x844 cancel zone spends no resources
+PASS 390x844 focus loss cancels aiming
+PASS 390x844 rotation cancels aiming without throwing
+PASS 390x844 pause cancels captured aiming
+PASS 390x844 aiming exposes a bounded landing point
+PASS 390x844 release throws at the previewed position exactly once
+PASS 390x844 cooldown prevents repeat touch throws
+PASS 390x844 combat touch controls are reachable
+PASS 390x844 runtime has no page errors
+PASS 844x390 tower preview does not spend money
+PASS 844x390 tower confirm, cancel and pause are reachable
+PASS 844x390 cancelling tower preserves money
+PASS 844x390 tower preview switches without spending
+PASS 844x390 confirming builds exactly one level
+PASS 844x390 confirmation closes after purchase
+PASS 844x390 unavailable supplies remain locked
+PASS 844x390 supply menu can always return
+PASS 844x390 all new supply text fits the panel
+PASS 844x390 new wave actually spawns runners
+PASS 844x390 second touch does not end active aim
+PASS 844x390 touchcancel spends no bait or cooldown
+PASS 844x390 cancel zone spends no resources
+PASS 844x390 focus loss cancels aiming
+PASS 844x390 rotation cancels aiming without throwing
+PASS 844x390 pause cancels captured aiming
+PASS 844x390 aiming exposes a bounded landing point
+PASS 844x390 release throws at the previewed position exactly once
+PASS 844x390 cooldown prevents repeat touch throws
+PASS 844x390 combat touch controls are reachable
+PASS 844x390 runtime has no page errors
+PASS 1366x600 tower preview does not spend money
+PASS 1366x600 tower confirm, cancel and pause are reachable
+PASS 1366x600 cancelling tower preserves money
+PASS 1366x600 tower preview switches without spending
+PASS 1366x600 confirming builds exactly one level
+PASS 1366x600 confirmation closes after purchase
+PASS 1366x600 unavailable supplies remain locked
+PASS 1366x600 supply menu can always return
+PASS 1366x600 all new supply text fits the panel
+PASS 1366x600 new wave actually spawns runners
+PASS 1366x600 second touch does not end active aim
+PASS 1366x600 touchcancel spends no bait or cooldown
+PASS 1366x600 cancel zone spends no resources
+PASS 1366x600 focus loss cancels aiming
+PASS 1366x600 rotation cancels aiming without throwing
+PASS 1366x600 pause cancels captured aiming
+PASS 1366x600 aiming exposes a bounded landing point
+PASS 1366x600 release throws at the previewed position exactly once
+PASS 1366x600 cooldown prevents repeat touch throws
+PASS 1366x600 combat touch controls are reachable
+PASS 1366x600 runtime has no page errors
+PASS natural clear awards first permanent stamp
+PASS first stamp unlocks the bait bag in actual UI
+PASS selecting unlocked supply persists immediately
+PASS reloaded bait bag gives two actual free throws
+PASS quick tap still throws without dragging
+PASS supplies cannot change mid-wave
+PASS actual campaign reset retains stamps and chosen supply
+PASS repair crate adds six actual wall HP at wave start
+PASS bounty certificate adds fifteen to actual clear reward
+PASS repeating an already stamped wave gives no duplicate
+PASS hauler encounter actually spawns an animated brute

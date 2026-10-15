@@ -113,7 +113,7 @@ export class InputController {
   };
 
   private readonly onJoystickDown = (event: PointerEvent): void => {
-    if (!this.enabled) return;
+    if (!this.enabled || this.joystickPointer !== null) return;
     event.preventDefault();
     this.joystickPointer = event.pointerId;
     this.joystickZone.classList.add("is-pressed");

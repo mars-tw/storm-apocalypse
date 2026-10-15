@@ -1,0 +1,45 @@
+{
+  "status": "VERIFIED",
+  "version": "0.2.15",
+  "baselineCommit": "50695f2ee346f36fe602c53df442e9cc3f27530f",
+  "checks": {
+    "smoke": {
+      "passed": 196,
+      "total": 196
+    },
+    "mobile": {
+      "passed": 74,
+      "total": 74
+    },
+    "newRules": {
+      "passed": 14,
+      "total": 14
+    },
+    "r23Rules": {
+      "passed": 7,
+      "total": 7
+    },
+    "spawnCadenceCases": 2,
+    "unchangedLateWaveRuns": 720
+  },
+  "blocked": [
+    "preexisting W29 balance acceptance gate, identical on R23 baseline",
+    "shipping performance under clean physical mobile conditions",
+    "physical Android/iOS long-session playtest"
+  ],
+  "sourceSha256": {
+    "src/game/patrol.ts": "bee5e89174c13b7fa633ea1764bc4434917f827e910668a151dbde3e4a1b9d0a",
+    "src/game/ui.ts": "22e810c64789c74564026e7215365350af102ab05523db7604e0e47c8013775e",
+    "src/game/StormGame.ts": "e47984a0ede14c20c53319e68102b5baad346010a39bb636374cec9e6fe20ffc",
+    "src/game/input.ts": "95fad1cb710592000adabf45518740a2659b7ead59d41f6a168d88f83a775225",
+    "src/game/waveDirector.ts": "f4f51232cb7eb06e6ec315afa0b7d6338a5a248410834a1a4f56a4fd0c6e1116",
+    "src/main.ts": "b58b160c1bbb85a29ef21ce4b7376494129ab4d6c3efac384b2562eacaff3d00",
+    "src/styles.css": "0bc49cd381f9f9cab602d57c4f859ea0dd24c09b3e791d3e29c173834ac097cb",
+    "scripts/test-r24-mobile.mjs": "790835801409b270b8d4492afa869438b11f520b14d96da791a3d21d823587a5",
+    "scripts/test-r24-rules.mjs": "b15f67ef47079e094da3df0ebc4afb14df0b7929436dc2d60644986853dc38e5",
+    "scripts/test-smoke.mjs": "af46bfa788046331817f6a602d94a382dd8668e4436cf58f18d68c3f424da48f",
+    "package.json": "f6e522714464d72770a44386cb1c46b1cffa049d5e008bd7bf3082435ae51a22",
+    "package-lock.json": "ef4e297be4dc4f1b2716f2ecc38efbecb49263775b9cdc776694654a355bca2e",
+    "README.md": "607652dfe4ba62ad787ec4f140cb8ad0e70bc6d6af4036c4608380a8f542560d"
+  }
+}

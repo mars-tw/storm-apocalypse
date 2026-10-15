@@ -1,0 +1,19 @@
+
+> storm-apocalypse@0.2.15 test:r24-rules
+> node scripts/test-r24-rules.mjs
+
+PASS old and corrupt profile falls back safely
+PASS profile validates, deduplicates and bounds stamps
+PASS locked supply cannot be selected
+PASS all supply thresholds are reachable and exact
+PASS supply effects remain mutually exclusive
+PASS bait objective requires two attracted enemies
+PASS player objective requires two impact kills
+PASS wall objective boundary is 12 damage
+PASS failed objectives and invalid waves give no stamp
+PASS completed objective awards once across reload and replay
+PASS quick tap has deadzone and drag aim is bounded
+PASS wave 3 contains two leading runners and five walkers
+PASS wave 7 contains exactly two brutes and one runner
+PASS historic profiles and late-wave balance remain unchanged
+14/14 passed

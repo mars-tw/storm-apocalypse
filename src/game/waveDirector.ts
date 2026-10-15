@@ -1,5 +1,5 @@
 export type DirectorZombieType = "walker" | "runner" | "brute" | "boss";
-export type WaveEventId = "standard" | "whiteout" | "elite_surge" | "boss";
+export type WaveEventId = "standard" | "whiteout" | "elite_surge" | "boss" | "hungry_rush" | "haulers";
 
 export interface WavePlan {
   wave: number;
@@ -36,6 +36,20 @@ export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_W
   const normalized = Math.min(30, Math.max(1, Math.floor(wave)));
   const baseCount = Math.min(42, 4 + Math.ceil(normalized * 1.22));
   const baseInterval = Math.max(0.38, 0.86 - (normalized - 1) * 0.014);
+
+  // Authored early encounters teach bait control before the first Boss.
+  // Historical profiles retain their original enemy lineups for comparisons.
+  if (balance.id === "r22" && (normalized === 3 || normalized === 7)) {
+    const hungry = normalized === 3;
+    return {
+      wave: normalized, balanceProfile: balance.id, event: hungry ? "hungry_rush" : "haulers",
+      title: hungry ? "飢餓快襲" : "蠻屍搬貨隊",
+      forecast: hungry ? "雙奔行者 · 誘餌引進塔射界" : "兩隻蠻屍 · 寒霜控場保貨架",
+      announcement: hungry ? "奔行者搶先抵達，用誘餌讓牠們停步" : "蠻屍打算搬走攤位存貨，先控場再集火",
+      enemyCount: hungry ? 7 : 10, spawnInterval: hungry ? 0.9 : 1.05,
+      hpMultiplier: 1, speedMultiplier: 1, damageMultiplier: 1,
+    };
+  }
 
   if (normalized % 10 === 0) {
     return {
@@ -102,6 +116,8 @@ export function getWavePlan(wave: number, balance: WaveBalanceProfile = ACTIVE_W
 }
 
 export function enemyTypeForWave(plan: WavePlan, order: number): DirectorZombieType {
+  if (plan.event === "hungry_rush") return order === plan.enemyCount || order === plan.enemyCount - 1 ? "runner" : "walker";
+  if (plan.event === "haulers") return order === plan.enemyCount || order === 4 ? "brute" : order === 7 ? "runner" : "walker";
   if (plan.event === "boss" && order === 1) return "boss";
   if (plan.event === "whiteout" && (order % 4 === 0 || order % 4 === 1)) return "runner";
   if (plan.event === "elite_surge" && plan.balanceProfile === "r22") {

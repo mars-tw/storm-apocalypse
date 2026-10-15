@@ -1,0 +1,811 @@
+
+> storm-apocalypse@0.2.15 test:smoke
+> node scripts/test-smoke.mjs
+
+PASS [assets/R8.1] portraits and menu background pass the luminance gate — protagonist-butcher-matron.png=0.562/0.0%, protagonist-butcher-matron-medium.png=0.562/0.0%, protagonist-butcher-matron-low.png=0.562/0.0%, protagonist-vet-sniper.png=0.567/0.0%, protagonist-vet-sniper-medium.png=0.567/0.0%, protagonist-vet-sniper-low.png=0.567/0.0%, protagonist-mech-youth.png=0.619/0.0%, protagonist-mech-youth-medium.png=0.619/0.0%, protagonist-mech-youth-low.png=0.619/0.0%, menu-background.png=0.221/11.4%, menu-background-medium.png=0.222/16.6%, menu-background-low.png=0.222/16.6%
+PASS [assets/R8] R8 character art, palettes and animation assets satisfy the shipping contract — ui-atlas-low.png=512x384/183779B, ui-atlas-medium.png=768x576/386854B, ui-atlas-high.png=1024x768/632311B, menu-background.png=1920x1080/2224985B, panel-9s.png=192x192/30299B, button-9s.png=192x192/32112B, protagonist-butcher-matron.png=512x768/377867B, protagonist-vet-sniper.png=512x768/294489B, protagonist-mech-youth.png=512x768/302586B, preset=R8/palettes:3, butcher=3204tris/18bones/4clips, sniper=3724tris/18bones/4clips, mechanic=3376tris/18bones/4clips, zombie-ash=1216tris/5clips, zombie-frost=1360tris/5clips, zombie-rust=1324tris/5clips, npc-lao-zhou.glb=18bones/Idle+Walk/LaoZhouConicalHat+LaoZhouPipeStem, npc-nurse-lin.glb=18bones/Idle+Walk/NurseLinMedicalBag, npc-kid-bao.glb=18bones/Idle+Walk/KidBaoOversizeBackpack, npc-scout-he.glb=18bones/Idle+Walk/ScoutHeBinocularL
+PASS [animation/R8] Boss stays within budget and has walk, attack, hurt and death clips — tris=4296, clips=Idle,Walk,Idle_Attack,HitReact,Death
+PASS [assets/R10] staff, customer variants and articulated dog meet the R10 geometry, clip and forward contract — hunter=3224tris/18bones/idle+walk+run+attack/root180=true, cashier=3096tris/18bones/idle+walk+run/root180=true, customer-traveler=3212tris/18bones/idle+walk+run/root180=true, customer-forager=3156tris/18bones/idle+walk+run/root180=true, customer-refugee=3136tris/18bones/idle+walk+run/root180=true, shepherd-dog=3092tris/19bones/idle+walk+run/root180=true
+PASS [assets/R10→R13] strong-cow horns and emissive collar are integrated into the articulated cow GLB — tris=2352, bones=19, clips=idle+Eating+Walk+Idle_HitReact1+Death, parts=CowStrongHornL+CowStrongHornR+CowStrongEmberCollar
+PASS [wiring/R10→R13] runtime uses authored R10 staff and dog plus the integrated R13 strong cow — legacy=none
+PASS [assets/R13] 12 Blender-MCP world GLBs pass count, hash, budget, AgX, material and cow animation gates — counts={"total":12,"cow":2,"pine":3,"rock":2,"fence":2,"snowhouse":3}, tris=7930, cows19bones=true
+PASS [assets/R13] 8 gpt-image-2 combat VFX pass RGBA, dimension, alpha-corner, hash and uniqueness gates — assets=8, runtime=1024² RGBA, manual=0m, alphaQA=10m
+PASS [wiring/R13] new world GLBs replace legacy references and VFX fire only on applied combat impacts — models=12, vfx=8, legacy=none, impactOrder=true
+PASS [audio/R12] eight procedural WebAudio cues are registered and wired to runtime events — cues=hit,swing,build,sale,wave,boss,towerAlarm,ui, wired=true
+PASS [director/R12] whiteout and elite event waves change spawn rhythm and composition — whiteout=fast runner surge, elite_surge=brute/high-HP formation
+PASS [save/R12] base health is versioned and saved on impact — SaveState.baseHealth + impact-frame saveState wiring
+PASS [content/R18] wave-eve dispatches cover milestone waves and are wired at wave start — waves=5,10,15,20,25,29,30
+PASS [content/R18] customer affinity gain shows lightweight feedback outside threshold events — addCustomerAffinity non-threshold toast
+PASS [loading/R18] static boot loader ships in index.html and is retired once the intro loader mounts — index.html #boot-loader + ui.ts removal
+PASS [loading/R18.1] entry import failure replaces the loading copy with a reload action — import catch + error copy + location.reload button
+PASS [a11y/R18.1] selection scroll hint is a polite live text status — role=status + aria-live=polite; no aria-hidden on hint
+PASS [lifecycle/R18.1] scroll-hint resize listeners are removed before UI remount — root remount cleanup + removeEventListener
+PASS [camera/R19] narrow portrait framing reserves the measured HUD safe frame — aspect blend + top HUD + bottom controls + beta/radius/screen offset
+PASS [resize/R19] Babylon resize is trailing-debounced away from CSS layout — 140ms trailing debounce; no direct resize-event rebuild
+PASS [balance/R20] runtime and fixed-seed simulator share the R20 combat rules — R19=1.08, R20=1.07; shared enemy/tower/player rule functions
+PASS [balance/R22] R22 uses midgame, monotonicity and maxed endgame gates while general W30 is informational — general W25-28 playable/non-increasing; maxed W29=40-60% and W30=50-70%; fixed/fresh validation
+PASS [feel/R23] hit-stop only follows a confirmed melee hit; whiffs show a miss floater without freezing — hitStopTimer set inside if (hit), miss branch only floats text
+PASS [fun/R23] meat bait, wave grade and run advice are wired from the shared rule module — feedback.ts rules used by StormGame
+PASS [simulation/R21] spawn cadence uses 60 Hz fractional carry and verifies both boundary intervals — 0.496s and 0.510s; relative error <1%; multi-trigger clock
+vite v8.1.4 building client environment for smoke...
+[2K
+node.exe :
+位於 線路:1 字元:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+/storm-apocalypse/images/ui/chrome/button-9s.png referenced in /storm-apocalypse/images/ui/chrome/button-9s.png didn't
+resolve at build time, it will remain unchanged to be resolved at runtime
+
+/storm-apocalypse/images/ui/background/menu-background-low.png?v=b6fc1241 referenced in /storm-apocalypse/images/ui/bac
+kground/menu-background-low.png?v=b6fc1241 didn't resolve at build time, it will remain unchanged to be resolved at run
+time
+
+/storm-apocalypse/images/ui/atlas/ui-atlas-high.png referenced in /storm-apocalypse/images/ui/atlas/ui-atlas-high.png d
+idn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/storm-apocalypse/images/ui/background/menu-background.png?v=a24f01ac referenced in /storm-apocalypse/images/ui/backgro
+und/menu-background.png?v=a24f01ac didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/storm-apocalypse/images/ui/chrome/danger-button-9s.png referenced in /storm-apocalypse/images/ui/chrome/danger-button-
+9s.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/storm-apocalypse/images/ui/atlas/ui-atlas-medium.png referenced in /storm-apocalypse/images/ui/atlas/ui-atlas-medium.p
+ng didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/storm-apocalypse/images/ui/atlas/ui-atlas-low.png referenced in /storm-apocalypse/images/ui/atlas/ui-atlas-low.png did
+n't resolve at build time, it will remain unchanged to be resolved at runtime
+
+/storm-apocalypse/images/ui/chrome/panel-9s.png referenced in /storm-apocalypse/images/ui/chrome/panel-9s.png didn't re
+solve at build time, it will remain unchanged to be resolved at runtime
+
+/storm-apocalypse/images/ui/background/menu-background-medium.png?v=c0af4d6e referenced in /storm-apocalypse/images/ui/
+background/menu-background-medium.png?v=c0af4d6e didn't resolve at build time, it will remain unchanged to be resolved
+at runtime
+transforming...✓ 3227 modules transformed.
+rendering chunks...
+computing gzip size...
+.smoke-dist/index.html                                                         12.53 kB │ gzip:     7.85 kB
+.smoke-dist/assets/main-CIAd2-3i.css                                           52.94 kB │ gzip:    12.02 kB
+.smoke-dist/assets/flowGraphRichTypes-0iD2N1yC.js                               0.05 kB │ gzip:     0.07 kB
+.smoke-dist/assets/lod.fragment-DQuOM4n0.js                                     0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/pbr.fragment-DcTdmLCw.js                                     0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/taa.fragment-BIADURbv.js                                     0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/fxaa.fragment-NK2Yw6XG.js                                    0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/line.fragment-D6a7BFSP.js                                    0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/mesh.vertexData.functions-Os3O5Aoh.js                        0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/pass.fragment-C93oXvS8.js                                    0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/pbr.vertex-BnrLRiLy.js                                       0.06 kB │ gzip:     0.08 kB
+.smoke-dist/assets/color.fragment-CBhwH6pC.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/depth.fragment-CkhbWnKT.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/fxaa.vertex-B4YFxypF.js                                      0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/grain.fragment-BR1fOIfV.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/layer.fragment-Cv0x9fV9.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/line.vertex-DetrZk3U.js                                      0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/ssao2.fragment-zukUtJ9c.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/color.vertex-DujI0-GQ.js                                     0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/depth.vertex-CjL0bvCN.js                                     0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/exrTextureLoader-Cg-lz3uU.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/filter.fragment-DJVAzXtA.js                                  0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/flowGraphDoNBlock-Dm1SBqOQ.js                                0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/layer.vertex-VCP6lhmn.js                                     0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/lod.fragment-BJ2ucqUd.js                                     0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/pbr.fragment-Cf2kf9h8.js                                     0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/taa.fragment-DW2oOR9C.js                                     0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/default.fragment-CqhxgBg4.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/iblCdfx.fragment-sIGr_HIn.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/iblCdfy.fragment-CM2r7FKP.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/iblIcdf.fragment-DD-HlWUa.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/line.fragment-BX_ITjFi.js                                    0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/lodCube.fragment-C5GNweOT.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/openpbr.fragment-CCZnPFM6.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/outline.fragment-CSMvECFQ.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/pass.fragment-BBQUSZ1x.js                                    0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/pbr.vertex-D_UMeips.js                                       0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/sharpen.fragment-beJqRqpe.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/sprites.fragment-EfJHbOt9.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/tonemap.fragment-C7jkDoHv.js                                 0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/anaglyph.fragment-DLxg1eFj.js                                0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/default.vertex-Cjt0tJAj.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/fxaa.fragment-DjmyV8g4.js                                    0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/geometry.fragment-B-WDhMuv.js                                0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/layer.fragment-D9eY5X9R.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/line.vertex-CQyiP9-3.js                                      0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/openpbr.vertex-dioL8Qoi.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/outline.vertex-D-utFVW3.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/passCube.fragment-DdURwzQ4.js                                0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/sprites.vertex-whuJ7en4.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/ssao2.fragment-Dmq1bV-w.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/color.fragment-BuxkdKcM.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/depth.fragment-DOdQgxSH.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/flowGraphBranchBlock-CE0QioX9.js                             0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/flowGraphEasingBlock-BgF0Avqe.js                             0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/flowGraphSwitchBlock-BnDKWFRx.js                             0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/fxaa.vertex-BURhZKyQ.js                                      0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/geometry.vertex-Cq8zEhIR.js                                  0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/grain.fragment-CvOAoLhF.js                                   0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/layer.vertex-K1B_ia1v.js                                     0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/lensFlare.fragment-BuofdBfw.js                               0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/particles.fragment-n2uLbQL6.js                               0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/shadowMap.fragment-DpKm7ngi.js                               0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/webAudioSoundSource-Vqfuf4jC.js                              0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/background.fragment-DEMCk5nb.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/bloomMerge.fragment-pZgAkVBP.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/color.vertex-CDFZmAfZ.js                                     0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/depth.vertex-G22UMGoQ.js                                     0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/filter.fragment-Dkyt-3Yg.js                                  0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphContextBlock-BGxSw5AQ.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphForLoopBlock-CrD9J9Y4.js                            0.07 kB │ gzip:     0.08 kB
+.smoke-dist/assets/flowGraphIndexOfBlock-xsSEL7tu.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphWaitAllBlock-CZNyIfLZ.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/kernelBlur.fragment-eWvyIRYP.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lensFlare.vertex-AYDWaZVa.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lightProxy.fragment-CyfUXHXw.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lodCube.fragment-De0nqAc_.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/motionBlur.fragment-BSeeVGKM.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/openpbr.fragment-C4-8hfmB.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/outline.fragment-Dpmc0foh.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/particles.vertex-DgO1xT5U.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/rgbdDecode.fragment-C8x5BQ1T.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/rgbdEncode.fragment-BD-JHSfk.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/shadowMap.vertex-B5pFwPSq.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/sharpen.fragment-zuxWPKDE.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/sprites.fragment-vxiIMwN0.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/tonemap.fragment-B9yBGWDB.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/background.vertex-DLlqeXia.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/convolution.fragment-CdFhUg1e.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/default.fragment-CHlKB_Gi.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/displayPass.fragment-WdY1P38C.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphConstantBlock-CS-IWItY.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphDebounceBlock-rIS1f4jT.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphFlipFlopBlock-B72jYZYL.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphGetAssetBlock-DMgmZEwq.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSequenceBlock-4tFtudV3.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSetDelayBlock-BoQh3t9V.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphThrottleBlock-BFJcVNoU.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/greasedLine.fragment-D5PrzVSg.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblCdfDebug.fragment-Byr45jIe.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblCdfx.fragment-DIzGxwzg.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblCdfy.fragment-Czl7AU-F.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblIcdf.fragment-Deq6kFL9.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/kernelBlur.vertex-BOVieGBL.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lightProxy.vertex-DDHJcqu8.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/minmaxRedux.fragment-CJqf74wi.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/openpbr.vertex-BXC8esO8.js                                   0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/outline.vertex-Bv-qiqh-.js                                   0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/passCube.fragment-D4YsZj-o.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/procedural.vertex-57RikXV2.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/sprites.vertex-Beo7OMXu.js                                   0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/ssaoCombine.fragment-C1_0xFhL.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/anaglyph.fragment-BkKGXCeO.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/default.vertex-e9GHoBWB.js                                   0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/depthBoxBlur.fragment-8hobiGQI.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphMultiGateBlock-CqJAo2gI.js                          0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphPlaySoundBlock-CdgQH8zd.js                          0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphStopSoundBlock-77UAsXfv.js                          0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphWhileLoopBlock-DRIlNwVQ.js                          0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/geometry.fragment-W6E4kQDs.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/glowMapMerge.fragment-C7X2lr1p.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/greasedLine.vertex-DyWsQeOW.js                               0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/hdrFiltering.fragment-DfIqS1db.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblVoxelGrid.fragment-CAcmFmBa.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lensFlare.fragment-Zontkn_V.js                               0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/oitBackBlend.fragment-WcfSu7cn.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/particles.fragment-BbGGhXSg.js                               0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/postprocess.vertex-DEncUiAY.js                               0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/shadowMap.fragment-CxjZ6gmx.js                               0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/webAudioStreamingSound-BdNrj212.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/bilateralBlur.fragment-CsnD629t.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/blackAndWhite.fragment-BTh5MOko.js                           0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/clearQuad.fragment-BkpNxSmF.js                               0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphApplyForceBlock-DkQDzIc6.js                         0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphArrayIndexBlock-DJDxKTP4.js                         0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphConsoleLogBlock-EvjiB6Em.js                         0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphDataSwitchBlock-J-TwzLqR.js                         0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphKeyUpEventBlock-l_qQlvfD.js                         0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphPauseSoundBlock-DWfedHbi.js                         0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/geometry.vertex-BI1FSvCn.js                                  0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/glowMapMerge.vertex-C20XCPue.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/hdrFiltering.vertex-BQhUg9m_.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblVoxelGrid.vertex-B8vY2bgZ.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/kernelBlur.fragment-BeEeC-_M.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lensFlare.vertex-BfZOzvL1.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lightProxy.fragment-C4PxLdb2.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/motionBlur.fragment-B31UjI0r.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/particles.vertex-Bg3RyYXz.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/pbrMaterialLoadingAdapter-Bj130ptD.js                        0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/rgbdDecode.fragment-C-q2e2Tm.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/rgbdEncode.fragment-BRCHFfXG.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/shadowMap.vertex-CSemU5XF.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/background.fragment-JwfYIdqB.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/bloomMerge.fragment-pAV1-imD.js                              0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/clearQuad.vertex-D28eoI-7.js                                 0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphCancelDelayBlock-B6W8cSJn.js                        0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphCounterBlock-6-G7DG4V.js                            0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphGetPropertyBlock-Cq8Y7skI.js                        0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphGetVariableBlock-DD8mO_zO.js                        0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSetPropertyBlock-DAXtNtkT.js                        0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSetVariableBlock-C7V4RjSu.js                        0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/kernelBlur.vertex-DPirH_fT.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/lightProxy.vertex-U6sk5tYd.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/minmaxRedux.fragment-BsTNvCX8.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/procedural.vertex-B7yf1aum.js                                0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/ssaoCombine.fragment-CaxX-Fq_.js                             0.07 kB │ gzip:     0.09 kB
+.smoke-dist/assets/background.vertex-DlyU7ryq.js                                0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/colorCorrection.fragment-CvqB3b6r.js                         0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/convolution.fragment-DjjCsUmG.js                             0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/displayPass.fragment-BITMKdSL.js                             0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphApplyImpulseBlock-CLIOnFMl.js                       0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphIsKeyPressedBlock-2-nFJxic.js                       0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphKeyDownEventBlock-BceC3N52.js                       0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/greasedLine.fragment-B4No8xWl.js                             0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblCdfDebug.fragment-D8EbyX-4.js                             0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/imageProcessing.fragment-hYtMbOuC.js                         0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/oitBackBlend.fragment-BaZeJ_J1.js                            0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/postprocess.vertex-CsSjL8Gw.js                               0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/typeStore-Cu_sj2zM.js                                        0.08 kB │ gzip:     0.08 kB
+.smoke-dist/assets/depthBoxBlur.fragment-Ck4eN5bx.js                            0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphCodeExecutionBlock-CHwaMgNS.js                      0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphInterpolationBlock-DWjnRRlA.js                      0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphMeshPickEventBlock-dpYoAB-p.js                      0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphPlayAnimationBlock-CNFajQpq.js                      0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphStopAnimationBlock-50pEs43B.js                      0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/glowMapMerge.fragment-BBwx0VlW.js                            0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/greasedLine.vertex-CoOCHJdE.js                               0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/hdrFiltering.fragment-hXvfrO7B.js                            0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblVoxelGrid.fragment-DWiqHheb.js                            0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/bilateralBlur.fragment-BNv-C9-y.js                           0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/blackAndWhite.fragment-Bp1zP_eD.js                           0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/circleOfConfusion.fragment-niivUdgj.js                       0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/depthOfFieldMerge.fragment-BQBn8zm2.js                       0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/extractHighlights.fragment-ChBi7OHS.js                       0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphGetSoundVolumeBlock-BTtrTwNw.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphIsSoundPlayingBlock-BENFSFos.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphPauseAnimationBlock-D6sec8Nu.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSceneTickEventBlock-Ck-FZFZk.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSetSoundVolumeBlock-F2wvccMW.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/glowMapGeneration.fragment-Ck6MoYGq.js                       0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/glowMapMerge.vertex-BiHxUUOC.js                              0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/hdrFiltering.vertex-DbMioARk.js                              0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblVoxelGrid.vertex-CKaNC7px.js                              0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/openpbrMaterialLoadingAdapter-_MkupZIy.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphConditionalDataBlock-CATqZiyx.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphPointerOutEventBlock-Dsc_XJu-.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSceneReadyEventBlock-BbNou5k6.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSendCustomEventBlock-BMmSaghU.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphSoundEndedEventBlock-BlMgE_CR.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/glowMapGeneration.vertex-G1cvpP0n.js                         0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblScaledLuminance.fragment-DQRqXtNj.js                      0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/imageProcessing.fragment-Dhj4QxIx.js                         0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/boundingBoxRenderer.fragment-B4UHc0mi.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/chromaticAberration.fragment-8VyqzPWc.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/colorCorrection.fragment-Cjn8o8PJ.js                         0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphPointerOverEventBlock-wivaK3fm.js                   0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/glowBlurPostProcess.fragment-CQ3DL9h7.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblGenerateVoxelMip.fragment-69uwGkex.js                     0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/bilateralBlurQuality.fragment-D8KOCy32.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/boundingBoxRenderer.vertex-CYKP_DLI.js                       0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/copyTextureToTexture.fragment-iDypuDNh.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphBezierCurveEasingBlock-BPL-I-eS.js                  0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphFunctionReferenceBlock-CxjT8fm5.js                  0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphGetLinearVelocityBlock-Cqc2v8GH.js                  0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphJsonPointerParserBlock-BRA4mPhr.js                  0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphSetLinearVelocityBlock-BVr_QK-T.js                  0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingRender.fragment-DA3Ec6MW.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblCombineVoxelGrids.fragment-Co4kKpd7.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblDominantDirection.fragment-DqlCCpie.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblShadowSpatialBlur.fragment-BSVL8gN1.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/screenSpaceCurvature.fragment-CB2XrDOw.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/circleOfConfusion.fragment-BnRxpDbf.js                       0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/depthOfFieldMerge.fragment-CwbZMCAs.js                       0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/extractHighlights.fragment-CnCxNakk.js                       0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphGetAngularVelocityBlock-BMCiJtmE.js                 0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphReceiveCustomEventBlock-CYz91InK.js                 0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphSetAngularVelocityBlock-CGCd7pqk.js                 0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/glowMapGeneration.fragment-BT2r7-BJ.js                       0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblShadowAccumulation.fragment-DJgMSlp5.js                   0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblShadowVoxelTracing.fragment-BjhKmH_n.js                   0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/rsmGlobalIllumination.fragment-B74qMcth.js                   0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/glowMapGeneration.vertex-CKxd8CTr.js                         0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/hdrIrradianceFiltering.fragment-6-X5_aXm.js                  0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblScaledLuminance.fragment-B0mYcvxH.js                      0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/screenSpaceReflection2.fragment-CR9QgLvw.js                  0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/vrDistortionCorrection.fragment-BvYx7ku1.js                  0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/boundingBoxRenderer.fragment-BWfn7niT.js                     0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/chromaticAberration.fragment-BKoXKO5M.js                     0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphSetPhysicsMotionTypeBlock-DVR_npA5.js               0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/glowBlurPostProcess.fragment-CoGnesxf.js                     0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/hdrIrradianceFiltering.vertex-C6pwGZk2.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblGenerateVoxelMip.fragment-g7aq1HgO.js                     0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/bilateralBlurQuality.fragment-BxOJlY5z.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/boundingBoxRenderer.vertex-DqAUDagI.js                       0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/copyTextureToTexture.fragment-DEfEEhOJ.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/flowGraphPhysicsCollisionEventBlock-BCvsUqqD.js              0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingRender.fragment-BAz6DT2g.js                    0.08 kB │ gzip:     0.09 kB
+.smoke-dist/assets/iblCombineVoxelGrids.fragment-UEZ9pE-c.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblDominantDirection.fragment-DBILwp9M.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblShadowSpatialBlur.fragment-DGkDa-eT.js                    0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/rsmGlobalIllumination.fragment-CAOkGuTl.js                   0.08 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblShadowAccumulation.fragment-CpU8VX7w.js                   0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/iblShadowVoxelTracing.fragment-BBdj_bCQ.js                   0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/rsmFullGlobalIllumination.fragment-CeiNwm8q.js               0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/screenSpaceReflection2.fragment-C6UwzT8j.js                  0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/vrDistortionCorrection.fragment-D0CvYUAk.js                  0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingStandardBlur.fragment-BSwN8tyU.js              0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/hdrIrradianceFiltering.fragment-CWhgSG-f.js                  0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/screenSpaceReflection2Blur.fragment-CxPQLS3B.js              0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/copyTexture3DLayerToTexture.fragment-DACwqNR8.js             0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/dds-CW9TZ5wN.js                                              0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphGetPhysicsMassPropertiesBlock-BwsVr61w.js           0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingBilateralBlur.fragment-DZvz6WAh.js             0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingParticleDepth.fragment-tkWFLL6n.js             0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/gaussianSplattingVertexDeclaration-DFOTJ82m.js               0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/hdrIrradianceFiltering.vertex-B7JkzcB4.js                    0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/shadowMapFragmentSoftTransparentShadow-CbRTfa-s.js           0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingParticleDepth.vertex-Dd-szuiK.js               0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/rsmFullGlobalIllumination.fragment-DzeczmCa.js               0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/flowGraphTransformCoordinatesSystemBlock-DydgmWB0.js         0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingParticleDiffuse.fragment-D286_3bq.js           0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/screenSpaceReflection2Blur.fragment-CyVvrcGT.js              0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingStandardBlur.fragment-Ck9kg4H0.js              0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/copyTexture3DLayerToTexture.fragment-DwWY82v0.js             0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingBilateralBlur.fragment-BvomoQff.js             0.09 kB │ gzip:     0.11 kB
+.smoke-dist/assets/fluidRenderingParticleDepth.fragment-C1fxSDDM.js             0.09 kB │ gzip:     0.11 kB
+.smoke-dist/assets/fluidRenderingParticleThickness.fragment-BsaFAhHM.js         0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/shadowMapFragmentSoftTransparentShadow-CNwGraHa.js           0.09 kB │ gzip:     0.10 kB
+.smoke-dist/assets/fluidRenderingParticleDepth.vertex-DI4c1-Du.js               0.09 kB │ gzip:     0.11 kB
+.smoke-dist/assets/fluidRenderingParticleThickness.vertex-C4Lwg-jB.js           0.09 kB │ gzip:     0.11 kB
+.smoke-dist/assets/fluidRenderingParticleDiffuse.fragment-k8ueuwJ1.js           0.09 kB │ gzip:     0.11 kB
+.smoke-dist/assets/screenSpaceReflection2BlurCombiner.fragment-zNbWtVw7.js      0.09 kB │ gzip:     0.11 kB
+.smoke-dist/assets/fluidRenderingParticleThickness.fragment-PO-7xidU.js         0.10 kB │ gzip:     0.11 kB
+.smoke-dist/assets/fluidRenderingParticleThickness.vertex-xntFquLf.js           0.10 kB │ gzip:     0.11 kB
+.smoke-dist/assets/thinEngine-CEnLCEwW.js                                       0.10 kB │ gzip:     0.10 kB
+.smoke-dist/assets/screenSpaceReflection2BlurCombiner.fragment-fPIX7Eek.js      0.10 kB │ gzip:     0.11 kB
+.smoke-dist/assets/webAudioStaticSound-DbDDs6cp.js                              0.11 kB │ gzip:     0.10 kB
+.smoke-dist/assets/abstractAudioBus-DZaP8XZL.js                                 0.11 kB │ gzip:     0.13 kB
+.smoke-dist/assets/pbrMaterial.pure-CMWMBddH.js                                 0.13 kB │ gzip:     0.11 kB
+.smoke-dist/assets/openpbrMaterial.pure-d2O5oOEO.js                             0.14 kB │ gzip:     0.12 kB
+.smoke-dist/assets/guid-BXdVC_j_.js                                             0.15 kB │ gzip:     0.14 kB
+.smoke-dist/assets/flowGraphExecutionBlockWithOutSignal-DmmmF0NN.js             0.15 kB │ gzip:     0.15 kB
+.smoke-dist/assets/precisionDate-Uyb-ubD0.js                                    0.18 kB │ gzip:     0.14 kB
+.smoke-dist/assets/kernelBlurVaryingDeclaration-DP2Wr9Oc.js                     0.21 kB │ gzip:     0.17 kB
+.smoke-dist/assets/fogVertex-B90wzaBe.js                                        0.21 kB │ gzip:     0.18 kB
+.smoke-dist/assets/fogVertexDeclaration-Bb9kDbrL.js                             0.22 kB │ gzip:     0.18 kB
+.smoke-dist/assets/kernelBlurVaryingDeclaration-g2Ge9lzd.js                     0.22 kB │ gzip:     0.18 kB
+.smoke-dist/assets/meshVertexDeclaration-CPlGPeEg.js                            0.22 kB │ gzip:     0.18 kB
+.smoke-dist/assets/mainUVVaryingDeclaration-BBamQlxR.js                         0.22 kB │ gzip:     0.19 kB
+.smoke-dist/assets/fogVertexDeclaration-CiHbVcSR.js                             0.23 kB │ gzip:     0.19 kB
+.smoke-dist/assets/glTFLoaderAnimation-C9rDdDhG.js                              0.23 kB │ gzip:     0.16 kB
+.smoke-dist/assets/mainUVVaryingDeclaration-B_7d0nc3.js                         0.23 kB │ gzip:     0.19 kB
+.smoke-dist/assets/pointCloudVertex-CmkEsLzf.js                                 0.24 kB │ gzip:     0.20 kB
+.smoke-dist/assets/flowGraphTypeToTypeBlocks-DoGWyPo9.js                        0.25 kB │ gzip:     0.14 kB
+.smoke-dist/assets/domManagement-BqltO0ki.js                                    0.25 kB │ gzip:     0.17 kB
+.smoke-dist/assets/subSurfaceScatteringFunctions-D1w5631e.js                    0.26 kB │ gzip:     0.20 kB
+.smoke-dist/assets/logDepthFragment-C5lxT4l1.js                                 0.27 kB │ gzip:     0.22 kB
+.smoke-dist/assets/subSurfaceScatteringFunctions-kzIx-1Od.js                    0.27 kB │ gzip:     0.21 kB
+.smoke-dist/assets/meshUboDeclaration-BATNZvmb.js                               0.27 kB │ gzip:     0.23 kB
+.smoke-dist/assets/flowGraphMatrixMathBlocks-CRsdUvBb.js                        0.28 kB │ gzip:     0.17 kB
+.smoke-dist/assets/mrtFragmentDeclaration-DJxx36to.js                           0.28 kB │ gzip:     0.22 kB
+.smoke-dist/assets/fogFragment-CKCGTcJi.js                                      0.29 kB │ gzip:     0.22 kB
+.smoke-dist/assets/flowGraphUnaryOperationBlock-Dds-J4qT.js                     0.30 kB │ gzip:     0.22 kB
+.smoke-dist/assets/tgaTextureLoader-BHrCdJLl.js                                 0.30 kB │ gzip:     0.25 kB
+.smoke-dist/assets/logDepthVertex-D5IUM6qd.js                                   0.30 kB │ gzip:     0.24 kB
+.smoke-dist/assets/logDepthFragment-CxtJswLx.js                                 0.31 kB │ gzip:     0.24 kB
+.smoke-dist/assets/fogFragment-C9E3EVJj.js                                      0.32 kB │ gzip:     0.25 kB
+.smoke-dist/assets/sceneVertexDeclaration-CluTp-RC.js                           0.33 kB │ gzip:     0.22 kB
+.smoke-dist/assets/fogVertex-D0bmc4KF.js                                        0.33 kB │ gzip:     0.23 kB
+.smoke-dist/assets/bumpVertexDeclaration-Cb04kLz9.js                            0.34 kB │ gzip:     0.25 kB
+.smoke-dist/assets/meshUboDeclaration-BmNu2KU_.js                               0.34 kB │ gzip:     0.25 kB
+.smoke-dist/assets/morphTargetsVertexGlobal-CjrOq831.js                         0.34 kB │ gzip:     0.25 kB
+.smoke-dist/assets/keyboardEvents-CGYiptFb.js                                   0.35 kB │ gzip:     0.20 kB
+.smoke-dist/assets/logDepthDeclaration-Dh136csG.js                              0.36 kB │ gzip:     0.26 kB
+.smoke-dist/assets/sceneFragmentDeclaration-ql3RpL9u.js                         0.36 kB │ gzip:     0.23 kB
+.smoke-dist/assets/engineStore-BjZBZynU.js                                      0.36 kB │ gzip:     0.23 kB
+.smoke-dist/assets/sceneUboDeclaration-B5VhSG0v.js                              0.36 kB │ gzip:     0.26 kB
+.smoke-dist/assets/morphTargetsVertexGlobal-DuIqJiFY.js                         0.36 kB │ gzip:     0.26 kB
+.smoke-dist/assets/logDepthDeclaration-BpsZdJ7z.js                              0.37 kB │ gzip:     0.27 kB
+.smoke-dist/assets/flowGraphBinaryOperationBlock-CaDo8vcZ.js                    0.37 kB │ gzip:     0.24 kB
+.smoke-dist/assets/logDepthVertex-DSD5XdGw.js                                   0.37 kB │ gzip:     0.26 kB
+.smoke-dist/assets/oitFinalSimpleBlend.fragment-Q5Yng1yZ.js                     0.38 kB │ gzip:     0.25 kB
+.smoke-dist/assets/decalFragment-DYiNNNYb.js                                    0.39 kB │ gzip:     0.24 kB
+.smoke-dist/assets/bumpVertexDeclaration-I4Guxw_q.js                            0.39 kB │ gzip:     0.26 kB
+.smoke-dist/assets/vertexColorMixing-DPW6Is9y.js                                0.43 kB │ gzip:     0.27 kB
+.smoke-dist/assets/sceneUboDeclaration-B96Tfx7b.js                              0.43 kB │ gzip:     0.27 kB
+.smoke-dist/assets/tools.functions-BHN4804L.js                                  0.44 kB │ gzip:     0.24 kB
+.smoke-dist/assets/oitFinalSimpleBlend.fragment-nGYFumis.js                     0.45 kB │ gzip:     0.29 kB
+.smoke-dist/assets/gaussianSplattingUboDeclaration-D-E5L1Sy.js                  0.46 kB │ gzip:     0.25 kB
+.smoke-dist/assets/flowGraphGLTFDataProvider-BHQ5k5Qg.js                        0.46 kB │ gzip:     0.29 kB
+.smoke-dist/assets/fresnelFunction-C_dd308T.js                                  0.46 kB │ gzip:     0.31 kB
+.smoke-dist/assets/boundingBoxRendererUboDeclaration-p4IHL4lf.js                0.46 kB │ gzip:     0.28 kB
+.smoke-dist/assets/shaderStore-D-XQlhUT.js                                      0.46 kB │ gzip:     0.17 kB
+.smoke-dist/assets/decalFragment-CvBK6CMD.js                                    0.48 kB │ gzip:     0.28 kB
+.smoke-dist/assets/fresnelFunction-FdYlYPwE.js                                  0.48 kB │ gzip:     0.32 kB
+.smoke-dist/assets/performanceConfigurator-UtxC_Odd.js                          0.50 kB │ gzip:     0.25 kB
+.smoke-dist/assets/gaussianSplattingVertexDeclaration-CHA3aFX9.js               0.51 kB │ gzip:     0.28 kB
+.smoke-dist/assets/bumpVertex-CWhdIpqj.js                                       0.52 kB │ gzip:     0.32 kB
+.smoke-dist/assets/hdrTextureLoader-Dv2SdRnO.js                                 0.53 kB │ gzip:     0.38 kB
+.smoke-dist/assets/flowGraphMathCombineExtractBlocks-DiFvPXk5.js                0.54 kB │ gzip:     0.20 kB
+.smoke-dist/assets/vertexColorMixing-UCrnwszu.js                                0.56 kB │ gzip:     0.30 kB
+.smoke-dist/assets/flowGraphVectorMathBlocks-BHbkS3gC.js                        0.56 kB │ gzip:     0.26 kB
+.smoke-dist/assets/envTextureLoader-Dp3yBT0C.js                                 0.58 kB │ gzip:     0.38 kB
+.smoke-dist/assets/gaussianSplattingFragmentDeclaration-CE2Ol3-0.js             0.59 kB │ gzip:     0.36 kB
+.smoke-dist/assets/clipPlaneFragmentDeclaration-M3T9Lap-.js                     0.60 kB │ gzip:     0.28 kB
+.smoke-dist/assets/packingFunctions-CYllaKEW.js                                 0.61 kB │ gzip:     0.33 kB
+.smoke-dist/assets/clipPlaneFragmentDeclaration-Dztv0IA8.js                     0.61 kB │ gzip:     0.28 kB
+.smoke-dist/assets/lod3D.fragment-yRlWVCij.js                                   0.62 kB │ gzip:     0.36 kB
+.smoke-dist/assets/devTools-Bh3wKyVb.js                                         0.62 kB │ gzip:     0.38 kB
+.smoke-dist/assets/flowGraphEventBlock-QmQE9qoX.js                              0.63 kB │ gzip:     0.37 kB
+.smoke-dist/assets/packingFunctions-Zjmt0YZ0.js                                 0.65 kB │ gzip:     0.35 kB
+.smoke-dist/assets/clipPlaneVertex-DwkrJYmX.js                                  0.65 kB │ gzip:     0.29 kB
+.smoke-dist/assets/drawWrapper-CTfGYdy_.js                                      0.66 kB │ gzip:     0.38 kB
+.smoke-dist/assets/flowGraphAsyncExecutionBlock-B9crFbXV.js                     0.66 kB │ gzip:     0.34 kB
+.smoke-dist/assets/gaussianSplattingFragmentDeclaration-CZfjm7rV.js             0.66 kB │ gzip:     0.39 kB
+.smoke-dist/assets/samplerFragmentDeclaration-3yaLawFX.js                       0.67 kB │ gzip:     0.29 kB
+.smoke-dist/assets/utils-N5rsUTjt.js                                            0.68 kB │ gzip:     0.36 kB
+.smoke-dist/assets/flowGraphCachedOperationBlock-DKAXGFjC.js                    0.69 kB │ gzip:     0.33 kB
+.smoke-dist/assets/backgroundUboDeclaration-ClJLip40.js                         0.69 kB │ gzip:     0.36 kB
+.smoke-dist/assets/bumpVertex-DRq4BZvD.js                                       0.69 kB │ gzip:     0.38 kB
+.smoke-dist/assets/backgroundUboDeclaration-i4MsxPq1.js                         0.72 kB │ gzip:     0.38 kB
+.smoke-dist/assets/samplerFragmentDeclaration-CEHqUfAO.js                       0.72 kB │ gzip:     0.32 kB
+.smoke-dist/assets/flowGraphAssetsContext-WtUyuDAI.js                           0.73 kB │ gzip:     0.27 kB
+.smoke-dist/assets/morphTargetsVertexDeclaration-4aMxOx2b.js                    0.74 kB │ gzip:     0.36 kB
+.smoke-dist/assets/clipPlaneVertexDeclaration-BYIpTPFm.js                       0.75 kB │ gzip:     0.30 kB
+.smoke-dist/assets/volumetricLightingRenderVolume.vertex-D-GEBv1f.js            0.75 kB │ gzip:     0.39 kB
+.smoke-dist/assets/pointerEvents-BnQxO_j8.js                                    0.76 kB │ gzip:     0.40 kB
+.smoke-dist/assets/volumetricLightingRenderVolume.vertex-B-Lpjuxy.js            0.76 kB │ gzip:     0.39 kB
+.smoke-dist/assets/clusteredLightingFunctions-BFCOODPn.js                       0.76 kB │ gzip:     0.35 kB
+.smoke-dist/assets/lod3D.fragment-y-jhIqg5.js                                   0.76 kB │ gzip:     0.41 kB
+.smoke-dist/assets/clusteredLightingFunctions-DNqaoQCj.js                       0.79 kB │ gzip:     0.35 kB
+.smoke-dist/assets/clipPlaneVertexDeclaration-B8LM6QZj.js                       0.79 kB │ gzip:     0.31 kB
+.smoke-dist/assets/morphTargetsVertexDeclaration-DQ2pBC2E.js                    0.79 kB │ gzip:     0.38 kB
+.smoke-dist/assets/clipPlaneVertex-DfQm2Zia.js                                  0.80 kB │ gzip:     0.31 kB
+.smoke-dist/assets/clipPlaneFragment-CXLYb7ZJ.js                                0.80 kB │ gzip:     0.31 kB
+.smoke-dist/assets/volumetricLightingBlendVolume.fragment-Bz5yiNiY.js           0.81 kB │ gzip:     0.45 kB
+.smoke-dist/assets/bakedVertexAnimationDeclaration-C-g0vyVW.js                  0.85 kB │ gzip:     0.44 kB
+.smoke-dist/assets/instancesVertex-C-FoRQR1.js                                  0.88 kB │ gzip:     0.32 kB
+.smoke-dist/assets/clipPlaneFragment-CWY7C38Z.js                                0.90 kB │ gzip:     0.33 kB
+.smoke-dist/assets/imageProcessingDeclaration-C1TL3wLs.js                       0.91 kB │ gzip:     0.45 kB
+.smoke-dist/assets/webAudioMainBus-cpcyCE2f.js                                  0.91 kB │ gzip:     0.42 kB
+.smoke-dist/assets/shadowMapVertexMetric-djBwrYtz.js                            0.91 kB │ gzip:     0.45 kB
+.smoke-dist/assets/instancesDeclaration-CJBvtBV5.js                             0.93 kB │ gzip:     0.34 kB
+.smoke-dist/assets/fogFragmentDeclaration--w8QPs2M.js                           0.93 kB │ gzip:     0.46 kB
+.smoke-dist/assets/shadowsVertex-CdnfwHqg.js                                    1.00 kB │ gzip:     0.42 kB
+.smoke-dist/assets/imageProcessingDeclaration-BsMKsu0P.js                       1.01 kB │ gzip:     0.47 kB
+.smoke-dist/assets/flowGraphPointerUpEventBlock-5YsBrSdb.js                     1.01 kB │ gzip:     0.48 kB
+.smoke-dist/assets/volumetricLightingBlendVolume.fragment-DIkNb-c4.js           1.01 kB │ gzip:     0.51 kB
+.smoke-dist/assets/flowGraphPointerDownEventBlock-udq5EmR5.js                   1.02 kB │ gzip:     0.48 kB
+.smoke-dist/assets/flowGraphPointerMoveEventBlock-D3ra9Ozi.js                   1.03 kB │ gzip:     0.49 kB
+.smoke-dist/assets/fogFragmentDeclaration-B3hbo39x.js                           1.03 kB │ gzip:     0.49 kB
+.smoke-dist/assets/instancesDeclaration-DsiFqYXH.js                             1.04 kB │ gzip:     0.36 kB
+.smoke-dist/assets/flowGraphKeyboardEventBlock-Ihw5_qzJ.js                      1.05 kB │ gzip:     0.43 kB
+.smoke-dist/assets/shadowMapFragment-kfMIjDW7.js                                1.10 kB │ gzip:     0.49 kB
+.smoke-dist/assets/selection.fragment-XJaKE0mn.js                               1.11 kB │ gzip:     0.52 kB
+.smoke-dist/assets/shadowMapVertexMetric-BR5nXnRA.js                            1.14 kB │ gzip:     0.48 kB
+.smoke-dist/assets/lightVxUboDeclaration-CQiAoKfZ.js                            1.16 kB │ gzip:     0.53 kB
+.smoke-dist/assets/instancesVertex-Dty6qjVO.js                                  1.17 kB │ gzip:     0.39 kB
+.smoke-dist/assets/smartArray-BRfcgNbX.js                                       1.18 kB │ gzip:     0.44 kB
+.smoke-dist/assets/harmonicsFunctions-Cc7pbAzt.js                               1.21 kB │ gzip:     0.53 kB
+.smoke-dist/assets/basisTextureLoader-DexcWyld.js                               1.21 kB │ gzip:     0.56 kB
+.smoke-dist/assets/bonesDeclaration-SX_sSZ8J.js                                 1.22 kB │ gzip:     0.60 kB
+.smoke-dist/assets/morphTargetsVertexGlobalDeclaration-5vBrbEWU.js              1.24 kB │ gzip:     0.49 kB
+.smoke-dist/assets/noise.fragment-DEbzbasH.js                                   1.24 kB │ gzip:     0.65 kB
+.smoke-dist/assets/lightVxFragmentDeclaration-Cn2ZeppL.js                       1.25 kB │ gzip:     0.52 kB
+.smoke-dist/assets/defaultUboDeclaration-C53xcSdv.js                            1.26 kB │ gzip:     0.55 kB
+.smoke-dist/assets/ddsTextureLoader-DaNsxN7W.js                                 1.26 kB │ gzip:     0.62 kB
+.smoke-dist/assets/workerPool-aLlzPuNn.js                                       1.28 kB │ gzip:     0.51 kB
+.smoke-dist/assets/halfFloat-Ce77JD5z.js                                        1.29 kB │ gzip:     0.60 kB
+.smoke-dist/assets/selection.fragment-D2MyCFYD.js                               1.33 kB │ gzip:     0.59 kB
+.smoke-dist/assets/shadowMapFragment-BTWwUNxy.js                                1.36 kB │ gzip:     0.52 kB
+.smoke-dist/assets/noise.fragment-LuZEVkT0.js                                   1.40 kB │ gzip:     0.71 kB
+.smoke-dist/assets/lightVxUboDeclaration-C0zImfsf.js                            1.42 kB │ gzip:     0.59 kB
+.smoke-dist/assets/flowGraphDebugBlock-RzynbKm9.js                              1.45 kB │ gzip:     0.64 kB
+.smoke-dist/assets/abstractSoundSource-CZJNWBOk.js                              1.48 kB │ gzip:     0.48 kB
+.smoke-dist/assets/gaussianSplattingVoxel.fragment-D_ycHy0d.js                  1.48 kB │ gzip:     0.68 kB
+.smoke-dist/assets/harmonicsFunctions-YM-AdJck.js                               1.51 kB │ gzip:     0.56 kB
+.smoke-dist/assets/gaussianSplatting.fragment-BvugKWPZ.js                       1.52 kB │ gzip:     0.63 kB
+.smoke-dist/assets/bonesDeclaration-eZsb-J1W.js                                 1.57 kB │ gzip:     0.68 kB
+.smoke-dist/assets/screenSpaceCurvature.fragment-DGKqBbuS.js                    1.59 kB │ gzip:     0.65 kB
+.smoke-dist/assets/gaussianSplatting.fragment-C5dkR4UX.js                       1.60 kB │ gzip:     0.64 kB
+.smoke-dist/assets/defaultUboDeclaration-bEX7kynB.js                            1.62 kB │ gzip:     0.53 kB
+.smoke-dist/assets/volumetricLightingRenderVolume.fragment-CYIVTPj8.js          1.72 kB │ gzip:     0.81 kB
+.smoke-dist/assets/morphTargetsVertexGlobalDeclaration-CKZ3fsoN.js              1.76 kB │ gzip:     0.55 kB
+.smoke-dist/assets/pbrUboDeclaration--xFZEw0i.js                                1.80 kB │ gzip:     0.67 kB
+.smoke-dist/assets/math.plane-eoSJyPIc.js                                       1.81 kB │ gzip:     0.77 kB
+.smoke-dist/assets/gpuRenderParticles.fragment-C-2W1uwV.js                      1.85 kB │ gzip:     0.71 kB
+.smoke-dist/assets/logger-CuBYPcDK.js                                           1.88 kB │ gzip:     0.82 kB
+.smoke-dist/assets/volumetricLightingRenderVolume.fragment-D3Ti9Owi.js          1.95 kB │ gzip:     0.88 kB
+.smoke-dist/assets/gaussianSplattingVoxel.fragment-BEqZ9WEG.js                  1.98 kB │ gzip:     0.70 kB
+.smoke-dist/assets/gaussianSplattingVoxel.vertex-BXdAQgLp.js                    2.00 kB │ gzip:     0.78 kB
+.smoke-dist/assets/bumpFragmentFunctions-BKQoojZ_.js                            2.03 kB │ gzip:     0.84 kB
+.smoke-dist/assets/morphTargetsVertex-ogcMWae3.js                               2.07 kB │ gzip:     0.60 kB
+.smoke-dist/assets/bonesVertex-pbyGCQQC.js                                      2.16 kB │ gzip:     0.50 kB
+.smoke-dist/assets/flowGraphMathBlocks-CCo8_aWv.js                              2.17 kB │ gzip:     0.72 kB
+.smoke-dist/assets/math.scalar.functions-BWXNux-o.js                            2.19 kB │ gzip:     1.03 kB
+.smoke-dist/assets/bumpFragmentFunctions-DBY65jvy.js                            2.19 kB │ gzip:     0.88 kB
+.smoke-dist/assets/webAudioBus-DrXCVeh2.js                                      2.28 kB │ gzip:     0.75 kB
+.smoke-dist/assets/pbrUboDeclaration-oed3_f2e.js                                2.39 kB │ gzip:     0.66 kB
+.smoke-dist/assets/bumpFragment-COQ64DYF.js                                     2.45 kB │ gzip:     0.93 kB
+.smoke-dist/assets/shadowsVertex-D6v7o28N.js                                    2.47 kB │ gzip:     0.54 kB
+.smoke-dist/assets/pbrIBLFunctions-CSlJv7qb.js                                  2.52 kB │ gzip:     0.88 kB
+.smoke-dist/assets/gaussianSplattingVoxel.vertex-DrE9nEV0.js                    2.60 kB │ gzip:     0.91 kB
+.smoke-dist/assets/selection.vertex-BBZz1WDK.js                                 2.63 kB │ gzip:     0.92 kB
+.smoke-dist/assets/flowGraphExecutionBlock-C_fH2Lsv.js                          2.64 kB │ gzip:     0.93 kB
+.smoke-dist/assets/iesTextureLoader-z6D5sYgX.js                                 2.68 kB │ gzip:     1.14 kB
+.smoke-dist/assets/pbrIBLFunctions-b8fwQKtH.js                                  2.71 kB │ gzip:     0.88 kB
+.smoke-dist/assets/bumpFragmentMainFunctions-DGQe1pIX.js                        2.76 kB │ gzip:     1.22 kB
+.smoke-dist/assets/bonesVertex-CDLHrzx0.js                                      2.82 kB │ gzip:     0.54 kB
+.smoke-dist/assets/bakedVertexAnimation-CP3BNGXM.js                             2.82 kB │ gzip:     0.65 kB
+.smoke-dist/assets/lightUboDeclaration-0GW0xpMZ.js                              2.82 kB │ gzip:     0.94 kB
+.smoke-dist/assets/lightFragmentDeclaration-BfzJFvAK.js                         2.92 kB │ gzip:     0.94 kB
+.smoke-dist/assets/webRequest-CNElM_Yd.js                                       2.93 kB │ gzip:     1.06 kB
+.smoke-dist/assets/bumpFragmentMainFunctions-D-SkF7GB.js                        2.99 kB │ gzip:     1.24 kB
+.smoke-dist/assets/abstractSoundInstance-CGHwFA1K.js                            3.00 kB │ gzip:     0.90 kB
+.smoke-dist/assets/selection.vertex-Gx-efp-Z.js                                 3.03 kB │ gzip:     1.01 kB
+.smoke-dist/assets/tga-kwgYoQSY.js                                              3.17 kB │ gzip:     1.21 kB
+.smoke-dist/assets/observable.pure-B4ZVEGuQ.js                                  3.26 kB │ gzip:     1.12 kB
+.smoke-dist/assets/bumpFragment-CxYyYLpf.js                                     3.27 kB │ gzip:     1.03 kB
+.smoke-dist/assets/bakedVertexAnimation-7XIMgH6x.js                             3.42 kB │ gzip:     0.93 kB
+.smoke-dist/assets/textureProcessor.fragment-D-awtrDP.js                        3.49 kB │ gzip:     1.00 kB
+.smoke-dist/assets/lightUboDeclaration-invEuN9e.js                              3.58 kB │ gzip:     1.07 kB
+.smoke-dist/assets/samplerVertexImplementation-DUwTGCgo.js                      3.85 kB │ gzip:     1.06 kB
+.smoke-dist/assets/openpbrUboDeclaration-CbPGRvOI.js                            3.87 kB │ gzip:     1.03 kB
+.smoke-dist/assets/decorators-D3kDnvNy.js                                       3.88 kB │ gzip:     1.58 kB
+.smoke-dist/assets/hdr-B03teFEy.js                                              3.98 kB │ gzip:     1.69 kB
+.smoke-dist/assets/imageProcessingFunctions-DZI7hKve.js                         4.02 kB │ gzip:     1.59 kB
+.smoke-dist/assets/reflectionFunction-C0UTcqMV.js                               4.13 kB │ gzip:     0.99 kB
+.smoke-dist/assets/gaussianSplatting.vertex-Cj8kCrSJ.js                         4.26 kB │ gzip:     1.45 kB
+.smoke-dist/assets/bufferUtils-BzL83JPG.js                                      4.30 kB │ gzip:     1.51 kB
+.smoke-dist/assets/textureProcessor.fragment-B-hqHgey.js                        4.37 kB │ gzip:     1.18 kB
+.smoke-dist/assets/morphTargetsVertex-DCuAuKMQ.js                               4.56 kB │ gzip:     0.82 kB
+.smoke-dist/assets/reflectionFunction-C2zo31eT.js                               4.64 kB │ gzip:     1.05 kB
+.smoke-dist/assets/imageProcessingFunctions-Bf0nQcr9.js                         4.83 kB │ gzip:     1.83 kB
+.smoke-dist/assets/selectionOutline.fragment-lN_28Eg-.js                        4.99 kB │ gzip:     1.04 kB
+.smoke-dist/assets/gaussianSplatting.vertex-DJSANeqg.js                         5.04 kB │ gzip:     1.56 kB
+.smoke-dist/assets/openpbrUboDeclaration-Dnhi8mvk.js                            5.22 kB │ gzip:     1.05 kB
+.smoke-dist/assets/subSurfaceScattering.fragment-BpMtg-sy.js                    5.48 kB │ gzip:     2.07 kB
+.smoke-dist/assets/math.size-NIzop19W.js                                        5.61 kB │ gzip:     2.08 kB
+.smoke-dist/assets/ltcHelperFunctions-DS3Utz6C.js                               6.04 kB │ gzip:     1.54 kB
+.smoke-dist/assets/subSurfaceScattering.fragment-C4QU0C4T.js                    6.10 kB │ gzip:     2.17 kB
+.smoke-dist/assets/selectionOutline.fragment-CwDO4qmT.js                        6.26 kB │ gzip:     1.16 kB
+.smoke-dist/assets/samplerVertexImplementation-CEwsh6W2.js                      6.49 kB │ gzip:     1.51 kB
+.smoke-dist/assets/helperFunctions-DHdJUWHO.js                                  6.57 kB │ gzip:     2.23 kB
+.smoke-dist/assets/ltcHelperFunctions-D8BySwCQ.js                               6.63 kB │ gzip:     1.84 kB
+.smoke-dist/assets/helperFunctions-B4ayNyfM.js                                  6.87 kB │ gzip:     2.33 kB
+.smoke-dist/assets/gpuRenderParticles.vertex-GzEWkdXY.js                        6.88 kB │ gzip:     1.70 kB
+.smoke-dist/assets/dds.pure-C1YUsR0K.js                                         6.96 kB │ gzip:     2.53 kB
+.smoke-dist/assets/basis.pure-C9Xdrj1p.js                                       7.33 kB │ gzip:     2.93 kB
+.smoke-dist/assets/lightsFragmentFunctions-f8jcK7_z.js                          7.35 kB │ gzip:     1.76 kB
+.smoke-dist/assets/buffer.pure-Bt8mykX4.js                                      7.61 kB │ gzip:     2.50 kB
+.smoke-dist/assets/oitFragment-BYDkS-ga.js                                      7.69 kB │ gzip:     2.76 kB
+.smoke-dist/assets/internalTexture-BmQzwjWR.js                                  7.73 kB │ gzip:     2.01 kB
+.smoke-dist/assets/screenSpaceRayTrace-BZRnp6Bu.js                              7.87 kB │ gzip:     2.75 kB
+.smoke-dist/assets/lightsFragmentFunctions-8UZCkSNg.js                          8.16 kB │ gzip:     1.87 kB
+.smoke-dist/assets/screenSpaceRayTrace-Z74_Mvl0.js                              8.47 kB │ gzip:     2.92 kB
+.smoke-dist/assets/oitFragment-DHyWTN5u.js                                      8.56 kB │ gzip:     2.78 kB
+.smoke-dist/assets/hdrFilteringFunctions-Djmq5OyP.js                            8.62 kB │ gzip:     2.54 kB
+.smoke-dist/assets/hdrFilteringFunctions-Da1yugu7.js                            8.68 kB │ gzip:     2.51 kB
+.smoke-dist/assets/cubemapToSphericalPolynomial-B6I-VRG0.js                     9.33 kB │ gzip:     2.81 kB
+.smoke-dist/assets/fileTools.pure-D3YZVHBE.js                                   9.45 kB │ gzip:     3.89 kB
+.smoke-dist/assets/vertexPullingDeclaration-bSzsf5ND.js                        11.57 kB │ gzip:     1.51 kB
+.smoke-dist/assets/constants-CV3VuzDZ.js                                       11.66 kB │ gzip:     3.16 kB
+.smoke-dist/assets/index-B0nSf3PJ.js                                           11.83 kB │ gzip:     4.71 kB
+.smoke-dist/assets/pbrBRDFFunctions-BCNINF-p.js                                11.93 kB │ gzip:     4.14 kB
+.smoke-dist/assets/webAudioBaseSubGraph-DmR0K7Df.js                            12.39 kB │ gzip:     3.51 kB
+.smoke-dist/assets/math.color.pure-DIHI8DMT.js                                 12.50 kB │ gzip:     2.93 kB
+.smoke-dist/assets/pbrBRDFFunctions-DxfbxN23.js                                12.76 kB │ gzip:     4.32 kB
+.smoke-dist/assets/timingTools-DNw4j6LG.js                                     13.00 kB │ gzip:     4.30 kB
+.smoke-dist/assets/dumpTools-DyxthYHo.js                                       13.58 kB │ gzip:     5.06 kB
+.smoke-dist/assets/easing-Bx5huOBj.js                                          13.72 kB │ gzip:     4.50 kB
+.smoke-dist/assets/flowGraphBlock-BEtZsOsV.js                                  13.95 kB │ gzip:     4.11 kB
+.smoke-dist/assets/gaussianSplatting-BLgioyKe.js                               14.04 kB │ gzip:     4.40 kB
+.smoke-dist/assets/gaussianSplatting-3oDQ43cR.js                               14.48 kB │ gzip:     4.39 kB
+.smoke-dist/assets/ktxTextureLoader-BhsqFNsE.js                                15.06 kB │ gzip:     4.37 kB
+.smoke-dist/assets/baseTexture.pure-C6xJ3F1Z.js                                15.07 kB │ gzip:     3.83 kB
+.smoke-dist/assets/lightConstants-ClB3Cd4r.js                                  15.82 kB │ gzip:     3.51 kB
+.smoke-dist/assets/spatialWebAudio-Dgtj5S7z.js                                 15.92 kB │ gzip:     3.65 kB
+.smoke-dist/assets/openpbrTransmissionLayerData-CauWF6g1.js                    16.72 kB │ gzip:     3.79 kB
+.smoke-dist/assets/baseTexture.polynomial.pure-B8U_z6wO.js                     17.66 kB │ gzip:     6.31 kB
+.smoke-dist/assets/openpbrTransmissionLayerData-CLQuA-DQ.js                    17.70 kB │ gzip:     3.98 kB
+.smoke-dist/assets/tools.pure-yf4mkKxY.js                                      17.94 kB │ gzip:     5.69 kB
+.smoke-dist/assets/sceneComponent-DrccZbem.js                                  18.20 kB │ gzip:     4.96 kB
+.smoke-dist/assets/effectRenderer.pure-Dhpe4sX3.js                             18.22 kB │ gzip:     5.77 kB
+.smoke-dist/assets/lightFragment-CbTUC3ac.js                                   19.61 kB │ gzip:     3.11 kB
+.smoke-dist/assets/texture.pure-BdMkUq2T.js                                    19.63 kB │ gzip:     5.47 kB
+.smoke-dist/assets/lightFragment-D_cy2y4E.js                                   22.26 kB │ gzip:     3.30 kB
+.smoke-dist/assets/shadowsFragmentFunctions-BBZeOHdF.js                        25.98 kB │ gzip:     4.00 kB
+.smoke-dist/assets/pbrDebug-BRo-t53J.js                                        27.92 kB │ gzip:     5.97 kB
+.smoke-dist/assets/animation.pure-BLnAChSR.js                                  28.17 kB │ gzip:     7.46 kB
+.smoke-dist/assets/postProcess.pure-DJo8R8EK.js                                28.25 kB │ gzip:     8.35 kB
+.smoke-dist/assets/shadowsFragmentFunctions-CyvG9jhk.js                        28.52 kB │ gzip:     3.96 kB
+.smoke-dist/assets/pbrDebug-2nuEUwSD.js                                        34.71 kB │ gzip:     7.49 kB
+.smoke-dist/assets/animationGroup--BjvsF95.js                                  47.02 kB │ gzip:    11.44 kB
+.smoke-dist/assets/abstractEngine.pure-CZ2-L7QP.js                             59.33 kB │ gzip:    14.58 kB
+.smoke-dist/assets/math.vector.pure-DHl79ROg.js                                64.56 kB │ gzip:    16.08 kB
+.smoke-dist/assets/thinEngine.pure-Vm8Xot5B.js                                 67.07 kB │ gzip:    16.86 kB
+.smoke-dist/assets/pushMaterial-BMuJkYmn.js                                   102.12 kB │ gzip:    55.54 kB
+.smoke-dist/assets/material.pure-vgpPo-wd.js                                  110.13 kB │ gzip:    27.39 kB
+.smoke-dist/assets/scene.pure-DgPOK8mO.js                                     154.01 kB │ gzip:    32.58 kB
+.smoke-dist/assets/main-BQ4eyQLp.js                                         5,806.82 kB │ gzip: 1,255.68 kB
+
+✓ built in 1.44s
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeS
+plitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+PASS [quality/4-core desktop] automatic quality — quality=中, shadow=realtime, cores=4, memory=4
+PASS [quality/missing desktop metrics] automatic quality — quality=中, shadow=realtime, cores=undefined, memory=undefined
+PASS [quality/compact constrained touch] automatic quality — quality=低, shadow=blob, cores=4, memory=4
+PASS [quality/mobile] automatic quality — quality=低, shadow=blob, cores=8, memory=8
+PASS [hints/desktop 1440×900] CTA keeps desktop WASD hint — WASD 移動 · 空白鍵攻擊
+PASS [hints/desktop 1440×900] game prompt keeps desktop WASD hint — WASD穿越雪地 · 空白鍵揮砍
+PASS [hints/mobile 390×844] CTA uses touch hint without WASD — 虛擬搖桿移動 · 揮砍鈕攻擊
+PASS [hints/mobile 390×844] game prompt uses touch hint without WASD — 搖桿虛擬搖桿移動 · 揮砍鈕攻擊
+PASS [hints/touchscreen-desktop 1440×900] CTA keeps desktop WASD hint — WASD 移動 · 空白鍵攻擊
+PASS [hints/touchscreen-desktop 1440×900] game prompt keeps desktop WASD hint — WASD穿越雪地 · 空白鍵揮砍
+PASS [R14 desktop 1366×600] intro modal makes background HUD inert and visually hidden — {"pass":true,"state":"intro","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"p"}
+PASS [R14 desktop 1366×600] settings modal makes background HUD inert and visually hidden — {"pass":true,"state":"system","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"div#quality-options"}
+PASS [R14 desktop 1366×600] result modal makes background HUD inert and visually hidden — {"pass":true,"state":"result","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"div#result-stats#result-stats"}
+PASS [R14 desktop 1366×600] selection modal makes background HUD inert and visually hidden — {"pass":true,"state":"intro","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"img"}
+PASS [R14 mobile 390×844] intro modal makes background HUD inert and visually hidden — {"pass":true,"state":"intro","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"p"}
+PASS [R14 mobile 390×844] mobile intro close removes start CTA and restores weapon hit target — {"pass":true,"startExists":false,"backgroundInert":false,"visibility":"visible","hit":"weapon-cycle-icon"}
+PASS [R14 mobile 390×844] settings modal makes background HUD inert and visually hidden — {"pass":true,"state":"system","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"div#quality-options"}
+PASS [R14 mobile 390×844] result modal makes background HUD inert and visually hidden — {"pass":true,"state":"result","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"div#result-stats#result-stats"}
+PASS [R14 mobile 390×844] selection modal makes background HUD inert and visually hidden — {"pass":true,"state":"intro","backgroundInert":true,"backgroundAriaHidden":"true","backgroundVisibility":"hidden","canvasInert":true,"canvasAriaHidden":"true","interactiveCount":26,"selfHits":[],"visuallyExposed":[],"overlayOwnsProbe":true,"probeHit":"span#character-card__copy"}
+PASS [844×390] boot loading indicator is visible within 1s of first paint and inside the viewport — box=262,331,320×29
+PASS [844×390] boot sweep animation stops under reduced-motion preference — animation=none
+PASS [844×390] boot loader is removed once the intro loader takes over — remaining=0
+PASS [844×390] landscape selection shows a scroll hint while content remains below — opacity=0.950145
+PASS [844×390] every protagonist card can be scrolled to and selected in landscape — cards=butcher_matron,vet_sniper,mech_youth
+PASS [844×390] sticky confirm button stays inside the landscape viewport — y=315, h=62
+PASS [844×390] scroll hint visually fades out (computed opacity ≤0.05) at the end of the list — opacity=0.0306468
+PASS [844×390] pressing start before assets are ready locks the button and keeps the loader visible — {"ready":false,"detached":false,"disabled":true,"text":"整 備 中 …","loaderInViewport":true,"parkedModels":3}
+PASS [844×390] delayed start auto-enters the game once assets finish — intro detached after ready
+PASS [R11 controls 1920x1080] bottom control centers stay in viewport and hit themselves — {"failures":[],"overlaps":[],"viewport":{"width":1920,"height":1080}}
+PASS [R11 controls 1920x1080] desktop does not expose virtual joystick — joystickVisible=false
+PASS [R11 controls 1920x1080] console errors — 0 errors
+PASS [R11 controls 1440x780] bottom control centers stay in viewport and hit themselves — {"failures":[],"overlaps":[],"viewport":{"width":1440,"height":780}}
+PASS [R11 controls 1440x780] desktop does not expose virtual joystick — joystickVisible=false
+PASS [R11 controls 1440x780] console errors — 0 errors
+PASS [R11 controls 1366x600] bottom control centers stay in viewport and hit themselves — {"failures":[],"overlaps":[],"viewport":{"width":1366,"height":600}}
+PASS [R11 controls 1366x600] desktop does not expose virtual joystick — joystickVisible=false
+PASS [R11 controls 1366x600] console errors — 0 errors
+PASS [R12 menu 1366x600] pause menu freezes simulation input — paused=true, player={"x":-0.5,"z":-1.5}→{"x":-0.5,"z":-1.5}
+PASS [R12 menu 1366x600] game settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":190,"panelScrollHeight":170}}
+PASS [R12 menu 1366x600] manual quality override applies and auto mode restores detection — high→auto/low
+PASS [R12 menu 1366x600] favicon is explicitly linked and returns SVG 200 — {"href":"http://127.0.0.1:5192/storm-apocalypse/favicon.svg","ok":true,"type":"image/svg+xml"}
+PASS [R12 menu 1366x600] audio settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":264,"panelScrollHeight":244}}
+PASS [R12 menu 1366x600] volume and mute persist while all nine audio cues (R23 adds bait) remain available — {"saved":{"version":1,"masterVolume":0.25,"sfxVolume":0.9,"muted":true,"quality":"auto","screenShake":true},"cues":["bait","boss","build","hit","sale","swing","towerAlarm","ui","wave"]}
+PASS [R12 menu 1366x600] system settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":112,"panelScrollHeight":92}}
+PASS [R12 menu 1366x600] reset save requires confirmation and cancel preserves progress — wave=5, health=63
+PASS [R12 menu 1366x600] Escape closes the modal and resumes simulation — modal hidden, paused=false
+PASS [R11 controls 1280x640] bottom control centers stay in viewport and hit themselves — {"failures":[],"overlaps":[],"viewport":{"width":1280,"height":640}}
+PASS [R11 controls 1280x640] desktop does not expose virtual joystick — joystickVisible=false
+PASS [R11 controls 1280x640] console errors — 0 errors
+PASS [R12 menu 1280x640] pause menu freezes simulation input — paused=true, player={"x":-0.5,"z":-1.5}→{"x":-0.5,"z":-1.5}
+PASS [R12 menu 1280x640] game settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":190,"panelScrollHeight":170}}
+PASS [R12 menu 1280x640] audio settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":264,"panelScrollHeight":244}}
+PASS [R12 menu 1280x640] system settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":112,"panelScrollHeight":92}}
+PASS [R12 menu 1280x640] reset save requires confirmation and cancel preserves progress — wave=5, health=63
+PASS [R12 menu 1280x640] Escape closes the modal and resumes simulation — modal hidden, paused=false
+PASS [1440×900] saved base health loads without refilling — 63%
+PASS [1440×900] visible buttons do not overlap and keep 8px spacing — #settings-button/.tower-dock=871.5px, #settings-button/#wave-button=937.6px, #settings-button/#weapon-button=768.7px, #settings-button/#attack-button=743.0px, .tower-dock/#wave-button=8.0px, .tower-dock/#weapon-button=402.0px, .tower-dock/#attack-button=468.0px, #wave-button/#weapon-button=423.0px, #wave-button/#attack-button=489.0px, #weapon-button/#attack-button=8.0px
+PASS [1440×900] R24 UI version marker — ui=R24
+PASS [1440×900] command panel uses four tabs and removes tower section — tabs=4, visible=weapon, towerButtons=0
+PASS [1440×900] tab employee shows one section — visible=employee
+PASS [1440×900] tab regular shows one section — visible=regular
+PASS [1440×900] tab expansion shows one section — visible=expansion
+PASS [1440×900] tab weapon shows one section — visible=weapon
+PASS [1440×900] bottom tower dock exposes three fixed tower actions after prep closes — buttons=3
+PASS [1440×900] weapon cycle button restores beside attack after prep closes — visible=true, enabled=true
+PASS [1440×900] clicking a 3D build pad opens local tower action — {"point":{"x":872.8471702439289,"y":353.1192183086658},"popoverState":{"hidden":false,"type":"tower","id":"ballista","text":"\n        \n          \n          獵風弩塔中央固定塔位 · 射程 18.5 · 傷害 3\n          確認建造 ✦ 60\n        \n        取消選取\n      "}}
+PASS [1440×900] Ch14 save unlocks SMG — enabled=true
+PASS [1440×900] buy and equip SMG — weapon=smg, money=9639
+PASS [1440×900] keyboard SMG responds immediately — attacks 0→4
+PASS [1440×900] SMG switches to ranged clip — animation=attack_ranged
+PASS [1440×900] keyboard SMG damages cow — cowsKilled 1→2
+PASS [1440×900] R13 combat VFX are preloaded and spawn on the cow damage frame — {"assets":8,"events":1,"lastAt":3.925}
+PASS [1440×900] swing and hit cues follow attack and impact — {"hit":1,"swing":4,"build":0,"sale":0,"wave":0,"boss":0,"towerAlarm":0,"ui":10,"bait":0}
+PASS [1440×900] keyboard reaches firing position — playerZ=7.07
+PASS [1440×900] R23 repeated toast merges into one ×N entry and stays readable — {"total":1,"matching":1,"counter":"×5","fontSize":12}
+PASS [1440×900] wave starts — 夜襲 · 6 / 30 · 15 敵
+PASS [1440×900] event wave announces whiteout and plays wave cue — event=whiteout, waveCue=1
+PASS [1440×900] tower fire triggers authored clip — animations=ballista:stopped,frost:attack,cannon:stopped
+PASS [1440×900] R23 bait button is ≥44px, inside the viewport and clear of combat controls — {"bait":{"left":1265,"top":735,"right":1323,"bottom":793,"width":58,"height":58},"weapon":{"left":1265,"top":827,"right":1323,"bottom":885,"width":58,"height":58},"attack":{"left":1331,"top":803,"right":1413,"bottom":885,"width":82,"height":82},"wave":{"left":598,"top":832,"right":842,"bottom":885,"width":244,"height":53},"viewport":{"width":1440,"height":900}}
+PASS [1440×900] R23 meat bait throws during a wave, starts cooldown and plays its cue — {"before":{"feedback":{"towerPreview":null,"baitAim":null,"baitPosition":null,"baitScraps":1,"patrolStamps":0,"supply":"standard","waveEvent":"whiteout","enemyTypes":["runner","walker"],"hitStops":0,"hitFlashes":0,"floaters":4,"combo":0,"bestCombo":0,"baitsThrown":0,"baitedZombies":0,"baitActive":false,"baitCooldown":0,"beacon":"none","fadedOccluders":6,"lastWaveGrade":""},"stock":"0 / 24"},"after":{"feedback":{"towerPreview":null,"baitAim":null,"baitPosition":{"x":-0.5000002098146638,"z":9.472239999604215},"baitScraps":0,"patrolStamps":0,"supply":"standard","waveEvent":"whiteout","enemyTypes":["runner","walker"],"hitStops":0,"hitFlashes":0,"floaters":5,"combo":0,"bestCombo":0,"baitsThrown":1,"baitedZombies":5,"baitActive":true,"baitCooldown":8.82,"beacon":"none","fadedOccluders":6,"lastWaveGrade":""},"audio":1,"music":{"mode":"night","day":"file","night":"file","volume":0.336}}}
+PASS [1440×900] R23 music director switches to the night layer during waves — {"mode":"night","day":"file","night":"file","volume":0.336}
+PASS [1366×768] R19 player body stays inside the combat HUD safe frame — {"profile":"standard","safe":{"left":12,"right":1354,"top":12,"bottom":756},"bounds":{"left":657.351959414081,"right":718.7068119285643,"top":350.4198401209107,"bottom":437.12685773379104},"size":{"width":61.354852514483355,"height":86.70701761288035}}
+PASS [1366×768] R19 player silhouette and attack direction remain readable — {"visibleSamples":9,"sampleCount":9,"anchor":{"x":683.0000615869543,"y":385.59127949759153},"direction":{"x":740.9228547328295,"y":348.8453252595064},"directionPixels":68.59529953784944,"occluders":[]}
+PASS [1440×900] keyboard SMG hold repeats — attacks 4→15
+PASS [1440×900] keyboard SMG damages zombie — playerKills 0→11
+PASS [1440×900] R23 player hits spawn floating numbers, enemy hit flashes and combo tracking — {"towerPreview":null,"baitAim":null,"baitPosition":null,"baitScraps":0,"patrolStamps":0,"supply":"standard","waveEvent":"whiteout","enemyTypes":["runner","walker"],"hitStops":0,"hitFlashes":12,"floaters":26,"combo":10,"bestCombo":10,"baitsThrown":1,"baitedZombies":11,"baitActive":false,"baitCooldown":0,"beacon":"none","fadedOccluders":6,"lastWaveGrade":""}
+PASS [1440×900] distant tower animation LOD pauses — lod=ballista:active,frost:paused,cannon:active
+PASS [1440×900] base health survives reload after wave repair or enemy impact — saved=75, reloaded=75
+PASS [1440×900] console errors — 0 errors
+PASS [HUD mutex 390×844] mobile HUD mutex rejects visible overlaps over 8px — {"count":16,"collisions":[],"viewport":"390×844"}
+PASS [R11 controls 390x844] bottom control centers stay in viewport and hit themselves — {"failures":[],"overlaps":[],"viewport":{"width":390,"height":844}}
+PASS [R11 controls 390x844] desktop does not expose virtual joystick — joystickVisible=true
+PASS [R11 controls 390x844] console errors — 0 errors
+PASS [R12 menu 390x844] pause menu freezes simulation input — paused=true, player={"x":-0.5,"z":-1.5}→{"x":-0.5,"z":-1.5}
+PASS [R12 menu 390x844] game settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":188,"panelScrollHeight":168}}
+PASS [R12 menu 390x844] audio settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":264,"panelScrollHeight":244}}
+PASS [R12 menu 390x844] system settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":112,"panelScrollHeight":92}}
+PASS [R12 menu 390x844] reset save requires confirmation and cancel preserves progress — wave=5, health=63
+PASS [R12 menu 390x844] Escape closes the modal and resumes simulation — modal hidden, paused=false
+PASS [390×844] saved base health loads without refilling — 63%
+PASS [390×844] visible buttons do not overlap and keep 8px spacing — #settings-button/#quest-toggle=219.6px, #settings-button/#shop-toggle=14.0px, #settings-button/.joystick=697.4px, #settings-button/.tower-dock=535.7px, #settings-button/#wave-button=600.3px, #settings-button/#weapon-button=728.2px, #settings-button/#attack-button=701.0px, #quest-toggle/#shop-toggle=163.9px, #quest-toggle/.joystick=549.0px, #quest-toggle/.tower-dock=419.0px, #quest-toggle/#wave-button=482.0px, #quest-toggle/#weapon-button=622.1px, #quest-toggle/#attack-button=610.5px, #shop-toggle/.joystick=625.2px, #shop-toggle/.tower-dock=473.0px, #shop-toggle/#wave-button=536.0px, #shop-toggle/#weapon-button=665.0px, #shop-toggle/#attack-button=639.0px, .joystick/.tower-dock=78.0px, .joystick/#wave-button=8.0px, .joystick/#weapon-button=118.0px, .joystick/#attack-button=176.0px, .tower-dock/#wave-button=11.0px, .tower-dock/#weapon-button=140.0px, .tower-dock/#attack-button=114.0px, #wave-button/#weapon-button=70.0px, #wave-button/#attack-button=47.5px, #weapon-button/#attack-button=8.0px
+PASS [390×844] panel responds on pointerdown — open-before-pointerup=true
+PASS [390×844] open prep modal makes background HUD inert, hidden and un-hittable — {"failures":[],"canvasInert":true,"canvasAriaHidden":"true","prepModal":"true","panelOwnsCenter":true}
+PASS [390×844] open panel avoids visible control hot zones — {"panelBox":{"x":75,"y":166,"width":304,"height":384,"hidden":false},"joystickBox":null,"attackBox":null}
+PASS [390×844] open panel blocks gameplay — canvas-pointerdown=0
+PASS [390×844] closed panel restores gameplay — canvas-pointerdown=1
+PASS [390×844] closed control hit targets — {"joystick":true,"attack":true}
+PASS [390×844] R24 UI version marker — ui=R24
+PASS [390×844] command panel uses four tabs and removes tower section — tabs=4, visible=weapon, towerButtons=0
+PASS [390×844] tab employee shows one section — visible=employee
+PASS [390×844] tab regular shows one section — visible=regular
+PASS [390×844] tab expansion shows one section — visible=expansion
+PASS [390×844] tab weapon shows one section — visible=weapon
+PASS [390×844] bottom tower dock exposes three fixed tower actions after prep closes — buttons=3
+PASS [390×844] weapon cycle button restores beside attack after prep closes — visible=true, enabled=true
+PASS [390×844] clicking a 3D build pad opens local tower action — {"point":{"x":324.580510566402,"y":269.6693323956014},"popoverState":{"hidden":false,"type":"tower","id":"ballista","text":"\n        \n          \n          獵風弩塔中央固定塔位 · 射程 18.5 · 傷害 3\n          確認建造 ✦ 60\n        \n        取消選取\n      "}}
+PASS [390×844] Ch14 save unlocks SMG — enabled=true
+PASS [390×844] buy and equip SMG — weapon=smg, money=9639
+PASS [390×844] attack pressed state — is-pressed=true
+PASS [390×844] touch SMG responds immediately — attacks 0→4
+PASS [390×844] SMG switches to ranged clip — animation=attack_ranged
+PASS [390×844] touch SMG damages cow — cowsKilled 1→2
+PASS [390×844] R13 combat VFX are preloaded and spawn on the cow damage frame — {"assets":8,"events":1,"lastAt":6.034}
+PASS [390×844] swing and hit cues follow attack and impact — {"hit":1,"swing":4,"build":0,"sale":0,"wave":0,"boss":0,"towerAlarm":0,"ui":7,"bait":0}
+PASS [390×844] joystick reaches firing position — playerZ=7.07
+PASS [390×844] R23 repeated toast merges into one ×N entry and stays readable — {"total":1,"matching":1,"counter":"×5","fontSize":11}
+PASS [390×844] wave starts — 夜襲 · 6 / 30 · 15 敵
+PASS [390×844] event wave announces whiteout and plays wave cue — event=whiteout, waveCue=1
+PASS [390×844] tower fire triggers authored clip — animations=ballista:stopped,frost:attack,cannon:stopped
+PASS [390×844] R23 bait button is ≥44px, inside the viewport and clear of combat controls — {"bait":{"left":312,"top":689,"right":366,"bottom":743,"width":54,"height":54},"weapon":{"left":243,"top":779,"right":293,"bottom":829,"width":50,"height":50},"attack":{"left":301,"top":753,"right":377,"bottom":829,"width":76,"height":76},"wave":{"left":107,"top":650,"right":283,"bottom":709,"width":176,"height":59},"viewport":{"width":390,"height":844}}
+PASS [390×844] R23 meat bait throws during a wave, starts cooldown and plays its cue — {"before":{"feedback":{"towerPreview":null,"baitAim":null,"baitPosition":null,"baitScraps":1,"patrolStamps":0,"supply":"standard","waveEvent":"whiteout","enemyTypes":["runner","walker"],"hitStops":0,"hitFlashes":0,"floaters":4,"combo":0,"bestCombo":0,"baitsThrown":0,"baitedZombies":0,"baitActive":false,"baitCooldown":0,"beacon":"none","fadedOccluders":0,"lastWaveGrade":""},"stock":"0 / 24"},"after":{"feedback":{"towerPreview":null,"baitAim":null,"baitPosition":{"x":-0.5000002098146638,"z":9.473899999999992},"baitScraps":0,"patrolStamps":0,"supply":"standard","waveEvent":"whiteout","enemyTypes":["runner","walker"],"hitStops":0,"hitFlashes":0,"floaters":5,"combo":0,"bestCombo":0,"baitsThrown":1,"baitedZombies":5,"baitActive":true,"baitCooldown":8.97,"beacon":"none","fadedOccluders":0,"lastWaveGrade":""},"audio":1,"music":{"mode":"night","day":"file","night":"file","volume":0.336}}}
+PASS [390×844] R23 music director switches to the night layer during waves — {"mode":"night","day":"file","night":"file","volume":0.336}
+PASS [390×844] R19 player body stays inside the combat HUD safe frame — {"profile":"narrow-portrait","safe":{"left":12,"right":378,"top":180,"bottom":575},"bounds":{"left":169.70852982322288,"right":230.6588506483229,"top":343.1507303710713,"bottom":428.18785103091074},"size":{"width":60.95032082510002,"height":85.03712065983945}}
+PASS [390×844] R19 player silhouette and attack direction remain readable — {"visibleSamples":9,"sampleCount":9,"anchor":{"x":194.99484233640626,"y":378.85096015499},"direction":{"x":252.6925111284903,"y":333.4132251560103},"directionPixels":73.44119243230281,"occluders":[]}
+PASS [390×844] attack pressed state — is-pressed=true
+PASS [390×844] touch SMG hold repeats — attacks 4→15
+PASS [390×844] touch SMG damages zombie — playerKills 0→11
+PASS [390×844] R23 player hits spawn floating numbers, enemy hit flashes and combo tracking — {"towerPreview":null,"baitAim":null,"baitPosition":null,"baitScraps":0,"patrolStamps":0,"supply":"standard","waveEvent":"whiteout","enemyTypes":["runner","walker"],"hitStops":0,"hitFlashes":11,"floaters":25,"combo":10,"bestCombo":10,"baitsThrown":1,"baitedZombies":11,"baitActive":false,"baitCooldown":0.82,"beacon":"none","fadedOccluders":0,"lastWaveGrade":""}
+PASS [390×844] console errors — 0 errors
+PASS [HUD mutex 844×390] mobile HUD mutex rejects visible overlaps over 8px — {"count":16,"collisions":[],"viewport":"844×390"}
+PASS [844×390] visible buttons do not overlap and keep 8px spacing — #settings-button/#quest-toggle=657.0px, #settings-button/#shop-toggle=173.1px, #settings-button/.joystick=687.2px, #settings-button/.tower-dock=330.8px, #settings-button/#wave-button=392.9px, #settings-button/#weapon-button=272.9px, #settings-button/#attack-button=247.0px, #quest-toggle/#shop-toggle=391.3px, #quest-toggle/.joystick=144.0px, #quest-toggle/.tower-dock=217.7px, #quest-toggle/#wave-button=280.9px, #quest-toggle/#weapon-button=592.3px, #quest-toggle/#attack-button=644.4px, #shop-toggle/.joystick=437.4px, #shop-toggle/.tower-dock=197.0px, #shop-toggle/#wave-button=260.8px, #shop-toggle/#weapon-button=269.1px, #shop-toggle/#attack-button=272.8px, .joystick/.tower-dock=164.0px, .joystick/#wave-button=191.4px, .joystick/#weapon-button=554.0px, .joystick/#attack-button=616.0px, .tower-dock/#wave-button=11.0px, .tower-dock/#weapon-button=158.3px, .tower-dock/#attack-button=220.0px, #wave-button/#weapon-button=185.4px, #wave-button/#attack-button=247.4px, #weapon-button/#attack-button=8.0px
+PASS [844×390] panel responds on pointerdown — open-before-pointerup=true
+PASS [844×390] open prep modal makes background HUD inert, hidden and un-hittable — {"failures":[],"canvasInert":true,"canvasAriaHidden":"true","prepModal":"true","panelOwnsCenter":true}
+PASS [844×390] open panel avoids visible control hot zones — {"panelBox":{"x":510,"y":64,"width":320,"height":312,"hidden":false},"joystickBox":null,"attackBox":null}
+PASS [844×390] open panel blocks gameplay — canvas-pointerdown=0
+PASS [844×390] closed panel restores gameplay — canvas-pointerdown=1
+PASS [844×390] closed control hit targets — {"joystick":true,"attack":true}
+PASS [844×390] R24 UI version marker — ui=R24
+PASS [844×390] command panel uses four tabs and removes tower section — tabs=4, visible=weapon, towerButtons=0
+PASS [844×390] tab employee shows one section — visible=employee
+PASS [844×390] tab regular shows one section — visible=regular
+PASS [844×390] tab expansion shows one section — visible=expansion
+PASS [844×390] tab weapon shows one section — visible=weapon
+PASS [844×390] bottom tower dock exposes three fixed tower actions after prep closes — buttons=3
+PASS [844×390] weapon cycle button restores beside attack after prep closes — visible=true, enabled=true
+PASS [844×390] clicking a 3D build pad opens local tower action — {"point":{"x":488.233645708389,"y":153.01833913704323},"popoverState":{"hidden":false,"type":"tower","id":"ballista","text":"\n        \n          \n          獵風弩塔中央固定塔位 · 射程 18.5 · 傷害 3\n          確認建造 ✦ 60\n        \n        取消選取\n      "}}
+PASS [844×390] prep panel content window stretches with the landscape viewport (≥280px) — {"clientHeight":292,"scrollHeight":364,"top":64,"bottom":376,"hasMore":true,"viewportHeight":390}
+PASS [844×390] prep panel shows a scroll fade while content remains below — scrollable=72px, hasMore=true
+PASS [844×390] all four prep tabs stay reachable in the stretched panel — employee,regular,expansion,weapon
+PASS [844×390] scroll hint reappears when panel content grows asynchronously (ResizeObserver) — has-more-below=true
+PASS [R12 menu 844x390] pause menu freezes simulation input — paused=true, player={"x":-0.5,"z":-1.5}→{"x":-0.5,"z":-1.5}
+PASS [R12 menu 844x390] game settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":137,"panelScrollHeight":125}}
+PASS [R12 menu 844x390] audio settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":195,"panelScrollHeight":183}}
+PASS [R12 menu 844x390] system settings panel stays reachable without long scrolling — {"failures":[],"body":{"clientHeight":84,"panelScrollHeight":72}}
+PASS [R12 menu 844x390] reset save requires confirmation and cancel preserves progress — wave=5, health=63
+PASS [R12 menu 844x390] Escape closes the modal and resumes simulation — modal hidden, paused=false
+PASS [844×390] joystick reaches firing position — playerZ=7.07
+PASS [844×390] R19 player body stays inside the combat HUD safe frame — {"profile":"standard","safe":{"left":12,"right":832,"top":12,"bottom":378},"bounds":{"left":408.30092482470167,"right":443.8012374867122,"top":176.67621606531756,"bottom":223.69531187057024},"size":{"width":35.500312662010515,"height":47.019095805252675}}
+PASS [844×390] R19 player silhouette and attack direction remain readable — {"visibleSamples":9,"sampleCount":9,"anchor":{"x":422.2159882863756,"y":195.74224796340877},"direction":{"x":453.48502575844407,"y":175.9004764624694},"directionPixels":37.03307441632563,"occluders":[]}
+PASS [844×390] R19 resize burst performs one delayed Babylon rebuild — {"before":{"events":0,"rebuilds":0},"during":{"events":5,"rebuilds":0},"after":{"events":5,"rebuilds":1}}
+PASS [844×390] console errors — 0 errors
+
+196/196 checks passed; 0 failed.

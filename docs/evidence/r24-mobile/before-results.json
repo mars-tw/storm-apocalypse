@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "name": "390x844 runtime has no page errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "844x390 runtime has no page errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "1366x600 runtime has no page errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "passed": 3
+}

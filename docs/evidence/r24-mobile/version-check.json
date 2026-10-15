@@ -1,0 +1,18 @@
+{
+  "status": "VERIFIED",
+  "version": "0.2.15",
+  "ui": "R24",
+  "activeOldVersionMatches": 0,
+  "scope": [
+    "package.json",
+    "package-lock.json",
+    "README.md",
+    "src",
+    "index.html",
+    "vite.config.ts"
+  ],
+  "historicalExclusions": [
+    "docs historical reports/evidence",
+    ".audit-tmp/r24-before (HEAD snapshot)"
+  ]
+}

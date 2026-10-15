@@ -1,0 +1,857 @@
+{
+  "results": [
+    {
+      "name": "390x844 tower preview does not spend money",
+      "pass": true
+    },
+    {
+      "name": "390x844 tower confirm, cancel and pause are reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#world-action-button",
+          "width": 330,
+          "height": 79.1875,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#world-action-cancel",
+          "width": 330,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "390x844 cancelling tower preserves money",
+      "pass": true
+    },
+    {
+      "name": "390x844 tower preview switches without spending",
+      "pass": true
+    },
+    {
+      "name": "390x844 confirming builds exactly one level",
+      "pass": true,
+      "detail": {
+        "money": 9939,
+        "level": 1
+      }
+    },
+    {
+      "name": "390x844 confirmation closes after purchase",
+      "pass": true
+    },
+    {
+      "name": "390x844 unavailable supplies remain locked",
+      "pass": true
+    },
+    {
+      "name": "390x844 supply menu can always return",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 164,
+          "height": 103,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "390x844 all new supply text fits the panel",
+      "pass": true
+    },
+    {
+      "name": "390x844 new wave actually spawns runners",
+      "pass": true,
+      "detail": {
+        "towerPreview": null,
+        "baitAim": null,
+        "baitPosition": null,
+        "baitScraps": 1,
+        "patrolStamps": 0,
+        "supply": "standard",
+        "waveEvent": "hungry_rush",
+        "enemyTypes": [
+          "runner"
+        ],
+        "hitStops": 0,
+        "hitFlashes": 0,
+        "floaters": 0,
+        "combo": 0,
+        "bestCombo": 0,
+        "baitsThrown": 0,
+        "baitedZombies": 0,
+        "baitActive": false,
+        "baitCooldown": 0,
+        "beacon": "none",
+        "fadedOccluders": 3,
+        "lastWaveGrade": ""
+      }
+    },
+    {
+      "name": "390x844 second touch does not end active aim",
+      "pass": true,
+      "detail": [
+        [
+          "pointerdown",
+          12,
+          "",
+          true
+        ],
+        [
+          "pointerdown",
+          13,
+          "",
+          false
+        ]
+      ]
+    },
+    {
+      "name": "390x844 touchcancel spends no bait or cooldown",
+      "pass": true
+    },
+    {
+      "name": "390x844 cancel zone spends no resources",
+      "pass": true
+    },
+    {
+      "name": "390x844 focus loss cancels aiming",
+      "pass": true
+    },
+    {
+      "name": "390x844 rotation cancels aiming without throwing",
+      "pass": true
+    },
+    {
+      "name": "390x844 pause cancels captured aiming",
+      "pass": true
+    },
+    {
+      "name": "390x844 aiming exposes a bounded landing point",
+      "pass": true,
+      "detail": {
+        "x": -8.129955679063027,
+        "z": 0.9049483020501414
+      }
+    },
+    {
+      "name": "390x844 release throws at the previewed position exactly once",
+      "pass": true,
+      "detail": {
+        "towerPreview": null,
+        "baitAim": null,
+        "baitPosition": {
+          "x": -8.129955679063027,
+          "z": 0.9049483020501414
+        },
+        "baitScraps": 0,
+        "patrolStamps": 0,
+        "supply": "standard",
+        "waveEvent": "hungry_rush",
+        "enemyTypes": [
+          "runner",
+          "walker"
+        ],
+        "hitStops": 0,
+        "hitFlashes": 0,
+        "floaters": 5,
+        "combo": 0,
+        "bestCombo": 0,
+        "baitsThrown": 1,
+        "baitedZombies": 0,
+        "baitActive": true,
+        "baitCooldown": 8.73,
+        "beacon": "none",
+        "fadedOccluders": 3,
+        "lastWaveGrade": ""
+      }
+    },
+    {
+      "name": "390x844 cooldown prevents repeat touch throws",
+      "pass": true
+    },
+    {
+      "name": "390x844 combat touch controls are reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#bait-button",
+          "width": 54,
+          "height": 54,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#attack-button",
+          "width": 76,
+          "height": 76,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#weapon-button",
+          "width": 50,
+          "height": 50,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "390x844 runtime has no page errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "844x390 tower preview does not spend money",
+      "pass": true
+    },
+    {
+      "name": "844x390 tower confirm, cancel and pause are reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#world-action-button",
+          "width": 330,
+          "height": 79.1875,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#world-action-cancel",
+          "width": 330,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "844x390 cancelling tower preserves money",
+      "pass": true
+    },
+    {
+      "name": "844x390 tower preview switches without spending",
+      "pass": true
+    },
+    {
+      "name": "844x390 confirming builds exactly one level",
+      "pass": true,
+      "detail": {
+        "money": 9939,
+        "level": 1
+      }
+    },
+    {
+      "name": "844x390 confirmation closes after purchase",
+      "pass": true
+    },
+    {
+      "name": "844x390 unavailable supplies remain locked",
+      "pass": true
+    },
+    {
+      "name": "844x390 supply menu can always return",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 141,
+          "height": 104,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "844x390 all new supply text fits the panel",
+      "pass": true
+    },
+    {
+      "name": "844x390 new wave actually spawns runners",
+      "pass": true,
+      "detail": {
+        "towerPreview": null,
+        "baitAim": null,
+        "baitPosition": null,
+        "baitScraps": 1,
+        "patrolStamps": 0,
+        "supply": "standard",
+        "waveEvent": "hungry_rush",
+        "enemyTypes": [
+          "runner"
+        ],
+        "hitStops": 0,
+        "hitFlashes": 0,
+        "floaters": 1,
+        "combo": 0,
+        "bestCombo": 0,
+        "baitsThrown": 0,
+        "baitedZombies": 0,
+        "baitActive": false,
+        "baitCooldown": 0,
+        "beacon": "none",
+        "fadedOccluders": 6,
+        "lastWaveGrade": ""
+      }
+    },
+    {
+      "name": "844x390 second touch does not end active aim",
+      "pass": true,
+      "detail": [
+        [
+          "pointerdown",
+          12,
+          "",
+          true
+        ],
+        [
+          "pointerdown",
+          13,
+          "",
+          false
+        ]
+      ]
+    },
+    {
+      "name": "844x390 touchcancel spends no bait or cooldown",
+      "pass": true
+    },
+    {
+      "name": "844x390 cancel zone spends no resources",
+      "pass": true
+    },
+    {
+      "name": "844x390 focus loss cancels aiming",
+      "pass": true
+    },
+    {
+      "name": "844x390 rotation cancels aiming without throwing",
+      "pass": true
+    },
+    {
+      "name": "844x390 pause cancels captured aiming",
+      "pass": true
+    },
+    {
+      "name": "844x390 aiming exposes a bounded landing point",
+      "pass": true,
+      "detail": {
+        "x": -8.129955801038822,
+        "z": 0.9049479150688606
+      }
+    },
+    {
+      "name": "844x390 release throws at the previewed position exactly once",
+      "pass": true,
+      "detail": {
+        "towerPreview": null,
+        "baitAim": null,
+        "baitPosition": {
+          "x": -8.129955801038822,
+          "z": 0.9049479150688606
+        },
+        "baitScraps": 0,
+        "patrolStamps": 0,
+        "supply": "standard",
+        "waveEvent": "hungry_rush",
+        "enemyTypes": [
+          "runner",
+          "walker"
+        ],
+        "hitStops": 0,
+        "hitFlashes": 0,
+        "floaters": 6,
+        "combo": 0,
+        "bestCombo": 0,
+        "baitsThrown": 1,
+        "baitedZombies": 0,
+        "baitActive": true,
+        "baitCooldown": 8.73,
+        "beacon": "none",
+        "fadedOccluders": 6,
+        "lastWaveGrade": ""
+      }
+    },
+    {
+      "name": "844x390 cooldown prevents repeat touch throws",
+      "pass": true
+    },
+    {
+      "name": "844x390 combat touch controls are reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#bait-button",
+          "width": 54,
+          "height": 54,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#attack-button",
+          "width": 76,
+          "height": 76,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#weapon-button",
+          "width": 54,
+          "height": 54,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "844x390 runtime has no page errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "1366x600 tower preview does not spend money",
+      "pass": true
+    },
+    {
+      "name": "1366x600 tower confirm, cancel and pause are reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#world-action-button",
+          "width": 330,
+          "height": 79.1875,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#world-action-cancel",
+          "width": 330,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "1366x600 cancelling tower preserves money",
+      "pass": true
+    },
+    {
+      "name": "1366x600 tower preview switches without spending",
+      "pass": true
+    },
+    {
+      "name": "1366x600 confirming builds exactly one level",
+      "pass": true,
+      "detail": {
+        "money": 9939,
+        "level": 1
+      }
+    },
+    {
+      "name": "1366x600 confirmation closes after purchase",
+      "pass": true
+    },
+    {
+      "name": "1366x600 unavailable supplies remain locked",
+      "pass": true
+    },
+    {
+      "name": "1366x600 supply menu can always return",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#system-menu-close",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#resume-button",
+          "width": 154,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "[data-supply=\"standard\"]",
+          "width": 283,
+          "height": 88,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "1366x600 all new supply text fits the panel",
+      "pass": true
+    },
+    {
+      "name": "1366x600 new wave actually spawns runners",
+      "pass": true,
+      "detail": {
+        "towerPreview": null,
+        "baitAim": null,
+        "baitPosition": null,
+        "baitScraps": 1,
+        "patrolStamps": 0,
+        "supply": "standard",
+        "waveEvent": "hungry_rush",
+        "enemyTypes": [
+          "runner"
+        ],
+        "hitStops": 0,
+        "hitFlashes": 0,
+        "floaters": 1,
+        "combo": 0,
+        "bestCombo": 0,
+        "baitsThrown": 0,
+        "baitedZombies": 0,
+        "baitActive": false,
+        "baitCooldown": 0,
+        "beacon": "none",
+        "fadedOccluders": 6,
+        "lastWaveGrade": ""
+      }
+    },
+    {
+      "name": "1366x600 second touch does not end active aim",
+      "pass": true,
+      "detail": [
+        [
+          "pointerdown",
+          12,
+          "",
+          true
+        ],
+        [
+          "pointerdown",
+          13,
+          "",
+          false
+        ]
+      ]
+    },
+    {
+      "name": "1366x600 touchcancel spends no bait or cooldown",
+      "pass": true
+    },
+    {
+      "name": "1366x600 cancel zone spends no resources",
+      "pass": true
+    },
+    {
+      "name": "1366x600 focus loss cancels aiming",
+      "pass": true
+    },
+    {
+      "name": "1366x600 rotation cancels aiming without throwing",
+      "pass": true
+    },
+    {
+      "name": "1366x600 pause cancels captured aiming",
+      "pass": true
+    },
+    {
+      "name": "1366x600 aiming exposes a bounded landing point",
+      "pass": true,
+      "detail": {
+        "x": -8.12995568442335,
+        "z": 0.9049482850439432
+      }
+    },
+    {
+      "name": "1366x600 release throws at the previewed position exactly once",
+      "pass": true,
+      "detail": {
+        "towerPreview": null,
+        "baitAim": null,
+        "baitPosition": {
+          "x": -8.12995568442335,
+          "z": 0.9049482850439432
+        },
+        "baitScraps": 0,
+        "patrolStamps": 0,
+        "supply": "standard",
+        "waveEvent": "hungry_rush",
+        "enemyTypes": [
+          "runner",
+          "walker"
+        ],
+        "hitStops": 0,
+        "hitFlashes": 0,
+        "floaters": 5,
+        "combo": 0,
+        "bestCombo": 0,
+        "baitsThrown": 1,
+        "baitedZombies": 0,
+        "baitActive": true,
+        "baitCooldown": 8.78,
+        "beacon": "none",
+        "fadedOccluders": 6,
+        "lastWaveGrade": ""
+      }
+    },
+    {
+      "name": "1366x600 cooldown prevents repeat touch throws",
+      "pass": true
+    },
+    {
+      "name": "1366x600 combat touch controls are reachable",
+      "pass": true,
+      "detail": [
+        {
+          "selector": "#settings-button",
+          "width": 44,
+          "height": 44,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#bait-button",
+          "width": 54,
+          "height": 54,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#attack-button",
+          "width": 76,
+          "height": 76,
+          "inside": true,
+          "hit": true
+        },
+        {
+          "selector": "#weapon-button",
+          "width": 54,
+          "height": 54,
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "1366x600 runtime has no page errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "natural clear awards first permanent stamp",
+      "pass": true,
+      "detail": {
+        "version": 1,
+        "completedWaves": [
+          1
+        ],
+        "selected": "standard"
+      }
+    },
+    {
+      "name": "first stamp unlocks the bait bag in actual UI",
+      "pass": true
+    },
+    {
+      "name": "selecting unlocked supply persists immediately",
+      "pass": true
+    },
+    {
+      "name": "reloaded bait bag gives two actual free throws",
+      "pass": true
+    },
+    {
+      "name": "quick tap still throws without dragging",
+      "pass": true
+    },
+    {
+      "name": "supplies cannot change mid-wave",
+      "pass": true
+    },
+    {
+      "name": "actual campaign reset retains stamps and chosen supply",
+      "pass": true,
+      "detail": {
+        "version": 1,
+        "completedWaves": [
+          1
+        ],
+        "selected": "ration"
+      }
+    },
+    {
+      "name": "repair crate adds six actual wall HP at wave start",
+      "pass": true,
+      "detail": {
+        "version": 5,
+        "money": 9999,
+        "wave": 0,
+        "baseHealth": 81,
+        "stallLevel": 4,
+        "towerBuilt": true,
+        "bestWave": 0,
+        "weapon": "smg",
+        "weapons": {
+          "machete": true,
+          "axe": true,
+          "smg": true
+        },
+        "protagonistId": "butcher_matron",
+        "employees": {
+          "hunter": 0,
+          "cashier": 0,
+          "dog": 0
+        },
+        "customerAffinity": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "customerRewardsClaimed": [],
+        "customerAffinityWave": 0,
+        "customerAffinityGained": {
+          "lao_zhou": 0,
+          "nurse_lin": 0,
+          "kid_bao": 0,
+          "scout_he": 0
+        },
+        "pasture2Unlocked": false,
+        "towers": {
+          "ballista": 3,
+          "frost": 3,
+          "cannon": 3
+        },
+        "quest": {
+          "chapter": 15,
+          "completed": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "unlocks": [
+            "defense-shop",
+            "tower-upgrade"
+          ],
+          "loop": {
+            "id": "tower-kills",
+            "wave": 1,
+            "progress": 0,
+            "target": 3,
+            "reward": 23,
+            "completed": false,
+            "claimed": false
+          }
+        },
+        "stats": {
+          "pastureVisited": false,
+          "cowsKilled": 0,
+          "meatCollected": 0,
+          "meatDeposited": 0,
+          "sales": 0,
+          "totalEarned": 9964,
+          "zombiesKilled": 0,
+          "playerKills": 0,
+          "towerKills": 0,
+          "damageDealt": 0,
+          "damageTaken": 0,
+          "wavesCleared": 0,
+          "campaignWins": 0
+        },
+        "lastSavedAt": 1792057651250
+      }
+    },
+    {
+      "name": "bounty certificate adds fifteen to actual clear reward",
+      "pass": true
+    },
+    {
+      "name": "repeating an already stamped wave gives no duplicate",
+      "pass": true
+    },
+    {
+      "name": "hauler encounter actually spawns an animated brute",
+      "pass": true
+    }
+  ],
+  "passed": 74
+}

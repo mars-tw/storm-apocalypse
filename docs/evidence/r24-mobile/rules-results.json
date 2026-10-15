@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "name": "old and corrupt profile falls back safely",
+      "pass": true
+    },
+    {
+      "name": "profile validates, deduplicates and bounds stamps",
+      "pass": true
+    },
+    {
+      "name": "locked supply cannot be selected",
+      "pass": true
+    },
+    {
+      "name": "all supply thresholds are reachable and exact",
+      "pass": true
+    },
+    {
+      "name": "supply effects remain mutually exclusive",
+      "pass": true
+    },
+    {
+      "name": "bait objective requires two attracted enemies",
+      "pass": true
+    },
+    {
+      "name": "player objective requires two impact kills",
+      "pass": true
+    },
+    {
+      "name": "wall objective boundary is 12 damage",
+      "pass": true
+    },
+    {
+      "name": "failed objectives and invalid waves give no stamp",
+      "pass": true
+    },
+    {
+      "name": "completed objective awards once across reload and replay",
+      "pass": true
+    },
+    {
+      "name": "quick tap has deadzone and drag aim is bounded",
+      "pass": true
+    },
+    {
+      "name": "wave 3 contains two leading runners and five walkers",
+      "pass": true
+    },
+    {
+      "name": "wave 7 contains exactly two brutes and one runner",
+      "pass": true
+    },
+    {
+      "name": "historic profiles and late-wave balance remain unchanged",
+      "pass": true
+    }
+  ],
+  "passed": 14
+}

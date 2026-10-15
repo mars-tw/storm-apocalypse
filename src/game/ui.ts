@@ -4,10 +4,12 @@ import { currentLoopDefinition, currentMainQuest, type QuestCompletion } from ".
 import type { PlayerSettings } from "./settings";
 import type { EmployeeId, ProtagonistId, RuntimeState, TowerId, WeaponId } from "./state";
 import { getWavePlan } from "./waveDirector";
+import { towerCombatStats } from "./combatRules";
+import { loadPatrol, patrolObjective, SUPPLIES, type PatrolProfile, type SupplyId } from "./patrol";
 
 type ShopCategory = "weapon" | "employee" | "pasture";
 type ShopTab = "weapon" | "employee" | "regular" | "expansion";
-type SystemTab = "game" | "audio" | "system";
+type SystemTab = "game" | "audio" | "system" | "supply";
 
 export type WorldActionTarget =
   | { type: "tower"; id: TowerId; x: number; y: number }
@@ -152,6 +154,15 @@ export class UiController {
   onTowerAction: (id: TowerId) => void = () => undefined;
   onWeaponCycle: () => void = () => undefined;
   onBait: () => void = () => undefined;
+  onBaitAim: (dx: number, dy: number, active: boolean) => void = () => undefined;
+  onBaitRelease: (commit: boolean) => void = () => undefined;
+  onTowerPreview: (id: TowerId | null) => void = () => undefined;
+  onSupplySelect: (id: SupplyId) => void = () => undefined;
+  private baitPointer: number | null = null;
+  private baitOrigin = { x: 0, y: 0 };
+  private baitCancelled = false;
+  private patrolSignature = "";
+  private latestState: RuntimeState;
   onPauseChange: (paused: boolean) => void = () => undefined;
   onSettingsChange: (settings: PlayerSettings) => void = () => undefined;
   onUiSound: () => void = () => undefined;
@@ -159,6 +170,7 @@ export class UiController {
   constructor(root: HTMLElement, state: RuntimeState, settings: PlayerSettings) {
     scrollHintRemountCleanups.get(root)?.();
     this.root = root;
+    this.latestState = state;
     this.touchMode = detectTouchMode();
     root.classList.toggle("is-touch", this.touchMode);
     const startHint = this.touchMode ? "虛擬搖桿移動 · 揮砍鈕攻擊" : "WASD 移動 · 空白鍵攻擊";
@@ -167,7 +179,7 @@ export class UiController {
     this.requiresProtagonistSelection = state.requiresProtagonistSelection;
     this.selectedProtagonist = state.protagonistId;
     this.settings = { ...settings };
-    root.dataset.uiVersion = "R23";
+    root.dataset.uiVersion = "R24";
     const icon = (name: string, className = ""): string => `<i class="asset-icon asset-icon--${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
     const skillIcons: Record<ProtagonistId, string> = {
       butcher_matron: "skill-butcher",
@@ -255,11 +267,15 @@ export class UiController {
           <span><b id="world-action-title">建造</b><small id="world-action-detail">選擇操作</small></span>
           <em id="world-action-price"></em>
         </button>
+        <button id="world-action-cancel" class="world-action-cancel" type="button">取消選取</button>
       </div>
       <div class="toast-host" id="toast-host" aria-live="polite"></div>
       <div class="floater-layer" id="floater-layer" aria-hidden="true"></div>
       <div class="combo-badge" id="combo-badge" aria-live="polite" hidden><b id="combo-count">0</b><span>連斬</span><small id="combo-bonus"></small></div>
       <section class="wave-report" id="wave-report" role="status" aria-live="polite" hidden></section>
+      <div id="patrol-objective" class="patrol-objective" role="status"></div>
+      <div id="bait-aim-hint" class="bait-aim-hint" hidden><b>拖曳瞄準，放開投擲</b><span>拖到下方取消區可取消</span><div id="bait-cancel-zone">移到這裡取消</div></div>
+      <div id="bait-aim-marker" class="bait-aim-marker" hidden><span>落點</span></div>
       </div>
 
       <section class="system-menu" id="system-menu" role="dialog" aria-modal="true" aria-labelledby="system-menu-title" hidden>
@@ -269,8 +285,14 @@ export class UiController {
             <button class="is-active" type="button" role="tab" data-system-tab="game" aria-selected="true" aria-controls="system-panel-game">遊戲</button>
             <button type="button" role="tab" data-system-tab="audio" aria-selected="false" aria-controls="system-panel-audio">聲音</button>
             <button type="button" role="tab" data-system-tab="system" aria-selected="false" aria-controls="system-panel-system">系統</button>
+            <button type="button" role="tab" data-system-tab="supply" aria-selected="false" aria-controls="system-panel-supply">補給</button>
           </nav>
           <div class="system-menu__body">
+            <section class="system-panel" id="system-panel-supply" data-system-panel="supply" role="tabpanel" hidden>
+              <p id="patrol-progress" class="patrol-progress"></p>
+              <div class="supply-grid">${SUPPLIES.map(s => `<button type="button" data-supply="${s.id}"><b>${s.name}</b><span>${s.detail}</span><small></small></button>`).join("")}</div>
+              <p class="system-note">每波首次達標＋1 章，重開戰役保留。夜襲中不可換。</p>
+            </section>
             <section class="system-panel is-active" id="system-panel-game" data-system-panel="game" role="tabpanel">
               <div class="setting-block"><div><b>畫質檔位</b><small>自動會依裝置能力選擇，手動檔位會保存。</small></div><div class="quality-options" role="group" aria-label="畫質檔位">
                 <button type="button" data-quality="auto">自動</button><button type="button" data-quality="high">高</button><button type="button" data-quality="medium">中</button><button type="button" data-quality="low">低</button>
@@ -285,7 +307,7 @@ export class UiController {
             <section class="system-panel" id="system-panel-system" data-system-panel="system" role="tabpanel" hidden>
               <div class="reset-save" id="reset-save"><div><b>重置戰役存檔</b><small>清除波次、角色、武器、員工與建設；聲音和畫質偏好會保留。</small></div><button class="danger-button" id="reset-save-open" type="button">重置存檔</button></div>
               <div class="reset-confirm" id="reset-confirm" hidden><strong>確定清除所有戰役進度？</strong><span><button id="reset-save-cancel" type="button">取消</button><button class="danger-button" id="reset-save-confirm" type="button">確認清除</button></span></div>
-              <p class="system-note">R23 · 打擊回饋／鮮肉誘餌／連斬戰報 · 本機存檔</p>
+              <p class="system-note">R24 · 手機瞄準／戰術波／守夜補給 · 本機存檔</p>
             </section>
           </div>
           <footer class="system-menu__footer"><span>遊戲模擬已暫停</span><button id="resume-button" type="button">繼續遊戲</button></footer>
@@ -421,16 +443,25 @@ export class UiController {
       bindImmediate(tab, () => this.setShopTab(tab.dataset.shopTab as ShopTab));
     }
     for (const button of this.towerDock.querySelectorAll<HTMLButtonElement>("[data-tower-dock]")) {
-      bindImmediate(button, () => this.onTowerAction(button.dataset.towerDock as TowerId));
+      button.addEventListener("click", () => {
+        const id = button.dataset.towerDock as TowerId;
+        this.showWorldAction({ type: "tower", id, x: innerWidth / 2, y: innerHeight - 170 });
+      });
     }
     bindImmediate(this.weaponButton, () => this.onWeaponCycle());
-    bindImmediate(this.baitButton, () => this.onBait());
-    bindImmediate(this.worldActionButton, () => {
+    this.bindBaitGesture();
+    get<HTMLButtonElement>("world-action-cancel").addEventListener("click", () => this.hideWorldAction());
+    this.worldActionButton.addEventListener("click", () => {
       if (!this.activeWorldAction) return;
       if (this.activeWorldAction.type === "tower") this.onTowerAction(this.activeWorldAction.id);
       else if (this.activeWorldAction.type === "employee") this.onShopAction("employee", this.activeWorldAction.id);
       else this.onShopAction("pasture", this.activeWorldAction.id);
+      this.hideWorldAction();
     });
+    for (const button of root.querySelectorAll<HTMLButtonElement>("[data-supply]")) {
+      button.addEventListener("click", () => this.onSupplySelect(button.dataset.supply as SupplyId));
+    }
+    this.updatePatrol(loadPatrol(), false, 1);
 
     for (const card of root.querySelectorAll<HTMLButtonElement>("[data-protagonist]")) {
       card.addEventListener("click", () => {
@@ -643,6 +674,7 @@ export class UiController {
   }
 
   private setModalState(state: "intro" | "system" | "result" | null): void {
+    if (state !== null) { this.cancelBaitGesture(); this.hideWorldAction(); }
     this.modalState = state;
     const modalOpen = state !== null;
     this.root.dataset.modal = state ?? "none";
@@ -658,6 +690,7 @@ export class UiController {
   }
 
   private setPrepModalOpen(open: boolean): void {
+    if (open) { this.cancelBaitGesture(); this.hideWorldAction(); }
     this.prepModalOpen = open;
     this.root.classList.toggle("is-prep-modal", open);
     this.root.dataset.prepModal = String(open);
@@ -772,14 +805,18 @@ export class UiController {
   }
 
   showWorldAction(target: WorldActionTarget): void {
+    if (this.modalState !== null) return;
     this.activeWorldAction = target;
+    this.onTowerPreview(target.type === "tower" ? target.id : null);
     this.worldAction.hidden = false;
+    this.updateWorldAction(this.latestState);
     this.positionWorldAction(target.x, target.y);
   }
 
   hideWorldAction(): void {
     this.activeWorldAction = null;
     this.worldAction.hidden = true;
+    this.onTowerPreview(null);
   }
 
   private positionWorldAction(x: number, y: number): void {
@@ -802,6 +839,7 @@ export class UiController {
   }
 
   update(state: RuntimeState): void {
+    this.latestState = state;
     // R23 開場 60 秒：手冊 1–4 章商店沒有可買項目，桌機先收起右側整備欄，讓牧場與目標信標露出
     this.gameUi.classList.toggle("is-onboarding", state.quest.chapter <= 4 && state.wave === 0);
     this.money.textContent = state.money.toString();
@@ -970,8 +1008,12 @@ export class UiController {
     this.worldAction.dataset.actionId = target.id;
     this.worldActionIcon.className = `asset-icon asset-icon--${action.icon} world-action-popover__icon`;
     this.worldActionTitle.textContent = action.title;
-    this.worldActionDetail.textContent = action.detail;
-    this.worldActionPrice.textContent = action.label;
+    if (target.type === "tower") {
+      const stats = towerCombatStats(target.id, Math.min(3, state.towers[target.id] + 1));
+      const location = target.id === "frost" ? "西側" : target.id === "ballista" ? "中央" : "東側";
+      this.worldActionDetail.textContent = `${location}固定塔位 · 射程 ${stats.range} · 傷害 ${stats.damage}`;
+    } else this.worldActionDetail.textContent = action.detail;
+    this.worldActionPrice.textContent = target.type === "tower" ? `確認${action.label}` : action.label;
     this.applyActionState(this.worldActionButton, action);
     this.positionWorldAction(target.x, target.y);
   }
@@ -1172,12 +1214,91 @@ export class UiController {
     this.baitSignature = signature;
     this.baitButton.hidden = !bait.visible;
     this.gameUi.classList.toggle("has-bait", bait.visible);
+    if ((!bait.visible || bait.cooldown > 0 || bait.meat <= 0) && this.baitPointer !== null) this.cancelBaitGesture();
     if (!bait.visible) return;
     this.baitButton.style.setProperty("--bait-cooldown", `${Math.round(bait.cooldown * 360)}deg`);
     this.baitButton.classList.toggle("is-cooling", bait.cooldown > 0);
     this.baitButton.classList.toggle("is-empty", bait.meat <= 0);
     this.baitButton.querySelector("#bait-count")!.textContent = String(bait.meat);
     this.baitButton.setAttribute("aria-disabled", String(bait.cooldown > 0 || bait.meat <= 0));
+  }
+
+  private bindBaitGesture(): void {
+    const hint = this.root.querySelector<HTMLElement>("#bait-aim-hint")!;
+    const cancel = this.root.querySelector<HTMLElement>("#bait-cancel-zone")!;
+    this.baitButton.setAttribute("aria-label", "鮮肉誘餌：輕點快投，按住拖曳瞄準，放開投擲");
+    this.baitButton.addEventListener("pointerdown", event => {
+      if (event.button !== 0 || this.baitPointer !== null || this.baitButton.getAttribute("aria-disabled") === "true") return;
+      event.preventDefault();
+      this.hideWorldAction();
+      this.baitPointer = event.pointerId;
+      this.baitOrigin = { x: event.clientX, y: event.clientY };
+      this.baitCancelled = false;
+      hint.hidden = false;
+      hint.classList.remove("is-cancelling");
+      this.baitButton.setPointerCapture(event.pointerId);
+      this.onAttackEnd();
+      this.onBaitAim(0, 0, true);
+    });
+    this.baitButton.addEventListener("pointermove", event => {
+      if (event.pointerId !== this.baitPointer) return;
+      const rect = cancel.getBoundingClientRect();
+      this.baitCancelled = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+      hint.classList.toggle("is-cancelling", this.baitCancelled);
+      hint.querySelector("b")!.textContent = this.baitCancelled ? "放開取消，不消耗肉" : "拖曳瞄準，放開投擲";
+      this.onBaitAim(event.clientX - this.baitOrigin.x, event.clientY - this.baitOrigin.y, !this.baitCancelled);
+    });
+    this.baitButton.addEventListener("pointerup", event => {
+      if (event.pointerId !== this.baitPointer) return;
+      const commit = !this.baitCancelled;
+      this.baitPointer = null;
+      hint.hidden = true;
+      this.onBaitRelease(commit);
+    });
+    for (const type of ["pointercancel", "lostpointercapture"]) this.baitButton.addEventListener(type, event => {
+      if ((event as PointerEvent).pointerId === this.baitPointer) this.cancelBaitGesture();
+    });
+    this.baitButton.addEventListener("click", event => { if (event.detail === 0) this.onBait(); });
+    window.addEventListener("blur", () => this.cancelBaitGesture());
+    window.addEventListener("resize", () => { this.cancelBaitGesture(); this.hideWorldAction(); });
+    document.addEventListener("visibilitychange", () => { if (document.hidden) this.cancelBaitGesture(); });
+  }
+
+  setBaitAimPoint(point: { x: number; y: number } | null): void {
+    const marker = this.root.querySelector<HTMLElement>("#bait-aim-marker")!;
+    marker.hidden = !point;
+    this.gameUi.classList.toggle("is-aiming", Boolean(point));
+    if (!point) return;
+    const outside = point.x < 28 || point.x > innerWidth - 28 || point.y < 100 || point.y > innerHeight - 70;
+    marker.style.left = `${Math.max(28, Math.min(innerWidth - 28, point.x))}px`;
+    marker.style.top = `${Math.max(100, Math.min(innerHeight - 70, point.y))}px`;
+    marker.querySelector("span")!.textContent = outside ? "畫面外落點" : "落點";
+  }
+
+  private cancelBaitGesture(): void {
+    if (this.baitPointer === null) return;
+    const pointer = this.baitPointer;
+    this.baitPointer = null;
+    if (this.baitButton.hasPointerCapture(pointer)) this.baitButton.releasePointerCapture(pointer);
+    this.root.querySelector<HTMLElement>("#bait-aim-hint")!.hidden = true;
+    this.onBaitRelease(false);
+  }
+
+  updatePatrol(profile: PatrolProfile, active: boolean, wave: number, metrics = { attracted: 0, playerKills: 0, wallDamage: 0 }): void {
+    const objective = patrolObjective(wave, metrics);
+    const signature = JSON.stringify([profile, active, wave, objective.progress]);
+    if (signature === this.patrolSignature) return;
+    this.patrolSignature = signature;
+    this.root.querySelector("#patrol-progress")!.textContent = `守夜章 ${profile.completedWaves.length}／30 · 每次出戰選一種補給`;
+    for (const button of this.root.querySelectorAll<HTMLButtonElement>("[data-supply]")) {
+      const supply = SUPPLIES.find(s => s.id === button.dataset.supply)!;
+      const unlocked = profile.completedWaves.length >= supply.threshold;
+      button.disabled = !unlocked || active;
+      button.setAttribute("aria-pressed", String(profile.selected === supply.id));
+      button.querySelector("small")!.textContent = !unlocked ? `還需 ${supply.threshold - profile.completedWaves.length} 枚守夜章` : profile.selected === supply.id ? "已選擇" : active ? "夜襲中無法更換" : "選擇補給";
+    }
+    const awarded = profile.completedWaves.includes(wave);
+    this.root.querySelector("#patrol-objective")!.textContent = wave > 30 ? "30 波守夜完成 · 補給進度已保留" : `${active ? "本波" : "下波"}委託 · ${objective.hint}${active ? `（${objective.progress}／${objective.target}）` : ""}${awarded ? " · 已得章" : " · 首次完成＋1章"}`;
   }
 
   showWaveReport(report: WaveReport): void {

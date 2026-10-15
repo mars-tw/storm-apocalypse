@@ -1,0 +1,7 @@
+
+> storm-apocalypse@0.2.15 test:simulation-fidelity
+> node scripts/test-wave-simulation-fidelity.mjs --output docs/evidence/r24-mobile/spawn-fidelity.json
+
+spawn=0.496s legacy=0.500000s corrected=0.496000s error=0.0000%
+spawn=0.510s legacy=0.750000s corrected=0.510000s error=0.0000%
+wrote docs/evidence/r24-mobile/spawn-fidelity.json

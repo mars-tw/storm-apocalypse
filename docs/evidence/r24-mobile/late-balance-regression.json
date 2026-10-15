@@ -1,0 +1,18 @@
+{
+  "status": "VERIFIED",
+  "unchangedRuns": 720,
+  "waves": [
+    25,
+    26,
+    27,
+    28,
+    29,
+    30
+  ],
+  "baseline": "HEAD R23 / 0.2.14",
+  "candidate": "R24 / 0.2.15",
+  "identicalRunResults": true,
+  "identicalAcceptanceGates": true,
+  "preexistingBalanceGate": "BLOCKED",
+  "reason": "maxed W29 40/60 (66.7%) exceeds existing 40-60% gate in both baseline and candidate; no assertion or late-wave tuning changed"
+}

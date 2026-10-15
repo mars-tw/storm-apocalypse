@@ -1,0 +1,9 @@
+{
+  "round": "R24",
+  "newGeneratedAssets": [],
+  "model_slug": null,
+  "status": "VERIFIED",
+  "note": "No new generated art or audio. Existing rigged models, atlas icons and audio are reused. The available image tool does not expose a verifiable gpt-image-2 model slug. Range rings and aim markers are interaction indicators.",
+  "missing": ["Dedicated bait icon", "Licensed dedicated aim/cancel sounds"],
+  "animation": "Existing skeletal locomotion, attack anticipation/impact/recovery, hurt and death clips retained; physics roots remain separate."
+}

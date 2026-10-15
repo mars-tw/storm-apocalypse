@@ -206,7 +206,7 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 .system-menu__head small { display:block; color:var(--ice); font-size:8px; letter-spacing:.22em; }
 .system-menu__head h2 { margin:2px 0 0; font:700 21px "Noto Serif TC",serif; letter-spacing:.11em; }
 .system-menu__head button { width:44px; min-width:44px; padding:0; cursor:pointer; color:#a9bbc0; background:transparent; font-size:26px; }
-.system-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:8px 12px 0; }
+.system-tabs { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; padding:8px 12px 0; }
 .system-tabs button { min-height:44px; cursor:pointer; color:#90a5aa; border:1px solid rgba(158,219,234,.15); background:rgba(10,28,37,.7); font-size:10px; letter-spacing:.12em; }
 .system-tabs button.is-active { color:#101b1f; border-color:rgba(240,183,104,.64); background:var(--gold); font-weight:900; }
 .system-menu__body { min-height:0; padding:10px 12px; overflow:hidden; }
@@ -589,4 +589,51 @@ button.is-pressed:not(:disabled) { filter: brightness(1.18); }
 @media (min-width:1101px) {
   #app:not(.is-touch) .command-panel { transition:opacity .45s ease, transform .45s ease, visibility .45s; }
   #app:not(.is-touch) .is-onboarding .command-panel { opacity:0; visibility:hidden; transform:translateX(28px); pointer-events:none; }
+}
+
+/* R24: touch previews are interaction indicators, using the existing art palette. */
+.world-action-cancel { width:100%; min-height:44px; margin-top:6px; border:1px solid #90a5aa; background:#102631; color:#eef6f6; cursor:pointer; font-size:13px; }
+.world-action-popover__button { min-height:74px; }
+.world-action-popover__button b { font-size:14px; white-space:normal; }
+.world-action-popover__button small { font-size:12px; white-space:normal; overflow:visible; }
+.world-action-popover__button em { font-size:12px; }
+.bait-button { touch-action:none; }
+.bait-aim-hint { position:fixed; z-index:25; right:18px; bottom:330px; padding:9px 12px; border:1px solid var(--gold); background:#102631; color:#fff1d4; pointer-events:none; font-size:13px; }
+.bait-aim-hint[hidden] { display:none; }
+.bait-aim-hint b,.bait-aim-hint span { display:block; }
+.bait-aim-hint span { font-size:12px; margin-top:3px; }
+#bait-cancel-zone { position:fixed; right:100px; bottom:110px; min-width:105px; height:48px; display:grid; place-items:center; border:2px dashed #ffc2ac; background:#492a28; color:white; }
+.bait-aim-hint.is-cancelling #bait-cancel-zone { background:#963b31; border-style:solid; }
+.bait-aim-marker { position:fixed; z-index:24; width:30px; height:30px; transform:translate(-50%,-50%); border:2px solid #ffe2a3; border-radius:50%; box-shadow:0 0 0 3px #102631; pointer-events:none; }
+.bait-aim-marker[hidden] { display:none; }
+.bait-aim-marker::after { content:"＋"; display:grid; place-items:center; width:100%; height:100%; color:#fff1d4; font-size:22px; }
+.bait-aim-marker span { position:absolute; left:50%; bottom:34px; transform:translateX(-50%); white-space:nowrap; font-size:12px; padding:2px 5px; color:#fff1d4; background:#102631; }
+.is-aiming .toast-host,.is-aiming .patrol-objective { visibility:hidden; }
+.game-ui:has(.world-action-popover:not([hidden])) .patrol-objective,
+.game-ui:has(.world-action-popover:not([hidden])) .toast-host { visibility:hidden; }
+#system-panel-supply .system-note { font-size:12px; line-height:1.4; margin:6px 0 0; }
+.patrol-objective { position:fixed; z-index:6; left:50%; top:110px; transform:translateX(-50%); max-width:calc(100vw - 28px); width:max-content; padding:5px 9px; border-left:2px solid var(--gold); background:rgba(6,20,29,.9); color:#f8e7ce; font-size:12px; line-height:1.5; pointer-events:none; }
+.has-wave-report .patrol-objective { visibility:hidden; }
+.patrol-progress { font-size:14px; color:#ffe2b8; margin:0 0 8px; }
+.supply-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.supply-grid button { min-height:88px; padding:9px; text-align:left; cursor:pointer; border:1px solid #75949e; color:#eaf3f3; background:#122c38; }
+.supply-grid button[aria-pressed="true"] { border:2px solid var(--gold); background:#3b3528; }
+.supply-grid button:disabled { cursor:default; opacity:.65; }
+.supply-grid b,.supply-grid span,.supply-grid small { display:block; }
+.supply-grid b { font-size:14px; }
+.supply-grid span { font-size:12px; line-height:1.5; margin:4px 0; }
+.supply-grid small { font-size:12px; color:#f5c890; }
+@media (pointer:coarse), (max-width:900px) {
+  .world-action-popover { left:50% !important; top:auto !important; bottom:280px; width:min(330px,calc(100vw - 24px)); transform:translateX(-50%); }
+  .patrol-objective { top:auto; bottom:262px; font-size:12px; }
+}
+@media (max-height:540px) and (orientation:landscape) {
+  .world-action-popover { bottom:140px; width:330px; }
+  .patrol-objective { top:70px; bottom:auto; max-width:400px; }
+  .bait-aim-hint { bottom:210px; }
+  #bait-cancel-zone { bottom:90px; right:125px; }
+  .supply-grid button { min-height:64px; padding:6px 9px; }
+  .supply-grid span { margin:2px 0; }
+  .supply-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  #system-panel-supply .supply-grid button { min-height:104px; padding:7px; }
 }

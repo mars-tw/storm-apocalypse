@@ -40,6 +40,7 @@ import { COMBAT_POSITIONS, COMBAT_TIMING, enemyAttackTimings, enemyCombatStats, 
 import { BAIT_RULES, baitAttractedIndices, comboExpired, createCombo, gradeWave, pickBaitSource, registerComboKill, runAdvice, WAVE_GRADE_LABEL } from "./feedback";
 import { EMPLOYEES, NAMED_CUSTOMERS, PROTAGONISTS, SHOP_UNLOCK_CHAPTER, TOWERS, WAVE_DISPATCHES, WAVE_EVE_DISPATCHES, WEAPONS, hasCompletedChapter, towerCostForState } from "./content";
 import { InputController } from "./input";
+import { awardPatrol, baitDrag, loadPatrol, savePatrol, selectSupply, supplyEffects, type SupplyId } from "./patrol";
 import { resolveQuality, type QualityLevel, type QualityPreference } from "./quality";
 import { addLoopProgress, assignLoopQuest, updateMainQuests } from "./quests";
 import type { PlayerSettings } from "./settings";
@@ -322,6 +323,13 @@ export class StormGame {
   private wavePlayerKills = 0;
   private waveTowerKills = 0;
   private waveStartTime = 0;
+  private readonly patrol = loadPatrol();
+  private waveAttractedStart = 0;
+  private waveSupply: SupplyId = "standard";
+  private baitAimPosition?: Vector3;
+  private baitAimRing?: Mesh;
+  private towerPreviewRing?: Mesh;
+  private selectedPreviewTower: TowerId | null = null;
   private campaignStartTime = performance.now();
   // R23：打擊回饋、連斬、誘餌、信標、遮擋淡化
   private hitStopTimer = 0;
@@ -662,6 +670,7 @@ export class StormGame {
   setPaused(paused: boolean): void {
     if (this.paused === paused) return;
     this.paused = paused;
+    if (paused) { this.releaseBait(false); this.previewTower(null); }
     this.input.setEnabled(!paused);
     this.scene.animationTimeScale = paused ? 0 : 1;
     const canvas = this.engine.getRenderingCanvas();
@@ -716,6 +725,61 @@ export class StormGame {
   towerAction(id: TowerId): void { this.buyOrUpgradeTower(id); }
 
   requestBait(): void { this.input.queueBait(); }
+
+  chooseSupply(id: SupplyId): void {
+    if (this.state.waveActive || !selectSupply(this.patrol, id)) return;
+    savePatrol(this.patrol);
+    this.ui.updatePatrol(this.patrol, false, this.state.wave + 1);
+  }
+
+  previewTower(id: TowerId | null): void {
+    this.towerPreviewRing?.dispose(false, true);
+    this.towerPreviewRing = undefined;
+    this.selectedPreviewTower = id;
+    if (!id || !this.started || this.state.waveActive) return;
+    const stats = towerCombatStats(id, Math.min(3, this.state.towers[id] + 1));
+    this.towerPreviewRing = this.createWorldRing("tower-range-preview", TOWER_POSITIONS[id], stats.range * 2, new Color3(0.95, 0.72, 0.23));
+    this.towerPreviewRing.isPickable = false;
+  }
+
+  aimBait(dx: number, dy: number, active: boolean): void {
+    if (!active || !this.started || this.paused || this.endShown || !this.state.waveActive || this.baitCooldown > 0) { this.releaseBait(false); return; }
+    const drag = baitDrag(dx, dy);
+    const forward = this.player.meshForwardNode.getDirection(this.player.meshForwardAxis);
+    forward.y = 0;
+    if (forward.lengthSquared() < 0.01) forward.set(0, 0, 1);
+    forward.normalize();
+    if (drag.aimed) {
+      const cameraForward = this.camera.getForwardRay().direction;
+      cameraForward.y = 0;
+      cameraForward.normalize();
+      const right = this.camera.getDirection(Vector3.Right());
+      right.y = 0;
+      right.normalize();
+      forward.copyFrom(right.scale(drag.x).add(cameraForward.scale(-drag.y)).normalize());
+    }
+    const distance = drag.aimed ? 2.4 + drag.power * 5.6 : BAIT_RULES.throwDistance;
+    const position = this.player.root.position.add(forward.scale(distance));
+    position.x = Math.max(-24, Math.min(24, position.x));
+    position.z = Math.max(-20, Math.min(20, position.z));
+    position.y = this.heightAt(position.x, position.z);
+    this.baitAimPosition = position;
+    this.ui.setBaitAimPoint(this.worldPositionScreenPoint(position));
+    if (!this.baitAimRing) {
+      this.baitAimRing = this.createWorldRing("bait-aim-preview", position, 2, new Color3(1, 0.72, 0.25));
+      this.baitAimRing.isPickable = false;
+    }
+    this.baitAimRing.position.copyFrom(position.add(new Vector3(0, 0.08, 0)));
+  }
+
+  releaseBait(commit: boolean): void {
+    const target = this.baitAimPosition?.clone();
+    this.baitAimPosition = undefined;
+    this.baitAimRing?.dispose(false, true);
+    this.baitAimRing = undefined;
+    this.ui.setBaitAimPoint(null);
+    if (commit && target && !this.paused && !this.endShown) this.throwBait(target);
+  }
 
   private bindWorldActions(): void {
     this.scene.onPointerObservable.add((pointerInfo) => {
@@ -1500,6 +1564,14 @@ export class StormGame {
           lastAt: Number(this.lastVfxAt.toFixed(3)),
         },
         feedback: {
+          towerPreview: this.selectedPreviewTower,
+          baitAim: this.baitAimPosition ? { x: this.baitAimPosition.x, z: this.baitAimPosition.z } : null,
+          baitPosition: this.bait ? { x: this.bait.position.x, z: this.bait.position.z } : null,
+          baitScraps: this.baitScraps,
+          patrolStamps: this.patrol.completedWaves.length,
+          supply: this.waveSupply,
+          waveEvent: this.currentWavePlan?.event,
+          enemyTypes: [...new Set(this.zombies.map(zombie => zombie.type))],
           hitStops: this.hitStops,
           hitFlashes: this.hitFlashes,
           floaters: this.floaterCount,
@@ -1522,6 +1594,9 @@ export class StormGame {
     if (this.uiUpdateTimer >= 0.1) {
       this.uiUpdateTimer = 0;
       this.ui.update(this.state);
+      this.ui.updatePatrol(this.patrol, this.state.waveActive, this.state.wave + 1, {
+        attracted: this.baitedZombies - this.waveAttractedStart, playerKills: this.wavePlayerKills, wallDamage: this.waveWallDamage,
+      });
     }
   }
 
@@ -2106,8 +2181,11 @@ export class StormGame {
 
   private tryStartWave(): void {
     if (!Object.values(this.state.towers).some((level) => level > 0) || this.state.waveActive || this.state.wave >= 30) return;
+    this.ui.hideWorldAction();
+    this.waveSupply = this.patrol.selected;
+    const supply = supplyEffects(this.waveSupply);
     this.state.waveActive = true;
-    this.state.baseHealth = Math.min(100, this.state.baseHealth + COMBAT_TIMING.waveRepair);
+    this.state.baseHealth = Math.min(100, this.state.baseHealth + COMBAT_TIMING.waveRepair + supply.repair);
     const waveNumber = this.state.wave + 1;
     this.currentWavePlan = getWavePlan(waveNumber);
     this.enemiesToSpawn = this.currentWavePlan.enemyCount;
@@ -2120,7 +2198,8 @@ export class StormGame {
     this.waveWallDamage = 0;
     this.waveBestCombo = 0;
     this.baitCooldown = 0;
-    this.baitScraps = 1;
+    this.baitScraps = supply.scraps;
+    this.waveAttractedStart = this.baitedZombies;
     this.waveStartTime = performance.now();
     this.waveStockLost = false;
     assignLoopQuest(this.state, {
@@ -2134,7 +2213,7 @@ export class StormGame {
     this.audio.play("wave");
     this.ui.toast(`警報：第 ${waveNumber} 波 · ${this.currentWavePlan.title}！${this.currentWavePlan.announcement}`, "danger");
     if (waveNumber <= 3 || this.baitsThrown === 0 && waveNumber % 4 === 0) {
-      window.setTimeout(() => this.ui.toast(this.ui.touchMode ? "招牌戰術：點「誘餌」丟一塊肉，把屍群拉進塔的射界" : "招牌戰術：按 Q 丟一塊肉當誘餌，把屍群拉進塔的射界", "warm"), 3200);
+      window.setTimeout(() => this.ui.toast(this.ui.touchMode ? "誘餌：輕點快投；拖曳瞄準，放開投擲。拖進取消區不扣肉。" : "招牌戰術：按 Q 丟一塊肉當誘餌，把屍群拉進塔的射界", "warm"), 3200);
     }
     { // R18 C-01：里程碑波前動員線——與完成廣播成對，強化波次間敘事節奏
       const eve = WAVE_EVE_DISPATCHES.find((entry) => entry.wave === waveNumber);
@@ -2449,7 +2528,12 @@ export class StormGame {
     this.state.wave += 1;
     this.state.bestWave = Math.max(this.state.bestWave, this.state.wave);
     this.state.stats.wavesCleared = Math.max(this.state.stats.wavesCleared, this.state.wave);
-    const reward = 16 + Math.min(this.state.wave, 10) * 3 + Math.max(0, this.state.wave - 10) + (this.state.wave % 10 === 0 ? 35 : 0);
+    this.releaseBait(false);
+    if (awardPatrol(this.patrol, this.state.wave, { attracted: this.baitedZombies - this.waveAttractedStart, playerKills: this.wavePlayerKills, wallDamage: this.waveWallDamage })) {
+      savePatrol(this.patrol);
+      this.ui.toast(`守夜委託達成 · ＋1 守夜章（共 ${this.patrol.completedWaves.length}）· 暫停 → 補給查看解鎖`, "warm");
+    }
+    const reward = 16 + Math.min(this.state.wave, 10) * 3 + Math.max(0, this.state.wave - 10) + (this.state.wave % 10 === 0 ? 35 : 0) + supplyEffects(this.waveSupply).bonus;
     creditIncome(this.state, reward);
     saveState(this.state);
     this.ui.toast(`第 ${this.state.wave} 波已清除 · 防守獎金 ✦ ${reward}`, "warm");
@@ -3066,8 +3150,8 @@ ${epilogue}` : ""), [
     this.hitFlashes += 1;
   }
 
-  private throwBait(): void {
-    if (!this.started || this.endShown) return;
+  private throwBait(target?: Vector3): void {
+    if (!this.started || this.endShown || this.paused) return;
     if (!this.state.waveActive) {
       this.ui.toast("誘餌只在夜襲時使用：把屍群拉進塔的射界。", "ice");
       return;
@@ -3090,7 +3174,7 @@ ${epilogue}` : ""), [
     forward.y = 0;
     if (forward.lengthSquared() < 0.01) forward.set(0, 0, 1);
     forward.normalize();
-    const position = this.player.root.position.add(forward.scale(BAIT_RULES.throwDistance));
+    const position = target?.clone() ?? this.player.root.position.add(forward.scale(BAIT_RULES.throwDistance));
     position.x = Math.max(-24, Math.min(24, position.x));
     position.z = Math.max(-20, Math.min(20, position.z));
     position.y = this.heightAt(position.x, position.z);
@@ -3128,6 +3212,7 @@ ${epilogue}` : ""), [
   }
 
   private updateR23Feedback(dt: number): void {
+    if (this.baitAimPosition) this.ui.setBaitAimPoint(this.worldPositionScreenPoint(this.baitAimPosition));
     this.baitCooldown = Math.max(0, this.baitCooldown - dt);
     if (comboExpired(this.combo, this.elapsed)) {
       this.combo.count = 0;

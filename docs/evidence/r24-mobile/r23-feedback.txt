@@ -1,0 +1,12 @@
+
+> storm-apocalypse@0.2.15 test:r23-feedback
+> node scripts/test-r23-feedback.mjs
+
+PASS combo chains inside window and resets outside
+PASS combo bonus starts at 5 and is capped
+PASS bait consumes carried meat before stall stock
+PASS bait attracts living non-boss zombies inside radius only
+PASS wave grade rewards clean walls and personal kills
+PASS run advice is data-driven
+PASS toast merge finds same message inside merge window only
+7/7 R23 feedback rule checks passed.
