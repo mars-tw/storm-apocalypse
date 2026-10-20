@@ -1,0 +1,552 @@
+[
+  {
+    "device": "phone-portrait",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "loaderCapturedMs": 8727,
+    "timings": {
+      "scriptStartMs": 8589.929999828339,
+      "loaderVisibleMs": 8627.609999656677,
+      "loaderGoneMs": 12728.329999923706,
+      "firstInteractiveMs": 12729.164999961853,
+      "firstInteractive": {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844
+        }
+      }
+    },
+    "paints": [
+      {
+        "name": "first-paint",
+        "startTime": 8635
+      },
+      {
+        "name": "first-contentful-paint",
+        "startTime": 8635
+      }
+    ],
+    "marks": [
+      {
+        "name": "storm-key-art-rendered",
+        "startTime": 8598
+      },
+      {
+        "name": "storm-first-interactive",
+        "startTime": 12694
+      }
+    ],
+    "controls": [
+      {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "disabled": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：肉舖更快堆出第一座塔 屠夫老闆娘 「沒秤就沒公道，沒公道就只剩搶。」 賣肉 +10% 每筆肉品交易收入提升 10%",
+        "disabled": false,
+        "rect": {
+          "x": 12,
+          "y": 121,
+          "width": 366,
+          "height": 190
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：你的刀與槍更疼，守夜更像獵人 退伍狙擊手 「子彈會用完，但準星還在腦子裡。」 武器傷 +1 你的武器每次命中額外 +1 傷害",
+        "disabled": false,
+        "rect": {
+          "x": 12,
+          "y": 319,
+          "width": 366,
+          "height": 190
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：三角防線比較不傷本 機械師少年 「齒輪比人誠實，轉不動就換。」 塔費 -10% 建造與升級防禦塔費用九折",
+        "disabled": false,
+        "rect": {
+          "x": 12,
+          "y": 517,
+          "width": 366,
+          "height": 190
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "確認屠夫老闆娘 寫入存檔 · 虛擬搖桿移動 · 揮砍鈕攻擊",
+        "disabled": false,
+        "rect": {
+          "x": 53,
+          "y": 753,
+          "width": 285,
+          "height": 62
+        },
+        "inViewport": true
+      }
+    ],
+    "title": "暴風啟示錄 · Storm Apocalypse",
+    "bodyText": "新戰役 · 選擇守燈人\n誰來走進暴風？\n\n三條路都能守到第三十次鐘聲。確認後，本局不可換角。\n\n這局：肉舖更快堆出第一座塔\n屠夫老闆娘\n「沒秤就沒公道，沒公道就只剩搶。」\n賣肉 +10%\n每筆肉品交易收入提升 10%\n這局：你的刀與槍更疼，守夜更像獵人\n退伍狙擊手\n「子彈會用完，但準星還在腦子裡。」\n武器傷 +1\n你的武器每次命中額外 +1 傷害\n這局：三角防線比較不傷本\n機械師少年\n「齒輪比人誠實，轉不動就換。」\n塔費 -10%\n建造與升級防禦塔費用九折\n串流北境資產 · 0 / 44 · 3%\n確認屠夫老闆娘\n寫入存檔 · 虛擬搖桿移動 · 揮砍鈕攻擊",
+    "crossOriginIsolated": true,
+    "errors": []
+  },
+  {
+    "device": "phone-landscape",
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "loaderCapturedMs": 218,
+    "timings": {
+      "scriptStartMs": 83.17500019073486,
+      "loaderVisibleMs": 125.82000017166138,
+      "loaderGoneMs": 1202.045000076294,
+      "firstInteractiveMs": 1202.6950001716614,
+      "firstInteractive": {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 844,
+          "height": 390
+        }
+      }
+    },
+    "paints": [
+      {
+        "name": "first-paint",
+        "startTime": 133
+      },
+      {
+        "name": "first-contentful-paint",
+        "startTime": 133
+      }
+    ],
+    "marks": [
+      {
+        "name": "storm-key-art-rendered",
+        "startTime": 88
+      },
+      {
+        "name": "storm-first-interactive",
+        "startTime": 1177
+      }
+    ],
+    "controls": [
+      {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "disabled": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 844,
+          "height": 390
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：肉舖更快堆出第一座塔 屠夫老闆娘 「沒秤就沒公道，沒公道就只剩搶。」 賣肉 +10% 每筆肉品交易收入提升 10%",
+        "disabled": false,
+        "rect": {
+          "x": 112,
+          "y": 134,
+          "width": 620,
+          "height": 216
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：你的刀與槍更疼，守夜更像獵人 退伍狙擊手 「子彈會用完，但準星還在腦子裡。」 武器傷 +1 你的武器每次命中額外 +1 傷害",
+        "disabled": false,
+        "rect": {
+          "x": 112,
+          "y": 358,
+          "width": 620,
+          "height": 216
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：三角防線比較不傷本 機械師少年 「齒輪比人誠實，轉不動就換。」 塔費 -10% 建造與升級防禦塔費用九折",
+        "disabled": false,
+        "rect": {
+          "x": 112,
+          "y": 582,
+          "width": 620,
+          "height": 216
+        },
+        "inViewport": false
+      },
+      {
+        "tag": "button",
+        "text": "確認屠夫老闆娘 寫入存檔 · 虛擬搖桿移動 · 揮砍鈕攻擊",
+        "disabled": false,
+        "rect": {
+          "x": 280,
+          "y": 318,
+          "width": 285,
+          "height": 62
+        },
+        "inViewport": true
+      }
+    ],
+    "title": "暴風啟示錄 · Storm Apocalypse",
+    "bodyText": "新戰役 · 選擇守燈人\n誰來走進暴風？\n\n三條路都能守到第三十次鐘聲。確認後，本局不可換角。\n\n這局：肉舖更快堆出第一座塔\n屠夫老闆娘\n「沒秤就沒公道，沒公道就只剩搶。」\n賣肉 +10%\n每筆肉品交易收入提升 10%\n這局：你的刀與槍更疼，守夜更像獵人\n退伍狙擊手\n「子彈會用完，但準星還在腦子裡。」\n武器傷 +1\n你的武器每次命中額外 +1 傷害\n這局：三角防線比較不傷本\n機械師少年\n「齒輪比人誠實，轉不動就換。」\n塔費 -10%\n建造與升級防禦塔費用九折\n串流北境資產 · 0 / 44 · 3%\n確認屠夫老闆娘\n寫入存檔 · 虛擬搖桿移動 · 揮砍鈕攻擊\n▼\n捲動選擇守燈人",
+    "crossOriginIsolated": true,
+    "errors": []
+  },
+  {
+    "device": "laptop-short",
+    "viewport": {
+      "width": 1366,
+      "height": 600
+    },
+    "loaderCapturedMs": 359,
+    "timings": {
+      "scriptStartMs": 241.48499965667725,
+      "loaderVisibleMs": 271.96499967575073,
+      "loaderGoneMs": 1363.1299996376038,
+      "firstInteractiveMs": 1364.1099996566772,
+      "firstInteractive": {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1366,
+          "height": 600
+        }
+      }
+    },
+    "paints": [
+      {
+        "name": "first-paint",
+        "startTime": 287
+      },
+      {
+        "name": "first-contentful-paint",
+        "startTime": 287
+      }
+    ],
+    "marks": [
+      {
+        "name": "storm-key-art-rendered",
+        "startTime": 245
+      },
+      {
+        "name": "storm-first-interactive",
+        "startTime": 1339
+      }
+    ],
+    "controls": [
+      {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "disabled": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1366,
+          "height": 600
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：肉舖更快堆出第一座塔 屠夫老闆娘 「沒秤就沒公道，沒公道就只剩搶。」 賣肉 +10% 每筆肉品交易收入提升 10%",
+        "disabled": false,
+        "rect": {
+          "x": 123,
+          "y": 153,
+          "width": 365,
+          "height": 390
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：你的刀與槍更疼，守夜更像獵人 退伍狙擊手 「子彈會用完，但準星還在腦子裡。」 武器傷 +1 你的武器每次命中額外 +1 傷害",
+        "disabled": false,
+        "rect": {
+          "x": 500,
+          "y": 153,
+          "width": 365,
+          "height": 390
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：三角防線比較不傷本 機械師少年 「齒輪比人誠實，轉不動就換。」 塔費 -10% 建造與升級防禦塔費用九折",
+        "disabled": false,
+        "rect": {
+          "x": 878,
+          "y": 153,
+          "width": 365,
+          "height": 390
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "確認屠夫老闆娘 寫入存檔 · WASD 移動 · 空白鍵攻擊",
+        "disabled": false,
+        "rect": {
+          "x": 541,
+          "y": 528,
+          "width": 285,
+          "height": 62
+        },
+        "inViewport": true
+      }
+    ],
+    "title": "暴風啟示錄 · Storm Apocalypse",
+    "bodyText": "新戰役 · 選擇守燈人\n誰來走進暴風？\n\n三條路都能守到第三十次鐘聲。確認後，本局不可換角。\n\n這局：肉舖更快堆出第一座塔\n屠夫老闆娘\n「沒秤就沒公道，沒公道就只剩搶。」\n賣肉 +10%\n每筆肉品交易收入提升 10%\n這局：你的刀與槍更疼，守夜更像獵人\n退伍狙擊手\n「子彈會用完，但準星還在腦子裡。」\n武器傷 +1\n你的武器每次命中額外 +1 傷害\n這局：三角防線比較不傷本\n機械師少年\n「齒輪比人誠實，轉不動就換。」\n塔費 -10%\n建造與升級防禦塔費用九折\n載入北境資產 · 5 / 44 · 9%\n確認屠夫老闆娘\n寫入存檔 · WASD 移動 · 空白鍵攻擊\n▼\n捲動選擇守燈人\nTHE LAST BUTCHER\nTAIPEI / LOCAL SAVE",
+    "crossOriginIsolated": true,
+    "errors": []
+  },
+  {
+    "device": "desktop",
+    "viewport": {
+      "width": 1366,
+      "height": 768
+    },
+    "loaderCapturedMs": 491,
+    "timings": {
+      "scriptStartMs": 351.7849998474121,
+      "loaderVisibleMs": 392.789999961853,
+      "loaderGoneMs": 1678.7999997138977,
+      "firstInteractiveMs": 1679.4349999427795,
+      "firstInteractive": {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1366,
+          "height": 768
+        }
+      }
+    },
+    "paints": [
+      {
+        "name": "first-paint",
+        "startTime": 414
+      },
+      {
+        "name": "first-contentful-paint",
+        "startTime": 414
+      }
+    ],
+    "marks": [
+      {
+        "name": "storm-key-art-rendered",
+        "startTime": 357
+      },
+      {
+        "name": "storm-first-interactive",
+        "startTime": 1656
+      }
+    ],
+    "controls": [
+      {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "disabled": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 1366,
+          "height": 768
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：肉舖更快堆出第一座塔 屠夫老闆娘 「沒秤就沒公道，沒公道就只剩搶。」 賣肉 +10% 每筆肉品交易收入提升 10%",
+        "disabled": false,
+        "rect": {
+          "x": 123,
+          "y": 153,
+          "width": 365,
+          "height": 510
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：你的刀與槍更疼，守夜更像獵人 退伍狙擊手 「子彈會用完，但準星還在腦子裡。」 武器傷 +1 你的武器每次命中額外 +1 傷害",
+        "disabled": false,
+        "rect": {
+          "x": 500,
+          "y": 153,
+          "width": 365,
+          "height": 510
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：三角防線比較不傷本 機械師少年 「齒輪比人誠實，轉不動就換。」 塔費 -10% 建造與升級防禦塔費用九折",
+        "disabled": false,
+        "rect": {
+          "x": 878,
+          "y": 153,
+          "width": 365,
+          "height": 510
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "確認屠夫老闆娘 寫入存檔 · WASD 移動 · 空白鍵攻擊",
+        "disabled": false,
+        "rect": {
+          "x": 541,
+          "y": 696,
+          "width": 285,
+          "height": 62
+        },
+        "inViewport": true
+      }
+    ],
+    "title": "暴風啟示錄 · Storm Apocalypse",
+    "bodyText": "新戰役 · 選擇守燈人\n誰來走進暴風？\n\n三條路都能守到第三十次鐘聲。確認後，本局不可換角。\n\n這局：肉舖更快堆出第一座塔\n屠夫老闆娘\n「沒秤就沒公道，沒公道就只剩搶。」\n賣肉 +10%\n每筆肉品交易收入提升 10%\n這局：你的刀與槍更疼，守夜更像獵人\n退伍狙擊手\n「子彈會用完，但準星還在腦子裡。」\n武器傷 +1\n你的武器每次命中額外 +1 傷害\n這局：三角防線比較不傷本\n機械師少年\n「齒輪比人誠實，轉不動就換。」\n塔費 -10%\n建造與升級防禦塔費用九折\n串流北境資產 · 0 / 44 · 3%\n確認屠夫老闆娘\n寫入存檔 · WASD 移動 · 空白鍵攻擊\n▼\n捲動選擇守燈人\nTHE LAST BUTCHER\nTAIPEI / LOCAL SAVE",
+    "crossOriginIsolated": true,
+    "errors": []
+  },
+  {
+    "device": "tablet",
+    "viewport": {
+      "width": 768,
+      "height": 1024
+    },
+    "loaderCapturedMs": 210,
+    "timings": {
+      "scriptStartMs": 81.17500019073486,
+      "loaderVisibleMs": 118.65000009536743,
+      "loaderGoneMs": 1448.590000152588,
+      "firstInteractiveMs": 1449.1449999809265,
+      "firstInteractive": {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 768,
+          "height": 1024
+        }
+      }
+    },
+    "paints": [
+      {
+        "name": "first-paint",
+        "startTime": 135
+      },
+      {
+        "name": "first-contentful-paint",
+        "startTime": 135
+      }
+    ],
+    "marks": [
+      {
+        "name": "storm-key-art-rendered",
+        "startTime": 87
+      },
+      {
+        "name": "storm-first-interactive",
+        "startTime": 1424
+      }
+    ],
+    "controls": [
+      {
+        "tag": "canvas",
+        "text": "暴風啟示錄 3D 遊戲畫面",
+        "disabled": false,
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "width": 768,
+          "height": 1024
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：肉舖更快堆出第一座塔 屠夫老闆娘 「沒秤就沒公道，沒公道就只剩搶。」 賣肉 +10% 每筆肉品交易收入提升 10%",
+        "disabled": false,
+        "rect": {
+          "x": 74,
+          "y": 134,
+          "width": 620,
+          "height": 216
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：你的刀與槍更疼，守夜更像獵人 退伍狙擊手 「子彈會用完，但準星還在腦子裡。」 武器傷 +1 你的武器每次命中額外 +1 傷害",
+        "disabled": false,
+        "rect": {
+          "x": 74,
+          "y": 358,
+          "width": 620,
+          "height": 216
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "這局：三角防線比較不傷本 機械師少年 「齒輪比人誠實，轉不動就換。」 塔費 -10% 建造與升級防禦塔費用九折",
+        "disabled": false,
+        "rect": {
+          "x": 74,
+          "y": 582,
+          "width": 620,
+          "height": 216
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "text": "確認屠夫老闆娘 寫入存檔 · 虛擬搖桿移動 · 揮砍鈕攻擊",
+        "disabled": false,
+        "rect": {
+          "x": 242,
+          "y": 844,
+          "width": 285,
+          "height": 62
+        },
+        "inViewport": true
+      }
+    ],
+    "title": "暴風啟示錄 · Storm Apocalypse",
+    "bodyText": "新戰役 · 選擇守燈人\n誰來走進暴風？\n\n三條路都能守到第三十次鐘聲。確認後，本局不可換角。\n\n這局：肉舖更快堆出第一座塔\n屠夫老闆娘\n「沒秤就沒公道，沒公道就只剩搶。」\n賣肉 +10%\n每筆肉品交易收入提升 10%\n這局：你的刀與槍更疼，守夜更像獵人\n退伍狙擊手\n「子彈會用完，但準星還在腦子裡。」\n武器傷 +1\n你的武器每次命中額外 +1 傷害\n這局：三角防線比較不傷本\n機械師少年\n「齒輪比人誠實，轉不動就換。」\n塔費 -10%\n建造與升級防禦塔費用九折\n串流北境資產 · 0 / 44 · 3%\n確認屠夫老闆娘\n寫入存檔 · 虛擬搖桿移動 · 揮砍鈕攻擊",
+    "crossOriginIsolated": true,
+    "errors": []
+  }
+]

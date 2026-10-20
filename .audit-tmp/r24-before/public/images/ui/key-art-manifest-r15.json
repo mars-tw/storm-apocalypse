@@ -1,0 +1,131 @@
+{
+  "release": "storm R15 Wave 2",
+  "assetType": "gpt-image-2 key art with deterministic runtime derivatives",
+  "model": "gpt-image-2",
+  "master": {
+    "path": "docs/evidence/R15/masters/storm-r15-key-art-gpt-image-2.png",
+    "sha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+    "bytes": 1883344,
+    "c2pa": {
+      "softwareAgent": {
+        "name": "gpt-image",
+        "version": "2.0"
+      },
+      "summary": "gpt-image 2.0",
+      "verification": "docs/evidence/R15/c2pa-verification.json"
+    }
+  },
+  "prompt": {
+    "path": "docs/evidence/R15/prompt-template.md",
+    "sha256": "fd8345711bbca7268c87395a5f9b2b02be7894f139093c04aa5d6d4e7a3dd68c"
+  },
+  "pipeline": {
+    "script": "tools/process_r15_key_art.py",
+    "resampler": "Pillow Lanczos",
+    "cropAnchor": "center",
+    "firstScreenPreview": "320x180 WebP bytes are inlined as a data URI in index.html; file copy is retained for hash verification",
+    "metadataPolicy": "master retained untouched; derivatives intentionally omit C2PA and point back by SHA-256"
+  },
+  "assets": [
+    {
+      "path": "public/images/ui/background/menu-background.png",
+      "width": 1920,
+      "height": 1080,
+      "decodedRgbaBytes": 8294400,
+      "fileBytes": 2224985,
+      "sha256": "a24f01ace095b560bb5af74c25dac721d8369de315358ff7fd8c5f7b9abac4bb",
+      "model": "gpt-image-2",
+      "masterSha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+      "postprocess": [
+        "center-crop 16:9",
+        "resize 1920x1080 Lanczos",
+        "PNG RGB optimize=1 compress=9"
+      ]
+    },
+    {
+      "path": "public/images/ui/background/menu-background-medium.png",
+      "width": 1280,
+      "height": 720,
+      "decodedRgbaBytes": 3686400,
+      "fileBytes": 227910,
+      "sha256": "c0af4d6eca5c10799ad915f71d5e963c14ae7d71c388b38b1e6be9fa1ed43a5f",
+      "model": "gpt-image-2",
+      "masterSha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+      "postprocess": [
+        "center-crop 16:9",
+        "resize 1280x720 Lanczos",
+        "brightness 1.02 quantization compensation",
+        "deterministic 256-color FASTOCTREE",
+        "PNG optimize=1 compress=9"
+      ]
+    },
+    {
+      "path": "public/images/ui/background/menu-background-low.png",
+      "width": 640,
+      "height": 360,
+      "decodedRgbaBytes": 921600,
+      "fileBytes": 66159,
+      "sha256": "b6fc12419f6d86b4e235dac4b7de3675e47a5cabde802048308152045728c74e",
+      "model": "gpt-image-2",
+      "masterSha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+      "postprocess": [
+        "center-crop 16:9",
+        "resize 640x360 Lanczos",
+        "brightness 1.02 quantization compensation",
+        "deterministic 128-color FASTOCTREE",
+        "PNG optimize=1 compress=9"
+      ]
+    },
+    {
+      "path": "public/images/ui/background/menu-background-preview.webp",
+      "width": 320,
+      "height": 180,
+      "decodedRgbaBytes": 230400,
+      "fileBytes": 4716,
+      "sha256": "7fb0cb2a41536b393e792f192c5d6605d8660d83217b96d6aacb09200352dd32",
+      "model": "gpt-image-2",
+      "masterSha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+      "postprocess": [
+        "center-crop 16:9",
+        "resize 320x180 Lanczos",
+        "WebP quality=42 method=6 exact=1"
+      ]
+    },
+    {
+      "path": "public/images/cover.png",
+      "width": 1280,
+      "height": 640,
+      "decodedRgbaBytes": 3276800,
+      "fileBytes": 1034816,
+      "sha256": "326a67a2c3ff77112d6457582c56457ba9759f7d93e4042e7935a435a2629c71",
+      "model": "gpt-image-2",
+      "masterSha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+      "postprocess": [
+        "center-crop 2:1",
+        "resize 1280x640 Lanczos",
+        "PNG RGB optimize=1 compress=9"
+      ]
+    },
+    {
+      "path": "assets/cover.png",
+      "width": 1280,
+      "height": 640,
+      "decodedRgbaBytes": 3276800,
+      "fileBytes": 1034816,
+      "sha256": "326a67a2c3ff77112d6457582c56457ba9759f7d93e4042e7935a435a2629c71",
+      "model": "gpt-image-2",
+      "masterSha256": "4614816946c2cbc6df96d3c956e3633e78d6a9d057bebdfab4de90088c787eab",
+      "postprocess": [
+        "byte-for-byte copy from public/images/cover.png"
+      ]
+    }
+  ],
+  "gates": {
+    "coverCopiesByteIdentical": true,
+    "desktopDecodedBytes": 9446400,
+    "mobileDecodedBytes": 1152000,
+    "desktopLimitBytes": 67108864,
+    "mobileLimitBytes": 33554432,
+    "allPass": true
+  }
+}

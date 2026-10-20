@@ -1,0 +1,321 @@
+{
+  "preset": {
+    "name": "R6 Sandstorm Foundry",
+    "renderer": "EEVEE",
+    "view_transform": "AgX",
+    "look": "Medium High Contrast",
+    "transparent_icons": true,
+    "camera": {
+      "lens_mm": 62,
+      "turntable_yaw_deg": -28,
+      "pitch_deg": 17
+    },
+    "lighting": {
+      "key": {
+        "color": "#FFC58A",
+        "energy": 920,
+        "size": 4.2
+      },
+      "fill": {
+        "color": "#70B3C4",
+        "energy": 430,
+        "size": 5.0
+      },
+      "rim": {
+        "color": "#F06735",
+        "energy": 720,
+        "size": 3.0
+      }
+    },
+    "palette": {
+      "night": "#07131A",
+      "steel": "#242B2C",
+      "rust": "#8F3B1F",
+      "sand": "#C18652",
+      "ice": "#79C3D2",
+      "signal": "#E36D3E"
+    },
+    "tiers": {
+      "low": {
+        "atlas_cell": 128,
+        "portrait": [
+          256,
+          384
+        ],
+        "background": [
+          960,
+          540
+        ]
+      },
+      "medium": {
+        "atlas_cell": 192,
+        "portrait": [
+          384,
+          576
+        ],
+        "background": [
+          1280,
+          720
+        ]
+      },
+      "high": {
+        "atlas_cell": 256,
+        "portrait": [
+          512,
+          768
+        ],
+        "background": [
+          1920,
+          1080
+        ]
+      }
+    }
+  },
+  "atlasOrder": [
+    "tower-ballista",
+    "tower-frost",
+    "tower-cannon",
+    "weapon-machete",
+    "weapon-axe",
+    "weapon-smg",
+    "skill-butcher",
+    "skill-sniper",
+    "skill-mechanic",
+    "skill-hunter",
+    "skill-cashier",
+    "skill-dog"
+  ],
+  "assets": [
+    {
+      "path": "images/ui/atlas/ui-atlas-high.png",
+      "width": 1024,
+      "height": 768,
+      "bytes": 609277,
+      "sha256": "4fe28e0ac710f53eba7a508ba21b3d253664edb5b745aefeb130ca52bc361262"
+    },
+    {
+      "path": "images/ui/atlas/ui-atlas-low.png",
+      "width": 512,
+      "height": 384,
+      "bytes": 176609,
+      "sha256": "c758be3a502ec9e9e3e407a7e2751a913f8d8757627ec0adf9f18853480f9d97"
+    },
+    {
+      "path": "images/ui/atlas/ui-atlas-medium.png",
+      "width": 768,
+      "height": 576,
+      "bytes": 371995,
+      "sha256": "f0bf6a3a594cb2e5f29e598e443f60ae008e73f5c6341e30652ac00530a921f0"
+    },
+    {
+      "path": "images/ui/background/menu-background-low.png",
+      "width": 960,
+      "height": 540,
+      "bytes": 607617,
+      "sha256": "2df329df8851f5101b11d48fb8867e4c95d2af602154f9ee37e50e4b4f581ec8"
+    },
+    {
+      "path": "images/ui/background/menu-background-medium.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 1091786,
+      "sha256": "ff7611d9d0b9d939c7f148bb30d58e263825bd1d56bfe8ab974de60a24a058ec"
+    },
+    {
+      "path": "images/ui/background/menu-background.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 1882930,
+      "sha256": "360c0d1796f407d3a60bef498e2d63760faf6c55149d2b019d60bcefc5d9895d"
+    },
+    {
+      "path": "images/ui/background/menu-dust-low.png",
+      "width": 960,
+      "height": 540,
+      "bytes": 232490,
+      "sha256": "a5659b9cf6021ffdc6778d93b3af4bb4a5027ce1d9f6862f293fe48cbf2267c9"
+    },
+    {
+      "path": "images/ui/background/menu-dust-medium.png",
+      "width": 1280,
+      "height": 720,
+      "bytes": 406038,
+      "sha256": "809ced859f5af4a69975b59c1d6e345b44fcfd4a178b302312424371c0bcba08"
+    },
+    {
+      "path": "images/ui/background/menu-dust.png",
+      "width": 1920,
+      "height": 1080,
+      "bytes": 563337,
+      "sha256": "a64dadffd5e2c96d6b8e73f5056410f30aea9bac94d2db2d76f9789350cfc47e"
+    },
+    {
+      "path": "images/ui/chrome/button-9s.png",
+      "width": 192,
+      "height": 192,
+      "bytes": 32112,
+      "sha256": "22e32d26c546968975c321b75b1549726aba4c3f4635a97215233ee477722ca7"
+    },
+    {
+      "path": "images/ui/chrome/danger-button-9s.png",
+      "width": 192,
+      "height": 192,
+      "bytes": 31993,
+      "sha256": "c2c5f03569aa2be8c4d19483a7f53a6e3f6183bd1359dc10cfddcb4b1155c86b"
+    },
+    {
+      "path": "images/ui/chrome/panel-9s.png",
+      "width": 192,
+      "height": 192,
+      "bytes": 30291,
+      "sha256": "cd1228cc75d7445e142a5405f49427e158637c13506210c142f9a0c8e20a57f8"
+    },
+    {
+      "path": "images/ui/icons/skill-butcher.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 38176,
+      "sha256": "f241ffe4c00e61c96e8f6eda763e06416289d7fa80f5ddefeb7d361f2b9b2642"
+    },
+    {
+      "path": "images/ui/icons/skill-cashier.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 43537,
+      "sha256": "57a37013be962a0c08ddf1a63f667e06524e48cecaf3133f3fdc8ee1020160ba"
+    },
+    {
+      "path": "images/ui/icons/skill-dog.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 51674,
+      "sha256": "b3a0e061c31fda36a6e53d869ef082822a3bb6148d5e75154e151400cc67d67c"
+    },
+    {
+      "path": "images/ui/icons/skill-hunter.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 46757,
+      "sha256": "f8235d85a59785e081b5a177c1209962044bf5fd652499ba9737895e15be09f7"
+    },
+    {
+      "path": "images/ui/icons/skill-mechanic.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 37173,
+      "sha256": "6389296f03eae5877d68b7b2826c1c68985acfd27bfed7d9e90fdef5eafc5a32"
+    },
+    {
+      "path": "images/ui/icons/skill-sniper.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 38529,
+      "sha256": "a6963120d7422a4ecf9a222e1489a1a3b98a21532d8c832f1ef65cb895b4e5ad"
+    },
+    {
+      "path": "images/ui/icons/tower-ballista.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 55432,
+      "sha256": "349e82fa4d60bd54c85152f9d8ff3ad37a27e963ff2b2b6b79c3ea4cc1434baf"
+    },
+    {
+      "path": "images/ui/icons/tower-cannon.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 59349,
+      "sha256": "3de7dccd7e5bc446a12100f0f3da1c05ff015f6b0bdc3d82f9720ea4163a3ceb"
+    },
+    {
+      "path": "images/ui/icons/tower-frost.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 38126,
+      "sha256": "c8a35990162752975a150e6e36fe18defbf7af9ed6f8654da5804c70616426e9"
+    },
+    {
+      "path": "images/ui/icons/weapon-axe.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 18504,
+      "sha256": "cbc6a8dca5499c604ef6df3930e4b382daf67e1cca79d0fff214cf6252ad22cc"
+    },
+    {
+      "path": "images/ui/icons/weapon-machete.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 16044,
+      "sha256": "d13fb5c35adbcb7e133d0f93080a389925fcee6d42673c27e5cdce0cce2801aa"
+    },
+    {
+      "path": "images/ui/icons/weapon-smg.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 20948,
+      "sha256": "f7d3493cd946365aed6996d799979d5cd8ed93671e1ab2509e7a347e80b42c73"
+    },
+    {
+      "path": "images/characters/protagonist-butcher-matron-low.png",
+      "width": 256,
+      "height": 384,
+      "bytes": 88767,
+      "sha256": "f8d8b7ca99a450cef62591226c212f76d47a966f912190d2df36ffbcc6c8f367"
+    },
+    {
+      "path": "images/characters/protagonist-butcher-matron-medium.png",
+      "width": 384,
+      "height": 576,
+      "bytes": 187718,
+      "sha256": "67b9abf769a069bf8311dcce5be7b3cfa279de80a137f40134961c1dfb2e9487"
+    },
+    {
+      "path": "images/characters/protagonist-butcher-matron.png",
+      "width": 512,
+      "height": 768,
+      "bytes": 242320,
+      "sha256": "64188bcb1b51aa311ebac7ca0c6e47f2e27408851c2ce2e73330e6116bba18ed"
+    },
+    {
+      "path": "images/characters/protagonist-mech-youth-low.png",
+      "width": 256,
+      "height": 384,
+      "bytes": 84503,
+      "sha256": "82983f365a98013f2645feae995f65e1e8c0f0e96b3088704977faae6ce0c68a"
+    },
+    {
+      "path": "images/characters/protagonist-mech-youth-medium.png",
+      "width": 384,
+      "height": 576,
+      "bytes": 179861,
+      "sha256": "26656ad8571c58fabe6f086b01eafd6a7f014ff69e640a86acecab806e264ab6"
+    },
+    {
+      "path": "images/characters/protagonist-mech-youth.png",
+      "width": 512,
+      "height": 768,
+      "bytes": 234164,
+      "sha256": "4ce0088cf32db43a75a6be7bbc2f1cc663043512f712557ec2e9814e56449788"
+    },
+    {
+      "path": "images/characters/protagonist-vet-sniper-low.png",
+      "width": 256,
+      "height": 384,
+      "bytes": 77763,
+      "sha256": "e4cc1056e51a23d766bb0822afae060d4fd23a324241c9c7e8d82501c517eaf9"
+    },
+    {
+      "path": "images/characters/protagonist-vet-sniper-medium.png",
+      "width": 384,
+      "height": 576,
+      "bytes": 164849,
+      "sha256": "1e05edd3b1055a459cf487d058afe56775af3e1f0f7aa8806658f4c679897171"
+    },
+    {
+      "path": "images/characters/protagonist-vet-sniper.png",
+      "width": 512,
+      "height": 768,
+      "bytes": 213654,
+      "sha256": "186b3856ce4c706b0360cb7706714faba8e10ed3a694fd7f5034c419b8ce2e64"
+    }
+  ]
+}

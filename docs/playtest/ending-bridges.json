@@ -1,0 +1,24 @@
+[
+  {
+    "scenario": "victory-bridge",
+    "interaction": "real start-wave, move to shop choke, held axe attack; injected wave 29 fixture",
+    "elapsedMs": 21128,
+    "won": false,
+    "result": "暴風戰報\n最後的燈熄了\n\n肉舖壁壘遭到突破。永久資金、任務、武器、員工與建設都已保留，重新集結後再戰。 彈殼埋進雪裡，燈滅在第三十次鐘聲前。記下風向。下一次，我提前兩秒開火。\n\n守過波次\n29 / 30\n累計擊殺\n528\n獵物\n27\n累計總收入\n✦ 10167\n剩餘資金\n✦ 10202\n本輪時間\n1 分\n帶著進度重整清除進度並重開",
+    "saveWave": 29,
+    "campaignWins": 0,
+    "retainedWave": 29,
+    "diagnostics": []
+  },
+  {
+    "scenario": "defeat-and-clear-bridge",
+    "interaction": "real start-wave, no-defense wait, result reset/cancel/reopen/confirm; injected wave 29 low-wall fixture",
+    "elapsedMs": 6831,
+    "result": "暴風戰報\n最後的燈熄了\n\n肉舖壁壘遭到突破。永久資金、任務、武器、員工與建設都已保留，重新集結後再戰。 彈殼埋進雪裡，燈滅在第三十次鐘聲前。記下風向。下一次，我提前兩秒開火。\n\n守過波次\n29 / 30\n累計擊殺\n501\n獵物\n26\n累計總收入\n✦ 9968\n剩餘資金\n✦ 10003\n本輪時間\n1 分\n帶著進度重整清除進度並重開",
+    "saveBeforeWave": 29,
+    "savedBaseHealth": 0,
+    "preservedAfterCancel": true,
+    "cleared": true,
+    "diagnostics": []
+  }
+]

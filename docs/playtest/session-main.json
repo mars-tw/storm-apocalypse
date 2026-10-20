@@ -1,0 +1,18 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:4178",
+      "localStorage": [
+        {
+          "name": "storm-apocalypse-settings-v1",
+          "value": "{\"version\":1,\"masterVolume\":0.81,\"sfxVolume\":0.91,\"muted\":false,\"quality\":\"auto\",\"screenShake\":true}"
+        },
+        {
+          "name": "storm-apocalypse-save-v1",
+          "value": "{\"version\":5,\"money\":330,\"wave\":5,\"baseHealth\":100,\"stallLevel\":1,\"towerBuilt\":true,\"bestWave\":5,\"weapon\":\"axe\",\"weapons\":{\"machete\":true,\"axe\":true,\"smg\":false},\"protagonistId\":\"vet_sniper\",\"employees\":{\"hunter\":1,\"cashier\":0,\"dog\":0},\"customerAffinity\":{\"lao_zhou\":2,\"nurse_lin\":2,\"kid_bao\":2,\"scout_he\":2},\"customerRewardsClaimed\":[],\"customerAffinityWave\":0,\"customerAffinityGained\":{\"lao_zhou\":2,\"nurse_lin\":2,\"kid_bao\":2,\"scout_he\":2},\"pasture2Unlocked\":true,\"towers\":{\"ballista\":1,\"frost\":1,\"cannon\":0},\"quest\":{\"chapter\":10,\"completed\":[1,2,3,4,5,6,7,8,9],\"unlocks\":[\"stall-guide\",\"defense-shop\",\"employee-shop\",\"strong-cattle\"],\"loop\":{\"id\":\"frost-hits\",\"wave\":5,\"progress\":8,\"target\":10,\"reward\":30,\"completed\":false,\"claimed\":false}},\"stats\":{\"pastureVisited\":true,\"cowsKilled\":74,\"meatCollected\":19,\"meatDeposited\":19,\"sales\":19,\"totalEarned\":985,\"zombiesKilled\":41,\"playerKills\":3,\"towerKills\":38,\"damageDealt\":218,\"damageTaken\":0,\"wavesCleared\":5,\"campaignWins\":0},\"lastSavedAt\":1784553269462}"
+        }
+      ]
+    }
+  ]
+}

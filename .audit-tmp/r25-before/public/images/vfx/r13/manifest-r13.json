@@ -1,0 +1,442 @@
+{
+  "release": "storm R13",
+  "generator": "gpt-image-2 + local chroma-key removal",
+  "runtime_contract": "RGBA PNG 1024x1024, transparent corners, consistent centered pivot and padding",
+  "manual_cleanup_minutes_total": 0,
+  "alpha_qa_minutes_total": 10,
+  "all_alpha_gates_pass": true,
+  "assets": [
+    {
+      "id": "snow-burst-a",
+      "category": "snow_burst",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "compact radial burst of chunky wind-carved snow shards and powder clumps; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 1,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/snow-burst-a-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "23bb8152627c7873226fb19a9e6881e3e24206ae18ebf675e4f561277b84991c"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/snow-burst-a-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "b9be39943ff53456a623eb4a48f5b38b243cbb03a56c9a5cf4db41ab6e54dfc0"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/snow-burst-a-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "98a37eb7ac28b96612626745c2c6f321eda182e67dd5821aa178002feaa515dd"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/snow-burst-a.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 427746,
+        "sha256": "ee48818c3d5291871fc6255befb23b81207e4cdac91ad1fad4aae76e938ab37c"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.223849,
+        "partial_pixels": 28248,
+        "visible_bbox": [
+          94,
+          136,
+          929,
+          867
+        ],
+        "green_fringe_pixels": 18,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    },
+    {
+      "id": "snow-burst-b",
+      "category": "snow_burst",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "low sweeping crescent of wind-driven snow chunks and ice splinters; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 1,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/snow-burst-b-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "d5eb1ab9d9077002789cc0bae7bd767cb55879f00905640e4058f9d67e44e0d5"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/snow-burst-b-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "e6f66b82cc48e845195b2aad448685b857986e2ee698da6e22277d36dfe5b6ce"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/snow-burst-b-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "71fa07a5d976f91807c3f399e4d2678de65ddd2b43ff9d26bab4f3443de8693f"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/snow-burst-b.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 415513,
+        "sha256": "ada5a091d4d4e794ae065b0c656811a2385261f22466e418042114288dcc58d8"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.182389,
+        "partial_pixels": 26255,
+        "visible_bbox": [
+          17,
+          218,
+          1003,
+          775
+        ],
+        "green_fringe_pixels": 16,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    },
+    {
+      "id": "wood-splinter-a",
+      "category": "wood_splinter",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "explosive fan of broken timber splinters, chips and cracked plank fragments; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 1,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/wood-splinter-a-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "813aaa3af202388b9acc0b897948ad4f09f6e3407252ac355a475ea106360c43"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/wood-splinter-a-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "f9183d1da69917b6d9a3aee6db700b201ec6046add7853dd3e22c26593168ab6"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/wood-splinter-a-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "3200fe8c7e67ea2f53452c457385f47d513e94cf9cc41a2c29d12ca4b5c65565"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/wood-splinter-a.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 764364,
+        "sha256": "c01ba9ad5146ca226c2b4fb5bb95def268eb6f7f375678f86a1dcdaad40b6421"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.286904,
+        "partial_pixels": 36931,
+        "visible_bbox": [
+          80,
+          83,
+          939,
+          926
+        ],
+        "green_fringe_pixels": 22,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    },
+    {
+      "id": "wood-splinter-b",
+      "category": "wood_splinter",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "compact sideways burst of wood chips, bark and one snapped rail fragment; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 1,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/wood-splinter-b-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "3a961132dea7550adf37b15718465c5441d71930b9b71fe600714bffb8e5261d"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/wood-splinter-b-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "a27194f3c5362c4b2067fe10b45420a1d3c8dda86fbeb6a4db88419d51eba93d"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/wood-splinter-b-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "2eeee26fb555bfe0d9d80d09993ef9bec4fc3633202735067eb48ba8dc00096a"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/wood-splinter-b.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 404394,
+        "sha256": "02d97d82b58ac569321684c1a16dd06cf221fb482c3a0c3f45a3fab74de0a5eb"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.165723,
+        "partial_pixels": 24517,
+        "visible_bbox": [
+          76,
+          196,
+          949,
+          816
+        ],
+        "green_fringe_pixels": 16,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    },
+    {
+      "id": "health-warning-a",
+      "category": "health_warning",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "screen-edge danger vignette of separated angular crimson shards; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 1,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/health-warning-a-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "a785042160c251ad7d41879d3cea9b3552dead485e129db28695b8419857e965"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/health-warning-a-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "bac5b2071720c624cd51c3cb297b98e9f52ccb9f72f0fb23f0c2ea6d53372db8"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/health-warning-a-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "c3a94e6a2c7b106d1a69da44096f554fdcde2e06877925fda60695eec25a50e8"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/health-warning-a.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 504944,
+        "sha256": "733a89f15a074547ffd15e7fec33afc738350d387293bd10d6a79ec33ac1ef34"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.226463,
+        "partial_pixels": 27706,
+        "visible_bbox": [
+          20,
+          12,
+          1003,
+          1005
+        ],
+        "green_fringe_pixels": 19,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    },
+    {
+      "id": "health-warning-b",
+      "category": "health_warning",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "fractured circular low-health frame with separated frost-cracked crimson plates; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 1,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/health-warning-b-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "ea65f47b74ba4fd9e654f8a3bca43e64214781b09f52d687fa2c7128f4750715"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/health-warning-b-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "e199cb6045a75e5b37828267e875eed6b8f78f89570967f683cee1c44978fd87"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/health-warning-b-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "06d8dbbcac4aa3d01c645c9955ddf69281fc754e8d0efdd25ccce2797f116e87"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/health-warning-b.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 931923,
+        "sha256": "8635354cf96ff2328cc5067c85f33a3776bef09b31e26cfa89743c6aa5b3321b"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.342864,
+        "partial_pixels": 44787,
+        "visible_bbox": [
+          27,
+          7,
+          1005,
+          1005
+        ],
+        "green_fringe_pixels": 102,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    },
+    {
+      "id": "impact-decal-a",
+      "category": "decal",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "irregular cracked dark-red impact stain pressed into snow; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 2,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/impact-decal-a-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "6620cffcc28f17328386e57b02858e7bddf07a58d17fd3c55892b6a51611d482"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/impact-decal-a-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "c20161c6f09628893a29c124913f00b8f4c02c1cead22c910bf8626b2490f86d"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/impact-decal-a-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "d505ee5c1f9b728f8e9f504d1abaec1af677ba5f927a96be67901567c49e757f"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/impact-decal-a.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 1165883,
+        "sha256": "ba92110cde84b9cdb9029d7d337879f3ba6f564815d3aad60f9f8d6c7b646668"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.476637,
+        "partial_pixels": 17739,
+        "visible_bbox": [
+          75,
+          94,
+          945,
+          935
+        ],
+        "green_fringe_pixels": 16,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    },
+    {
+      "id": "impact-decal-b",
+      "category": "decal",
+      "model": "gpt-image-2",
+      "use_case": "stylized-concept",
+      "prompt": "scuffed-snow impact with charcoal center, oxblood arcs and compressed ridges; Storm Apocalypse stylized low-poly painted combat VFX; perpetual blizzard; chunky readable forms; restrained texture density; perfectly flat solid #00ff00 chroma-key background; centered pivot; generous padding; no text, logo, watermark, character, weapon or scenery",
+      "background_removal": "remove_chroma_key.py auto-key border, soft matte, despill, edge-contract 1; Lanczos runtime resize",
+      "manual_cleanup_minutes": 0,
+      "alpha_qa_minutes": 2,
+      "opaque_master": {
+        "path": "docs/evidence/R13_art/opaque/impact-decal-b-opaque.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "aa156f8b845bea196007f70f1f2241ba149e837afbdc85f95c48a7bebb1612a1"
+      },
+      "rgba_master": {
+        "path": "docs/evidence/R13_art/rgba-master/impact-decal-b-rgba.png",
+        "width": 1254,
+        "height": 1254,
+        "sha256": "8c2a6346b29b484c1beb1f7205c191d86b70ecf7163e757eb739d36689c404fb"
+      },
+      "alpha_mask": {
+        "path": "docs/evidence/R13_art/masks/impact-decal-b-mask.png",
+        "width": 1024,
+        "height": 1024,
+        "sha256": "d52db271d681b92c69916394e8bc85bab28c82f4d3e27162e470ed20a2279de7"
+      },
+      "runtime": {
+        "path": "public/images/vfx/r13/impact-decal-b.png",
+        "width": 1024,
+        "height": 1024,
+        "bytes": 991818,
+        "sha256": "881e10a768ec8ede2b4c66838e3d70dcd8baf0bfe84513b5307dcfe228ae9628"
+      },
+      "alpha_gate": {
+        "pass": true,
+        "four_corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "occupancy": 0.419793,
+        "partial_pixels": 17218,
+        "visible_bbox": [
+          58,
+          120,
+          965,
+          905
+        ],
+        "green_fringe_pixels": 25,
+        "magic_bytes": "89504e470d0a1a0a"
+      }
+    }
+  ]
+}

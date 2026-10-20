@@ -1,0 +1,165 @@
+[
+  {
+    "scenario": "phone-portrait",
+    "wallDom": 315.07489999999984,
+    "boot": {
+      "scriptStart": 120.96499967575073,
+      "loaderSeen": 131.14999961853027,
+      "interactive": 1732.869999885559
+    },
+    "afterAttack": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "body": "✦\n暴風啟示錄\n資金\n35\n背包\n0 / 6\n攤位存貨\n0 / 6\n整備\n30 波戰役\n黎明 · 0 / 30\n⚙\n手冊 01 · 0/1\n生存手冊 · 01 / 15\n×\n前往東側牧場\n\n「封鎖線以東還有活物。今晚的湯，得靠自己的刀。」\n\n任務進度\n0 / 1\n完成獎勵\n✦ 10\n肉舖壁壘\n100%\n北境補給站\n武裝與自動化\n×\n武裝\n員工\n常客\n擴張\n武器鏈\n砍刀\n近距離單體揮砍 · 傷害 2\n使用中\n迴旋斧\n360° 橫掃 · 傷害 3\n🔒 完成手冊第 8 章解鎖\n衝鋒槍\n遠程掃射 · 傷害 2×3\n🔒 完成手冊第 9 章解鎖\n搖桿\n虛擬搖桿移動 · 揮砍鈕攻擊\n手冊 5\n手冊 5\n手冊 5\n準備防守\n至少建造一座塔\n武器\n揮砍\n「秤要準。今天的肉，還有人等。」",
+      "introHidden": false,
+      "fps": "56",
+      "paused": "false",
+      "attackCount": 1,
+      "settingsVisible": false,
+      "shopOpen": false,
+      "questOpen": false,
+      "consoleMark": 1732.869999885559
+    },
+    "shopOpen": true,
+    "questOpen": true,
+    "rotated": {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "body": "✦\n暴風啟示錄\nSTORM APOCALYPSE\n✦\n資金\n35\n🥩\n背包\n0 / 6\n▤\n攤位存貨\n0 / 6\n整備\n30 波戰役\n黎明 · 0 / 30\n⚙\n手冊 01 · 0/1\n生存手冊 · 01 / 15\n×\n前往東側牧場\n\n「封鎖線以東還有活物。今晚的湯，得靠自己的刀。」\n\n任務進度\n0 / 1\n完成獎勵\n✦ 10\n肉舖壁壘\n100%\n北境補給站\n武裝與自動化\n×\n武裝\n員工\n常客\n擴張\n武器鏈\n砍刀\n近距離單體揮砍 · 傷害 2\n使用中\n迴旋斧\n360° 橫掃 · 傷害 3\n🔒 完成手冊第 8 章解鎖\n衝鋒槍\n遠程掃射 · 傷害 2×3\n🔒 完成手冊第 9 章解鎖\n搖桿\n虛擬搖桿移動 · 揮砍鈕攻擊\n獵風弩塔\n手冊 5\n寒霜塔\n手冊 5\n火砲塔\n手冊 5\n準備防守\n至少建造一座塔\n武器\n揮砍\n揮砍落空——動作會完整收勢。",
+      "introHidden": false,
+      "fps": "24",
+      "paused": "false",
+      "attackCount": 1,
+      "settingsVisible": false,
+      "shopOpen": false,
+      "questOpen": false,
+      "consoleMark": 1732.869999885559
+    },
+    "offline": {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "body": "✦\n暴風啟示錄\nSTORM APOCALYPSE\n✦\n資金\n35\n🥩\n背包\n0 / 6\n▤\n攤位存貨\n0 / 6\n整備\n30 波戰役\n黎明 · 0 / 30\n⚙\n手冊 01 · 0/1\n生存手冊 · 01 / 15\n×\n前往東側牧場\n\n「封鎖線以東還有活物。今晚的湯，得靠自己的刀。」\n\n任務進度\n0 / 1\n完成獎勵\n✦ 10\n肉舖壁壘\n100%\n北境補給站\n武裝與自動化\n×\n武裝\n員工\n常客\n擴張\n武器鏈\n砍刀\n近距離單體揮砍 · 傷害 2\n使用中\n迴旋斧\n360° 橫掃 · 傷害 3\n🔒 完成手冊第 8 章解鎖\n衝鋒槍\n遠程掃射 · 傷害 2×3\n🔒 完成手冊第 9 章解鎖\n搖桿\n虛擬搖桿移動 · 揮砍鈕攻擊\n獵風弩塔\n手冊 5\n寒霜塔\n手冊 5\n火砲塔\n手冊 5\n準備防守\n至少建造一座塔\n武器\n揮砍",
+      "introHidden": false,
+      "fps": "56",
+      "paused": "false",
+      "attackCount": 1,
+      "settingsVisible": false,
+      "shopOpen": false,
+      "questOpen": false,
+      "consoleMark": 1732.869999885559
+    },
+    "errors": []
+  },
+  {
+    "scenario": "phone-landscape",
+    "before": {
+      "scrollTop": 0,
+      "scrollHeight": 663,
+      "clientHeight": 663
+    },
+    "after": {
+      "scrollTop": 0,
+      "scrollHeight": 663,
+      "clientHeight": 663
+    },
+    "mechanicRect": {
+      "x": 112,
+      "y": 400.1000061035156,
+      "width": 620,
+      "height": 215.60000610351562
+    },
+    "swipeMoved": false,
+    "facts": {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "body": "✦\n暴風啟示錄\nSTORM APOCALYPSE\n✦\n資金\n35\n🥩\n背包\n0 / 6\n▤\n攤位存貨\n0 / 6\n整備\n30 波戰役\n黎明 · 0 / 30\n⚙\n手冊 01 · 0/1\n生存手冊 · 01 / 15\n×\n前往東側牧場\n\n「封鎖線以東還有活物。今晚的湯，得靠自己的刀。」\n\n任務進度\n0 / 1\n完成獎勵\n✦ 10\n肉舖壁壘\n100%\n北境補給站\n武裝與自動化\n×\n武裝\n員工\n常客\n擴張\n武器鏈\n砍刀\n近距離單體揮砍 · 傷害 2\n使用中\n迴旋斧\n360° 橫掃 · 傷害 3\n🔒 完成手冊第 8 章解鎖\n衝鋒槍\n遠程掃射 · 傷害 2×3\n🔒 完成手冊第 9 章解鎖\n搖桿\n虛擬搖桿移動 · 揮砍鈕攻擊\n獵風弩塔\n手冊 5\n寒霜塔\n手冊 5\n火砲塔\n手冊 5\n準備防守\n至少建造一座塔\n武器\n揮砍\n「塔架歪了半指……我先焊，你們先撐。」",
+      "introHidden": false,
+      "fps": "56",
+      "paused": "false",
+      "attackCount": 0,
+      "settingsVisible": false,
+      "shopOpen": false,
+      "questOpen": false,
+      "consoleMark": 1603.75
+    },
+    "errors": []
+  },
+  {
+    "scenario": "laptop-short",
+    "metrics": {
+      "rect": {
+        "x": 373.20001220703125,
+        "y": 148.6999969482422,
+        "width": 620,
+        "height": 302.6000061035156,
+        "top": 148.6999969482422,
+        "right": 993.2000122070312,
+        "bottom": 451.3000030517578,
+        "left": 373.20001220703125
+      },
+      "scrollHeight": 282,
+      "clientHeight": 282,
+      "confirmVisible": true
+    },
+    "closed": true,
+    "facts": {
+      "viewport": {
+        "width": 1366,
+        "height": 600
+      },
+      "body": "✦\n暴風啟示錄\nSTORM APOCALYPSE\n✦\n資金\n330\n🥩\n背包\n0 / 6\n▤\n攤位存貨\n0 / 12\n30 波戰役\n黎明 · 5 / 30\n退伍狙擊手 · 武器傷 +1\n高畫質 · 49 FPS · 132 DC\n⚙\n生存手冊 · 10 / 15\n三角防線\n\n「弩矢、寒霜、火藥。三種聲音，組成封鎖區的新鐘聲。」\n\n任務進度\n2 / 3\n完成獎勵\n✦ 100 · 塔升級\n肉舖壁壘\n100%\n北境補給站\n武裝與自動化\n武裝\n員工\n常客\n擴張\n武器鏈\n砍刀\n近距離單體揮砍 · 傷害 2\n已解鎖\n迴旋斧\n360° 橫掃 · 傷害 3\n使用中\n衝鋒槍\n遠程掃射 · 傷害 2×3\n購買 ✦ 360\nWASD\n穿越雪地 · 空白鍵揮砍\nLv.1\n手冊 10\nLv.1\n手冊 10\n火砲塔\n建造 ✦ 160\n敵情：低能見度 · 奔行者連襲\n啟動第 6 波 · 白幕突襲\n武器\n橫掃\n牛隻生命 2 / 3",
+      "introHidden": false,
+      "fps": "49",
+      "paused": "false",
+      "attackCount": 0,
+      "settingsVisible": false,
+      "shopOpen": false,
+      "questOpen": false,
+      "consoleMark": 1574.3949999809265
+    },
+    "errors": []
+  },
+  {
+    "scenario": "tablet",
+    "metrics": {
+      "rect": {
+        "x": 74,
+        "y": 360.70001220703125,
+        "width": 620,
+        "height": 302.6000061035156,
+        "top": 360.70001220703125,
+        "right": 694,
+        "bottom": 663.3000183105469,
+        "left": 74
+      },
+      "scrollHeight": 282,
+      "clientHeight": 282,
+      "confirmVisible": true
+    },
+    "closed": true,
+    "facts": {
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "body": "✦\n暴風啟示錄\nSTORM APOCALYPSE\n✦\n資金\n330\n🥩\n背包\n0 / 6\n▤\n攤位存貨\n0 / 12\n整備\n30 波戰役\n黎明 · 5 / 30\n⚙\n手冊 10 · 2/3\n生存手冊 · 10 / 15\n×\n三角防線\n\n「弩矢、寒霜、火藥。三種聲音，組成封鎖區的新鐘聲。」\n\n任務進度\n2 / 3\n完成獎勵\n✦ 100 · 塔升級\n肉舖壁壘\n100%\n北境補給站\n武裝與自動化\n×\n武裝\n員工\n常客\n擴張\n武器鏈\n砍刀\n近距離單體揮砍 · 傷害 2\n已解鎖\n迴旋斧\n360° 橫掃 · 傷害 3\n使用中\n衝鋒槍\n遠程掃射 · 傷害 2×3\n購買 ✦ 360\n搖桿\n虛擬搖桿移動 · 揮砍鈕攻擊\nLv.1\n手冊 10\nLv.1\n手冊 10\n火砲塔\n建造 ✦ 160\n敵情：低能見度 · 奔行者連襲\n啟動第 6 波 · 白幕突襲\n武器\n橫掃\n「風向不對。先保住燈，再談子彈。」",
+      "introHidden": false,
+      "fps": "53",
+      "paused": "false",
+      "attackCount": 0,
+      "settingsVisible": false,
+      "shopOpen": false,
+      "questOpen": false,
+      "consoleMark": 1625.625
+    },
+    "errors": []
+  }
+]
